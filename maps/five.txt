@@ -1,0 +1,27 @@
+
+define 1 room 1
+define 2 room 2
+define 3 room 3
+define 4 room 4
+define 5 room 5
+define s worldspawn
+define o monster ogre
+define c monster cyberdaemon
+define h monster hellknight
+define a ammo 6 50
+define w weapon 6
+define l light
+
+###########################################
+# 1   a     w    . o     2   l# 4        l#
+# s     l        . o          #        c  #
+##################            #           #
+#               l#            .           #
+# 5              .            .           #
+#              a .      a     #          l#
+#l       c       #            #      ######
+##################..###########l     #
+# 3  l                  l     .      #
+#        a     h       h      .  a   #
+#            l                .     l#
+######################################

@@ -1,0 +1,23 @@
+
+define 1 room 1
+define 2 room 2
+define 3 room 3
+define 4 room 4
+define s worldspawn
+define o ogre
+define c cyberdaemon
+define h hellknight
+
+###########################################
+# 1              # 2          # 4         #
+#                #            #        c  #
+# s              . o          #           #
+#                . o          .           #
+#          #######            .           #
+#          #                  #           #
+#          #                  #      ######
+##################..###########      #
+# 3                           .      #
+#              h       h      .      #
+#                             .      #
+######################################

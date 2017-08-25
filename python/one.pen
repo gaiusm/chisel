@@ -1,0 +1,10 @@
+ROOM 1
+   WALL
+     1 1  18 1
+     18 1  18 9
+     18 9  1 9
+     1 9  1 1
+   SPAWN PLAYER AT 3 4
+END
+
+END.

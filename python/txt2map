@@ -1,0 +1,17 @@
+#!/bin/bash
+
+echo -n "txt2pen: "
+if python txt2pen.py -o tiny.pen $1 ; then
+   echo "pass"
+else
+   echo "failed"
+   exit 1
+fi
+
+echo -n "pen2map: "
+if python pen2map.py -s -e -o tiny.map tiny.pen ; then
+   echo "pass"
+else
+   echo "failed"
+   exit 1
+fi

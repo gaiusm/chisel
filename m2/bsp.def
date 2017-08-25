@@ -1,0 +1,91 @@
+(* Copyright (C) 2017 Free Software Foundation, Inc.  *)
+(* This file is part of Chisel.
+
+Chisel is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 3, or (at your option) any later
+version.
+
+Chisel is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
+
+You should have received a copy of the GNU General Public License along
+with gm2; see the file COPYING.  If not, write to the Free Software
+Foundation, 51 Franklin Street, Fifth Floor,
+Boston, MA 02110-1301, USA.  *)
+
+DEFINITION MODULE bsp ;  (*!m2pim*)
+
+(*
+    Title      : bsp
+    Author     : Gaius Mulley
+    System     : Chisel
+    Date       : Fri Aug  4 01:19:30 2017
+    Revision   : $Version$
+    Description: provides a mechanism to store map data and convert
+                 this into a bsp.
+*)
+
+FROM nameKey IMPORT Name ;
+FROM vector3 IMPORT vec3 ;
+
+TYPE
+   entity ;
+   plane ;
+
+
+(*
+   initEntity - creates an empty entity.
+*)
+
+PROCEDURE initEntity () : entity ;
+
+
+(*
+   putBrushDef3 -
+*)
+
+PROCEDURE putBrushDef3 (e: entity) ;
+
+
+(*
+   putPatchDef2 -
+*)
+
+PROCEDURE putPatchDef2 (e: entity) ;
+
+
+(*
+   initPlane - creates and returns a new plane
+               defined by the texture matrice
+                  [r0,
+                   r1,
+                   [0.0, 0.0, 1.0]]
+               mapped with, t.
+
+               The plane is dist from the origin and is defined by,
+               normal, value.  The texture image is defined by, t.
+*)
+
+PROCEDURE initPlane (normal: vec3; dist: LONGREAL; r0, r1: vec3; t: Name) : plane ;
+
+
+(*
+   includePlane - include plane, p, into entity, e.
+*)
+
+PROCEDURE includePlane (e: entity; p: plane) ;
+
+
+(*
+   includeTags - include the tag [d:v] to entity, e.
+                 d is the definition tag.
+                 v is the value tag.
+*)
+
+PROCEDURE includeTags (e: entity; d, v: Name) ;
+
+
+END bsp.

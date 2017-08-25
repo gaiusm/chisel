@@ -1,0 +1,53 @@
+(* Copyright (C) 2017
+                 Free Software Foundation, Inc. *)
+(* This file is part of Chisel.
+
+Chisel is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 3, or (at your option) any later
+version.
+
+Chisel is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
+
+You should have received a copy of the GNU General Public License along
+with gm2; see the file COPYING.  If not, write to the Free Software
+Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA. *)
+
+DEFINITION MODULE mapError ;
+
+(*
+    Title      : mapError
+    Author     : Gaius Mulley
+    System     : Chisel
+    Date       : Thu Nov 26 16:33:31 2015
+    Revision   : $Version$
+    Description: provides an interface between the string handling modules
+                 and the compiler.
+*)
+
+
+FROM SYSTEM IMPORT BYTE ;
+FROM DynamicStrings IMPORT String ;
+
+
+(*
+   internalError - displays an internal error message together with the compiler source
+                   file and line number.
+                   This function is not buffered and is used when the compiler is about
+                   to give up.
+*)
+
+PROCEDURE internalError (a: ARRAY OF CHAR; file: ARRAY OF CHAR; line: CARDINAL) ;
+
+
+(*
+   errorString - display error message, s.
+*)
+
+PROCEDURE errorString (s: String) ;
+
+
+END mapError.

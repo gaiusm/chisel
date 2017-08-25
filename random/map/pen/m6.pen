@@ -1,0 +1,1417 @@
+Starting Room building
+No of coords 404
+No of coords 601
+No of coords 597
+No of coords 604
+No of coords 592
+No of coords 592
+No of coords 592
+No of coords 606
+No of coords 606
+No of coords 606
+No of coords 600
+No of coords 600
+No of coords 608
+No of coords 608
+No of coords 606
+No of coords 606
+No of coords 614
+No of coords 598
+No of coords 572
+No of coords 572
+No of coords 586
+No of coords 588
+No of coords 588
+No of coords 604
+No of coords 609
+No of coords 611
+No of coords 621
+No of coords 630
+No of coords 630
+No of coords 650
+No of coords 668
+No of coords 677
+No of coords 693
+No of coords 681
+No of coords 695
+No of coords 697
+No of coords 715
+No of coords 715
+No of coords 725
+No of coords 739
+No of coords 755
+No of coords 769
+No of coords 779
+No of coords 779
+No of coords 779
+No of coords 761
+No of coords 737
+No of coords 725
+No of coords 729
+No of coords 739
+No of coords 736
+No of coords 736
+No of coords 726
+No of coords 730
+No of coords 735
+No of coords 753
+No of coords 749
+No of coords 760
+No of coords 731
+No of coords 741
+No of coords 723
+No of coords 713
+No of coords 716
+No of coords 734
+No of coords 734
+No of coords 756
+No of coords 772
+No of coords 788
+No of coords 790
+No of coords 791
+No of coords 805
+No of coords 811
+No of coords 823
+No of coords 815
+No of coords 815
+No of coords 808
+No of coords 822
+No of coords 822
+No of coords 812
+No of coords 826
+No of coords 840
+No of coords 826
+No of coords 821
+No of coords 811
+No of coords 821
+No of coords 807
+No of coords 803
+No of coords 789
+No of coords 779
+No of coords 795
+No of coords 799
+No of coords 806
+No of coords 820
+No of coords 826
+No of coords 831
+No of coords 836
+No of coords 805
+No of coords 811
+No of coords 821
+No of coords 816
+No of coords 788
+No of coords 778
+No of coords 771
+No of coords 769
+No of coords 749
+No of coords 761
+No of coords 771
+No of coords 747
+No of coords 720
+No of coords 734
+No of coords 743
+No of coords 751
+No of coords 741
+No of coords 744
+No of coords 760
+No of coords 758
+No of coords 752
+No of coords 752
+No of coords 742
+No of coords 722
+No of coords 702
+No of coords 709
+No of coords 712
+No of coords 711
+No of coords 712
+No of coords 717
+No of coords 711
+Corridors  10
+Rooms     136
+Creating RoomDoors
+Pushing walls   1   4
+Point  76  33
+Point  76  34
+Point  76  35
+Point  76  36
+Point  76  37
+Point  76  38
+Point  76  39
+Point  76  40
+Point  76  41
+Making walls   1   4
+No of coords  10
+Pushing walls   8   2
+Point  65  65
+Point  65  66
+Point  65  67
+Point  65  68
+Point  65  69
+Point  65  70
+Point  65  71
+Point  65  72
+Point  65  73
+Point  65  74
+Point  65  75
+Point  65  76
+Point  65  77
+Point  65  78
+Making walls   8   2
+No of coords  15
+Pushing walls   2   4
+Point 103  75
+Point 103  76
+Point 103  77
+Point 103  78
+Making walls   2   4
+No of coords   5
+Pushing walls   5   2
+Point  82  33
+Point  82  34
+Point  82  35
+Point  82  36
+Point  82  37
+Point  82  38
+Point  82  39
+Making walls   5   2
+No of coords   8
+Pushing walls   8   6
+Point  12  46
+Point  13  46
+Point  14  46
+Point  15  46
+Point  16  46
+Point  17  46
+Point  18  46
+Point  19  46
+Point  20  46
+Point  21  46
+Point  22  46
+Point  23  46
+Point  24  46
+Point  25  46
+Point  26  46
+Point  27  46
+Point  28  46
+Point  29  46
+Point  30  46
+Making walls   8   6
+No of coords  20
+Pushing walls   4   4
+Point  83  41
+Point  84  41
+Point  85  41
+Making walls   4   4
+No of coords   4
+Pushing walls   1   4
+Point  59  65
+Point  59  66
+Point  59  67
+Point  59  68
+Point  59  69
+Point  59  70
+Point  59  71
+Point  59  72
+Point  59  73
+Point  59  74
+Point  59  75
+Point  59  76
+Point  59  77
+Point  59  78
+Making walls   1   4
+No of coords  15
+Pushing walls   8   6
+Point  32  47
+Point  32  48
+Point  32  49
+Point  32  50
+Point  32  51
+Point  32  52
+Point  32  53
+Making walls   8   6
+No of coords   8
+Pushing walls   6   3
+Point  11  47
+Point  11  48
+Making walls   6   3
+No of coords   3
+Pushing walls   4   2
+Point 109  65
+Point 109  66
+Point 109  67
+Point 109  68
+Point 109  69
+Point 109  70
+Point 109  71
+Point 109  72
+Point 109  73
+Point 109  74
+Point 109  75
+Point 109  76
+Point 109  77
+Point 109  78
+Making walls   4   2
+No of coords  15
+Pushing walls   2   4
+Point  76  49
+Point  76  50
+Point  76  51
+Point  76  52
+Point  76  53
+Point  76  54
+Point  76  55
+Point  76  56
+Making walls   2   4
+No of coords   9
+Pushing walls   5   1
+Point  89  12
+Point  90  12
+Making walls   5   1
+No of coords   3
+Pushing walls   5   2
+Point  94  18
+Point  94  19
+Point  94  20
+Point  94  21
+Point  94  22
+Point  94  23
+Point  94  24
+Making walls   5   2
+No of coords   8
+No of coords   1
+Pushing walls   7   8
+Point   8  59
+Point   8  60
+Point   8  61
+Point   8  62
+Point   8  63
+Making walls   7   8
+No of coords   6
+No of coords   1
+Pushing walls   1   3
+Point 111  14
+Point 111  15
+Point 111  16
+Point 111  17
+Point 111  18
+Point 111  19
+Point 111  20
+Pushing walls   3   4
+Point 106  13
+Point 107  13
+Point 108  13
+Point 109  13
+Making walls   1   3
+No of coords  12
+No of coords   1
+Pushing walls   3   8
+Point   9  65
+Point  10  65
+Point  11  65
+Point  12  65
+Point  13  65
+Point  14  65
+Point  15  65
+Point  16  65
+Point  17  65
+Point  18  65
+Point  19  65
+Point  20  65
+Point  21  65
+Making walls   3   8
+No of coords  14
+No of coords   1
+Pushing walls   5   4
+Point  88  18
+Point  88  19
+Point  88  20
+Point  88  21
+Point  88  22
+Point  88  23
+Point  88  24
+Making walls   5   4
+No of coords   8
+No of coords   1
+Pushing walls   8   8
+Point  98  49
+Point  99  49
+Point 100  49
+Point 101  49
+Point 102  49
+Point 103  49
+Point 104  49
+Point 105  49
+Point 106  49
+Point 107  49
+Point 108  49
+Point 109  49
+Point 110  49
+Point 111  49
+Point 112  49
+Point 113  49
+Point 114  49
+Point 115  49
+Point 116  49
+Point 117  49
+Point 118  49
+Making walls   8   8
+No of coords  22
+No of coords   1
+Pushing walls   1   5
+Point  41  72
+Point  42  72
+Point  43  72
+Point  44  72
+Making walls   1   5
+No of coords   5
+No of coords   1
+Pushing walls   1   8
+Point 105   7
+Point 105   8
+Point 105   9
+Point 105  10
+Point 105  11
+Making walls   1   8
+No of coords   6
+No of coords   1
+Pushing walls   8   7
+Point   2  43
+Point   3  43
+Point   4  43
+Point   5  43
+Point   6  43
+Point   7  43
+Point   8  43
+Point   9  43
+Making walls   8   7
+No of coords   9
+No of coords   1
+Pushing walls   6   2
+Point 116  37
+Point 117  37
+Point 118  37
+Making walls   6   2
+No of coords   4
+No of coords   1
+Pushing walls   5   4
+Point  33  27
+Point  33  28
+Point  33  29
+Making walls   5   4
+No of coords   4
+No of coords   1
+Pushing walls   2   4
+Point 103  65
+Point 103  66
+Point 103  67
+Making walls   2   4
+No of coords   4
+No of coords   1
+Pushing walls   2   1
+Point  66  21
+Point  67  21
+Point  68  21
+Point  69  21
+Point  70  21
+Point  71  21
+Pushing walls   3   8
+Point  73  17
+Point  73  18
+Point  73  19
+Pushing walls   6   7
+Point  74  16
+Point  75  16
+Point  76  16
+Point  77  16
+Point  78  16
+Making walls   2   1
+No of coords  15
+No of coords   1
+Pushing walls   3   3
+Point  70  48
+Point  71  48
+Point  72  48
+Point  73  48
+Point  74  48
+Making walls   3   3
+No of coords   6
+No of coords   1
+No of coords   1
+Pushing walls   4   8
+Point  18  22
+Point  19  22
+Point  20  22
+Point  21  22
+Point  22  22
+Point  23  22
+Point  24  22
+Point  25  22
+Point  26  22
+Point  27  22
+Making walls   4   8
+No of coords  11
+No of coords   1
+Pushing walls   7   1
+Point  20  14
+Point  21  14
+Point  22  14
+Point  23  14
+Point  24  14
+Point  25  14
+Point  26  14
+Point  27  14
+Making walls   7   1
+No of coords   9
+Pushing walls   8   4
+Point  40   8
+Point  40   9
+Point  40  10
+Point  40  11
+Point  40  12
+Making walls   8   4
+No of coords   6
+Pushing walls   1   2
+Point  51  13
+Point  51  14
+Point  51  15
+Point  51  16
+Point  51  17
+Point  51  18
+Point  51  19
+Point  51  20
+Point  51  21
+Point  51  22
+Point  51  23
+Point  51  24
+Pushing walls   3   6
+Point  52  12
+Making walls   1   2
+No of coords  14
+Pushing walls   1   6
+Point  22  31
+Point  23  31
+Point  24  31
+Point  25  31
+Point  26  31
+Point  27  31
+Point  28  31
+Point  29  31
+Point  30  31
+Point  31  31
+Making walls   1   6
+No of coords  11
+Pushing walls   6   1
+Point  16   2
+Point  16   3
+Point  16   4
+Making walls   6   1
+No of coords   4
+Pushing walls   4   2
+Point   2  34
+Point   3  34
+Point   4  34
+Point   5  34
+Point   6  34
+Point   7  34
+Point   8  34
+Making walls   4   2
+No of coords   8
+Pushing walls   2   8
+Point  74   9
+Point  75   9
+Making walls   2   8
+No of coords   3
+Pushing walls   3   1
+Point 105   2
+Point 105   3
+Point 105   4
+Making walls   3   1
+No of coords   4
+Pushing walls   4   2
+Point  59  13
+Point  59  14
+Making walls   4   2
+No of coords   3
+Pushing walls   1   7
+Point  36  14
+Point  37  14
+Point  38  14
+Making walls   1   7
+No of coords   4
+Number of rooms 136
+Pushing walls   3   1
+Point  70  43
+Point  71  43
+Point  72  43
+Point  73  43
+Point  74  43
+Making walls   3   1
+No of coords   6
+Pushing walls   8   2
+Point  65  74
+Point  65  75
+Point  65  76
+Point  65  77
+Point  65  78
+Making walls   8   2
+No of coords   6
+Pushing walls   2   4
+No of coords   1
+Pushing walls   5   3
+Point  86  65
+Point  86  66
+Point  86  67
+Point  86  68
+Point  86  69
+Point  86  70
+Point  86  71
+Point  86  72
+Point  86  73
+Point  86  74
+Point  86  75
+Point  86  76
+Point  86  77
+Point  86  78
+Pushing walls   7   4
+Point  87  64
+Point  88  64
+Point  89  64
+Point  90  64
+Point  91  64
+Making walls   5   3
+No of coords  20
+Pushing walls   2   4
+No of coords   1
+Pushing walls   5   3
+Point  86  74
+Point  86  75
+Point  86  76
+Point  86  77
+Point  86  78
+Pushing walls   7   4
+Point  87  64
+Point  88  64
+Point  89  64
+Point  90  64
+Point  91  64
+Making walls   7   4
+No of coords  11
+Pushing walls   2   4
+No of coords   1
+Pushing walls   5   3
+Pushing walls   7   4
+No of coords   1
+Pushing walls   2   4
+No of coords   1
+Pushing walls   5   3
+Pushing walls   7   4
+No of coords   1
+Pushing walls   2   4
+No of coords   1
+Pushing walls   5   3
+Pushing walls   7   4
+No of coords   1
+Pushing walls   1   6
+Point  98  42
+Point  99  42
+Point 100  42
+Making walls   1   6
+No of coords   4
+Pushing walls   1   6
+No of coords   1
+Pushing walls   4   4
+No of coords   1
+Pushing walls   5   2
+Point  82  38
+Point  82  39
+Making walls   5   2
+No of coords   3
+Pushing walls   1   6
+No of coords   1
+Pushing walls   4   4
+No of coords   1
+Pushing walls   5   2
+No of coords   1
+No of coords   1
+Pushing walls   1   6
+No of coords   1
+Pushing walls   4   4
+No of coords   1
+Pushing walls   5   2
+No of coords   1
+No of coords   1
+Pushing walls   1   3
+Point  19  56
+Point  20  56
+Point  21  56
+Pushing walls   4   2
+Point  14  53
+Point  15  53
+Point  16  53
+Pushing walls   5   5
+Point  18  54
+Making walls   1   3
+No of coords   8
+Pushing walls   1   3
+Pushing walls   4   2
+Point  14  53
+Point  15  53
+Point  16  53
+Pushing walls   5   5
+Point  18  54
+Making walls   4   2
+No of coords   5
+Pushing walls   1   3
+Pushing walls   4   2
+Pushing walls   5   5
+Point  18  54
+Making walls   5   5
+No of coords   2
+Pushing walls   8   8
+No of coords   1
+Pushing walls   4   4
+No of coords   1
+Pushing walls   6   2
+No of coords   1
+Pushing walls   2   8
+No of coords   1
+Pushing walls   8   8
+No of coords   1
+Pushing walls   4   4
+No of coords   1
+Pushing walls   6   2
+No of coords   1
+Pushing walls   2   8
+No of coords   1
+Pushing walls   1   4
+No of coords   1
+Pushing walls   4   6
+No of coords   1
+Pushing walls   3   3
+Point  52  65
+Point  52  66
+Point  52  67
+Point  52  68
+Point  52  69
+Point  52  70
+Making walls   3   3
+No of coords   7
+Pushing walls   5   1
+No of coords   1
+Pushing walls   1   6
+Point  31  67
+Point  31  68
+Point  31  69
+Making walls   1   6
+No of coords   4
+Pushing walls   5   1
+No of coords   1
+Pushing walls   1   6
+No of coords   1
+Pushing walls   8   6
+No of coords   1
+Pushing walls   4   6
+Point  33  46
+Point  34  46
+Point  35  46
+Point  36  46
+Point  37  46
+Point  38  46
+Point  39  46
+Point  40  46
+Point  41  46
+Point  42  46
+Point  43  46
+Point  44  46
+Pushing walls   6   1
+Point  46  47
+Point  46  48
+Point  46  49
+Point  46  50
+Point  46  51
+Point  46  52
+Point  46  53
+Point  46  54
+Point  46  55
+Point  46  56
+Point  46  57
+Point  46  58
+Point  46  59
+Point  46  60
+Point  46  61
+Point  46  62
+Point  46  63
+Point  46  64
+Point  46  65
+Point  46  66
+Point  46  67
+Point  46  68
+Point  46  69
+Point  46  70
+Making walls   4   6
+No of coords  37
+Pushing walls   5   1
+No of coords   1
+Pushing walls   1   6
+No of coords   1
+Pushing walls   8   6
+No of coords   1
+Pushing walls   4   6
+Point  39  46
+Point  40  46
+Point  41  46
+Point  42  46
+Point  43  46
+Point  44  46
+Pushing walls   6   1
+Point  46  47
+Point  46  48
+Point  46  49
+Point  46  50
+Point  46  51
+Point  46  52
+Point  46  53
+Point  46  54
+Point  46  55
+Point  46  56
+Point  46  57
+Point  46  58
+Point  46  59
+Point  46  60
+Point  46  61
+Point  46  62
+Point  46  63
+Point  46  64
+Point  46  65
+Point  46  66
+Point  46  67
+Point  46  68
+Point  46  69
+Point  46  70
+Making walls   6   1
+No of coords  31
+Pushing walls   5   1
+No of coords   1
+Pushing walls   1   6
+No of coords   1
+Pushing walls   8   6
+No of coords   1
+Pushing walls   4   6
+Pushing walls   6   1
+No of coords   1
+Pushing walls   7   8
+Point   5  43
+Point   6  43
+Point   7  43
+Point   8  43
+Point   9  43
+Making walls   7   8
+No of coords   6
+Pushing walls   4   2
+No of coords   1
+Pushing walls   3   4
+No of coords   1
+Pushing walls   4   2
+No of coords   1
+Pushing walls   3   4
+No of coords   1
+Pushing walls   4   2
+No of coords   1
+Pushing walls   3   4
+No of coords   1
+Pushing walls   4   2
+No of coords   1
+Pushing walls   3   4
+No of coords   1
+Pushing walls   3   3
+No of coords   1
+Pushing walls   2   4
+No of coords   1
+Pushing walls   6   8
+No of coords   1
+Pushing walls   1   3
+Pushing walls   5   4
+No of coords   1
+Pushing walls   3   3
+No of coords   1
+Pushing walls   2   4
+No of coords   1
+Pushing walls   6   8
+No of coords   1
+Pushing walls   1   3
+Pushing walls   5   4
+No of coords   1
+Pushing walls   3   3
+No of coords   1
+Pushing walls   2   4
+No of coords   1
+Pushing walls   6   8
+No of coords   1
+Pushing walls   1   3
+Pushing walls   5   4
+No of coords   1
+Pushing walls   3   3
+No of coords   1
+Pushing walls   2   4
+No of coords   1
+Pushing walls   6   8
+No of coords   1
+Pushing walls   1   3
+Pushing walls   5   4
+No of coords   1
+Pushing walls   3   3
+No of coords   1
+Pushing walls   2   4
+No of coords   1
+Pushing walls   6   8
+No of coords   1
+Pushing walls   1   3
+Pushing walls   5   4
+No of coords   1
+Pushing walls   5   1
+No of coords   1
+Pushing walls   5   1
+No of coords   1
+Pushing walls   5   1
+No of coords   1
+Pushing walls   5   1
+No of coords   1
+Pushing walls   5   1
+No of coords   1
+Pushing walls   7   1
+Point 105  14
+Point 105  15
+Pushing walls   8   8
+Point  95  17
+Point  96  17
+Point  97  17
+Point  98  17
+Point  99  17
+Point 100  17
+Point 101  17
+Point 102  17
+Point 103  17
+Making walls   8   8
+No of coords  12
+Pushing walls   7   1
+Point 105  14
+Point 105  15
+Pushing walls   8   8
+Point 100  17
+Point 101  17
+Point 102  17
+Point 103  17
+Making walls   7   1
+No of coords   7
+Pushing walls   7   1
+Pushing walls   8   8
+Point 100  17
+Point 101  17
+Point 102  17
+Point 103  17
+Making walls   8   8
+No of coords   5
+Pushing walls   7   1
+Pushing walls   8   8
+No of coords   1
+Pushing walls   3   1
+Point 111  18
+Point 111  19
+Point 111  20
+Pushing walls   4   3
+Point 106  13
+Point 107  13
+Point 108  13
+Point 109  13
+Making walls   3   1
+No of coords   8
+Pushing walls   8   2
+Point  40  15
+Point  40  16
+Point  40  17
+Point  40  18
+Point  40  19
+Making walls   8   2
+No of coords   6
+Pushing walls   8   2
+Point  40  19
+Making walls   8   2
+No of coords   2
+Pushing walls   8   2
+No of coords   1
+Pushing walls   2   1
+Point  51  24
+Pushing walls   6   3
+Point  52  12
+Making walls   2   1
+No of coords   3
+Pushing walls   8   2
+No of coords   1
+Pushing walls   2   1
+Pushing walls   6   3
+Point  52  12
+Making walls   6   3
+No of coords   2
+No of coords   1
+Pushing walls   7   8
+Point   8  62
+Point   8  63
+Making walls   7   8
+No of coords   3
+Pushing walls   2   3
+Point 114  23
+Point 115  23
+Point 116  23
+Point 117  23
+Point 118  23
+Making walls   2   3
+No of coords   6
+Pushing walls   2   3
+No of coords   1
+Pushing walls   5   4
+Point 106   6
+Point 107   6
+Point 108   6
+Point 109   6
+Point 110   6
+Making walls   5   4
+No of coords   6
+Pushing walls   2   3
+No of coords   1
+Pushing walls   5   4
+No of coords   1
+No of coords   1
+Pushing walls   1   3
+Pushing walls   3   4
+No of coords   1
+Pushing walls   2   3
+No of coords   1
+Pushing walls   5   4
+No of coords   1
+No of coords   1
+Pushing walls   1   3
+Pushing walls   3   4
+No of coords   1
+Pushing walls   2   3
+No of coords   1
+Pushing walls   5   4
+No of coords   1
+No of coords   1
+Pushing walls   1   3
+Pushing walls   3   4
+No of coords   1
+Pushing walls   3   8
+No of coords   1
+Pushing walls   3   1
+Point   2  65
+Point   3  65
+Point   4  65
+Point   5  65
+Point   6  65
+Making walls   3   1
+No of coords   6
+Pushing walls   1   2
+Pushing walls   7   6
+Point  74  16
+Point  75  16
+Point  76  16
+Point  77  16
+Point  78  16
+Pushing walls   8   3
+Point  73  17
+Point  73  18
+Point  73  19
+Making walls   7   6
+No of coords   9
+Pushing walls   1   2
+Pushing walls   7   6
+Point  77  16
+Point  78  16
+Pushing walls   8   3
+Point  73  17
+Point  73  18
+Point  73  19
+Making walls   8   3
+No of coords   6
+Pushing walls   1   2
+Pushing walls   7   6
+Point  77  16
+Point  78  16
+Pushing walls   8   3
+Making walls   7   6
+No of coords   3
+Pushing walls   1   2
+Pushing walls   7   6
+Pushing walls   8   3
+No of coords   1
+Pushing walls   5   4
+Point  88  22
+Point  88  23
+Point  88  24
+Making walls   5   4
+No of coords   4
+Pushing walls   2   6
+No of coords   1
+Pushing walls   8   8
+No of coords   1
+Pushing walls   6   1
+No of coords   1
+Pushing walls   2   6
+No of coords   1
+Pushing walls   8   8
+No of coords   1
+Pushing walls   6   1
+No of coords   1
+Pushing walls   2   6
+No of coords   1
+Pushing walls   8   8
+No of coords   1
+Pushing walls   6   1
+No of coords   1
+Pushing walls   2   6
+No of coords   1
+Pushing walls   8   8
+No of coords   1
+Pushing walls   6   1
+No of coords   1
+Pushing walls   2   6
+No of coords   1
+Pushing walls   8   8
+No of coords   1
+Pushing walls   6   1
+No of coords   1
+Pushing walls   1   5
+No of coords   1
+No of coords   1
+Pushing walls   1   5
+No of coords   1
+No of coords   1
+Pushing walls   1   5
+No of coords   1
+No of coords   1
+Pushing walls   1   5
+No of coords   1
+No of coords   1
+Pushing walls   1   3
+No of coords   1
+Pushing walls   1   8
+No of coords   1
+Pushing walls   1   7
+Pushing walls   8   8
+No of coords   1
+Pushing walls   6   2
+Point  94  13
+Point  94  14
+Point  94  15
+Making walls   6   2
+No of coords   4
+Pushing walls   2   4
+No of coords   1
+Pushing walls   8   7
+No of coords   1
+Pushing walls   5   8
+Pushing walls   7   5
+No of coords   1
+Pushing walls   6   2
+No of coords   1
+Pushing walls   3   2
+No of coords   1
+Pushing walls   6   2
+No of coords   1
+Pushing walls   3   2
+No of coords   1
+Pushing walls   6   2
+No of coords   1
+Pushing walls   3   2
+No of coords   1
+Pushing walls   6   2
+No of coords   1
+Pushing walls   3   2
+No of coords   1
+Pushing walls   6   2
+No of coords   1
+Pushing walls   3   2
+No of coords   1
+Pushing walls   8   4
+No of coords   1
+Pushing walls   6   1
+No of coords   1
+No of coords   1
+Pushing walls   5   4
+No of coords   1
+Pushing walls   6   1
+No of coords   1
+Pushing walls   8   4
+No of coords   1
+No of coords   1
+Pushing walls   5   4
+No of coords   1
+Pushing walls   8   4
+No of coords   1
+Pushing walls   6   1
+No of coords   1
+No of coords   1
+Pushing walls   5   4
+No of coords   1
+Pushing walls   6   1
+No of coords   1
+Pushing walls   8   4
+No of coords   1
+No of coords   1
+Pushing walls   5   4
+No of coords   1
+Pushing walls   8   4
+No of coords   1
+Pushing walls   6   1
+No of coords   1
+No of coords   1
+Pushing walls   5   4
+No of coords   1
+Pushing walls   2   4
+No of coords   1
+No of coords   1
+Pushing walls   2   4
+No of coords   1
+No of coords   1
+Pushing walls   2   4
+No of coords   1
+No of coords   1
+Pushing walls   2   4
+No of coords   1
+No of coords   1
+Pushing walls   2   4
+No of coords   1
+No of coords   1
+No of coords   1
+Pushing walls   8   2
+No of coords   1
+Pushing walls   2   1
+Pushing walls   3   8
+Pushing walls   6   7
+No of coords   1
+No of coords   1
+Pushing walls   8   2
+No of coords   1
+Pushing walls   2   1
+Pushing walls   3   8
+Pushing walls   6   7
+No of coords   1
+No of coords   1
+Pushing walls   8   2
+No of coords   1
+Pushing walls   2   1
+Pushing walls   3   8
+Pushing walls   6   7
+No of coords   1
+No of coords   1
+Pushing walls   8   2
+No of coords   1
+Pushing walls   2   1
+Pushing walls   3   8
+Pushing walls   6   7
+No of coords   1
+No of coords   1
+Pushing walls   8   2
+No of coords   1
+Pushing walls   2   1
+Pushing walls   3   8
+Pushing walls   6   7
+No of coords   1
+Pushing walls   3   3
+No of coords   1
+Pushing walls   1   3
+Point  73  43
+Point  74  43
+Making walls   1   3
+No of coords   3
+Pushing walls   3   3
+No of coords   1
+Pushing walls   1   3
+No of coords   1
+No of coords   1
+Pushing walls   3   3
+No of coords   1
+Pushing walls   1   3
+No of coords   1
+No of coords   1
+Pushing walls   3   3
+No of coords   1
+Pushing walls   1   3
+No of coords   1
+No of coords   1
+Pushing walls   7   1
+Point  23  14
+Point  24  14
+Point  25  14
+Point  26  14
+Point  27  14
+Making walls   7   1
+No of coords   6
+Pushing walls   7   1
+Point  26  14
+Point  27  14
+Making walls   7   1
+No of coords   3
+Pushing walls   2   4
+No of coords   1
+Pushing walls   1   2
+Pushing walls   3   6
+No of coords   1
+No of coords   1
+Pushing walls   2   4
+No of coords   1
+Pushing walls   1   2
+Pushing walls   3   6
+No of coords   1
+No of coords   1
+Pushing walls   2   4
+No of coords   1
+Pushing walls   1   2
+Pushing walls   3   6
+No of coords   1
+No of coords   1
+Pushing walls   2   4
+No of coords   1
+Pushing walls   1   2
+Pushing walls   3   6
+No of coords   1
+No of coords   1
+Pushing walls   2   4
+No of coords   1
+Pushing walls   1   2
+Pushing walls   3   6
+No of coords   1
+No of coords   1
+Pushing walls   1   7
+No of coords   1
+Pushing walls   4   8
+No of coords   1
+Pushing walls   1   7
+No of coords   1
+Pushing walls   4   8
+No of coords   1
+Pushing walls   1   7
+No of coords   1
+Pushing walls   4   8
+No of coords   1
+Pushing walls   1   7
+No of coords   1
+Pushing walls   4   8
+No of coords   1
+Pushing walls   1   6
+No of coords   1
+Pushing walls   4   4
+Point  33  32
+Point  33  33
+Point  33  34
+Point  33  35
+Point  33  36
+Point  33  37
+Point  33  38
+Making walls   4   4
+No of coords   8
+Pushing walls   1   6
+No of coords   1
+Pushing walls   4   4
+No of coords   1
+No of coords   1
+Pushing walls   1   6
+No of coords   1
+Pushing walls   4   4
+No of coords   1
+No of coords   1
+Pushing walls   1   6
+No of coords   1
+Pushing walls   4   4
+No of coords   1
+No of coords   1
+Pushing walls   1   6
+No of coords   1
+Pushing walls   4   4
+No of coords   1
+No of coords   1
+Pushing walls   6   1
+No of coords   1
+Pushing walls   2   3
+Point   2  19
+Point   3  19
+Point   4  19
+Point   5  19
+Point   6  19
+Making walls   2   3
+No of coords   6
+Pushing walls   6   1
+No of coords   1
+Pushing walls   2   3
+No of coords   1
+Pushing walls   4   2
+No of coords   1
+Pushing walls   1   1
+Point  10  22
+Point  10  23
+Point  10  24
+Point  10  25
+Point  10  26
+Point  10  27
+Making walls   1   1
+No of coords   7
+Pushing walls   4   2
+No of coords   1
+Pushing walls   1   1
+No of coords   1
+Pushing walls   3   2
+No of coords   1
+Pushing walls   4   2
+No of coords   1
+Pushing walls   1   1
+No of coords   1
+Pushing walls   3   2
+No of coords   1
+Pushing walls   4   2
+No of coords   1
+Pushing walls   1   1
+No of coords   1
+Pushing walls   3   2
+No of coords   1
+Pushing walls   4   2
+No of coords   1
+Pushing walls   1   1
+No of coords   1
+Pushing walls   3   2
+No of coords   1
+Pushing walls   2   8
+No of coords   1
+Pushing walls   4   7
+No of coords   1
+Pushing walls   2   8
+No of coords   1
+Pushing walls   4   7
+No of coords   1
+Pushing walls   2   8
+No of coords   1
+Pushing walls   4   7
+No of coords   1
+Pushing walls   2   8
+No of coords   1
+Pushing walls   4   7
+No of coords   1
+Pushing walls   3   1
+No of coords   1
+Pushing walls   4   5
+No of coords   1
+Pushing walls   3   1
+No of coords   1
+Pushing walls   4   5
+No of coords   1
+Pushing walls   3   1
+No of coords   1
+Pushing walls   4   5
+No of coords   1
+Pushing walls   3   1
+No of coords   1
+Pushing walls   4   5
+No of coords   1
+Pushing walls   3   1
+No of coords   1
+Pushing walls   4   5
+N

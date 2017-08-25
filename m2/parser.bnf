@@ -1,0 +1,345 @@
+-- Copyright (C) 2017
+-- Free Software Foundation, Inc.
+-- This file is part of Chisel.
+--
+-- Chisel is free software; you can redistribute it and/or modify it under
+-- the terms of the GNU General Public License as published by the Free
+-- Software Foundation; either version 3, or (at your option) any later
+-- version.
+--
+-- Chisel is distributed in the hope that it will be useful, but WITHOUT ANY
+-- WARRANTY; without even the implied warranty of MERCHANTABILITY or
+-- FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+-- for more details.
+--
+-- You should have received a copy of the GNU General Public License along
+-- with gm2; see the file COPYING.  If not, write to the Free Software
+-- Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+--
+--
+--
+-- the ebnf grammer for the map file format.
+-- pg takes this file and produces a top down parser.
+--
+% module parser begin
+(* Copyright (C) 2017
+   Free Software Foundation, Inc.
+   This file is part of Chisel.
+
+Chisel is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 3, or (at your option) any later
+version.
+
+Chisel is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
+
+You should have received a copy of the GNU General Public License along
+with gm2; see the file COPYING.  If not, write to the Free Software
+Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  *)
+
+IMPLEMENTATION MODULE parser ;
+
+FROM DynamicStrings IMPORT String, InitString, KillString, Mark,
+                           ConCat, ConCatChar, InitStringCharStar ;
+
+FROM vector3 IMPORT vec3, initVec3 ;
+FROM StringConvert IMPORT stoi, stolr ;
+FROM SYSTEM IMPORT ADDRESS ;
+
+FROM mapError IMPORT errorString ;
+FROM nameKey IMPORT NulName, Name, makekey ;
+FROM libc IMPORT printf ;
+FROM mapDebug IMPORT assert ;
+FROM mapflex IMPORT toktype, openSource, getToken, currenttoken, currentstring ;
+FROM bsp IMPORT entity, plane, initEntity, putBrushDef3, putPatchDef2, initPlane,
+                includePlane, includeTags ;
+
+
+CONST
+   Debugging = FALSE ;
+
+VAR
+   wasNoError : BOOLEAN ;
+   curtexture,
+   curtagname,
+   curtagvalue,
+   curstring,
+   curident   : Name ;
+   curreal,
+   curnumber,
+   x, y, z, a : LONGREAL ;
+   curinteger : INTEGER ;
+   curplane   : plane ;
+   curentity  : entity ;
+   curnormal  : vec3 ;
+   r0, r1     : vec3 ;
+   curdist    : LONGREAL ;
+
+
+PROCEDURE ErrorString (s: String) ;
+BEGIN
+   errorString (s) ;
+   wasNoError := FALSE
+END ErrorString ;
+
+
+PROCEDURE ErrorArray (a: ARRAY OF CHAR) ;
+BEGIN
+   ErrorString (InitString (a))
+END ErrorArray ;
+
+
+% declaration parser begin
+
+
+(*
+   SyntaxError - after a syntax error we skip all tokens up until we reach
+                 a stop symbol.
+*)
+
+PROCEDURE SyntaxError (stopset: SetOfStop) ;
+BEGIN
+   DescribeError(stopset) ;
+   HALT (1) ;
+   IF Debugging
+   THEN
+      printf ('\nskipping token *** ')
+   END ;
+   WHILE NOT (currenttoken IN stopset) DO
+      getToken
+   END ;
+   IF Debugging
+   THEN
+      printf (' ***\n')
+   END
+END SyntaxError ;
+
+
+(*
+   SyntaxCheck -
+*)
+
+PROCEDURE SyntaxCheck (stopset: SetOfStop) ;
+BEGIN
+   IF NOT (currenttoken IN stopset)
+   THEN
+      SyntaxError (stopset)
+   END
+END SyntaxCheck ;
+
+
+(*
+   MissingToken - generates a warning message about a missing token, t.
+*)
+
+PROCEDURE MissingToken (t: toktype) ;
+VAR
+   s  : SetOfStop ;
+   str: String ;
+BEGIN
+   s := SetOfStop {t} ;
+   str := DescribeStop (s) ;
+
+   str := ConCat (InitString ('syntax error,'), Mark (str)) ;
+   errorString (str)
+END MissingToken ;
+
+
+(*
+   inStopSet
+*)
+
+PROCEDURE inStopSet (t: toktype; stopset: SetOfStop) : BOOLEAN ;
+BEGIN
+   RETURN t IN stopset
+END inStopSet ;
+
+
+(*
+   Expect -
+*)
+
+PROCEDURE Expect (t: toktype; stopset: SetOfStop) ;
+BEGIN
+   IF currenttoken=t
+   THEN
+      getToken
+   ELSE
+      MissingToken (t)
+   END ;
+   SyntaxCheck (stopset)
+END Expect ;
+
+
+(*
+   compile - returns TRUE if the input was correct enough to proceed with
+             conversion.
+*)
+
+PROCEDURE compile () : BOOLEAN ;
+BEGIN
+   getToken ;
+   wasNoError := TRUE ;
+   mapUnit (SetOfStop{eoftok}) ;
+   RETURN wasNoError
+END compile ;
+
+
+(*
+   ident - error checking varient of Ident
+*)
+
+PROCEDURE ident (stopset: SetOfStop) ;
+BEGIN
+   curident := makekey (currentstring) ;
+   Expect (identtok, stopset)
+END ident ;
+
+
+(*
+   string -
+*)
+
+PROCEDURE string (stopset: SetOfStop) ;
+BEGIN
+   curstring := makekey (currentstring) ;
+   Expect (stringtok, stopset)
+END string ;
+
+
+(*
+   integer -
+*)
+
+PROCEDURE integer (stopset: SetOfStop) ;
+VAR
+   s: String ;
+BEGIN
+   s := InitStringCharStar (currentstring) ;
+   curinteger := stoi (s) ;
+   s := KillString (s) ;
+   Expect (integertok, stopset)
+END integer ;
+
+
+(*
+   real -
+*)
+
+PROCEDURE real (stopset: SetOfStop) ;
+VAR
+   s: String ;
+BEGIN
+   s := InitStringCharStar (currentstring) ;
+   curreal := stolr (s) ;
+   s := KillString (s) ;
+   Expect (longrealtok, stopset)
+END real ;
+
+% module parser end
+END parser.
+% rules
+error       'ErrorArray' 'ErrorString'
+tokenfunc   'currenttoken'
+
+token   ''                eoftok      -- internal token
+token   'version'         versiontok
+token   '{'               lcbratok
+token   '}'               rcbratok
+token   '('               lrbratok
+token   ')'               rrbratok
+token   'brushdef3'       brushdef3tok
+token   'patchdef2'       patchdef2tok
+token   'integer number'  integertok
+token   'identifier'      identtok
+token   'real number'     longrealtok
+token   'string'          stringtok
+
+special ident             first { < identtok > } follow { }
+special integer           first { < integertok > } follow { }
+special real              first { < longrealtok > } follow { }
+special string            first { < stringtok > } follow { }
+
+BNF
+
+mapUnit := version {
+                     entityProd } =:
+
+entityProd :=                                              % curentity := initEntity () %
+              '{' { entitycontent } '}'
+            =:
+
+entitycontent := brushorpatch | keyandvalue =:
+
+brushorpatch := '{' brushorpatchsub '}' =:
+
+brushorpatchsub := brushdef3 | patchdef2 =:
+
+brushdef3 := 'brushdef3'                                   % putBrushDef3 (curentity) %
+                         '{' { facedef } '}' =:
+
+facedef :=   planedef texturemap texturepath               % curplane := initPlane (curnormal, curdist, r0, r1, curtexture) %
+                                                           % includePlane (curentity, curplane) %
+	     tripple
+         =:
+
+planedef := '(' quad                                      % curnormal := initVec3 (x, y, z) ;
+                                                            curdist := a %
+                     ')' =:
+
+texturemap := '(' '(' tripple                              % r0 := initVec3 (x, y, z) %
+                              ')'
+                  '(' tripple                              % r1 := initVec3 (x, y, z) %
+                              ')' ')'
+          =:
+
+patchdef2 := 'patchdef2'
+             '{'
+                tagname
+                '(' pent ')'
+	        '('
+	        '(' '(' pent ')' '(' pent ')' '(' pent ')' ')'
+	        '(' '(' pent ')' '(' pent ')' '(' pent ')' ')'
+	        '(' '(' pent ')' '(' pent ')' '(' pent ')' ')'
+	        ')'
+             '}' =:
+
+pent := number number number number number =:
+
+keyandvalue := { tagname tagvalue                           % includeTags (curentity, curtagname, curtagvalue) %
+               } =:
+
+version := 'version' integer                                % IF curinteger # 2
+                                                              THEN
+							         ErrorArray ('only map version 2 is supported')
+                                                              END %
+         =:
+
+number := real                                              % curnumber := curreal %
+          | integer                                         % curnumber := LFLOAT (curinteger) %
+	=:
+
+quad := number                                              % x := curnumber %
+        number                                              % y := curnumber %
+	number                                              % z := curnumber %
+	number                                              % a := curnumber %
+      =:
+
+tripple := number                                           % x := curnumber %
+           number                                           % y := curnumber %
+	   number                                           % z := curnumber %
+	 =:
+
+texturepath := string                                       % curtexture := makekey (currentstring) %
+             =:
+
+tagname := string                                           % curtagname := makekey (currentstring) %
+         =:
+
+tagvalue := string                                          % curtagvalue := makekey (currentstring) %
+          =:
+
+FNB

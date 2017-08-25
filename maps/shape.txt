@@ -1,0 +1,14 @@
+
+define 1 room 1
+define s worldspawn
+define o ogre
+
+##################
+# 1              #
+#                #
+# s         o    #
+#                #
+#          #######
+#          #
+#          #
+############

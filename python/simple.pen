@@ -1,0 +1,31 @@
+ROOM 1
+   WALL
+       1 1    18 1 
+       18 1    18 9 
+       18 9    1 9 
+       1 9    1 1 
+   DOOR 18 5   18 6   STATUS OPEN LEADS TO 2
+   DOOR 7 9   5 9   STATUS OPEN LEADS TO 3
+END
+
+ROOM 2
+   WALL
+       18 1    34 1 
+       34 1    34 9 
+       34 9    18 9 
+       18 9    18 1 
+   DOOR 27 9   25 9   STATUS OPEN LEADS TO 3
+   DOOR 18 6   18 5   STATUS OPEN LEADS TO 1
+END
+
+ROOM 3
+   WALL
+       1 9    34 9 
+       34 9    34 22 
+       34 22    1 22 
+       1 22    1 9 
+   DOOR 5 9   7 9   STATUS OPEN LEADS TO 1
+   DOOR 25 9   27 9   STATUS OPEN LEADS TO 2
+END
+
+END.

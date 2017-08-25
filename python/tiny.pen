@@ -1,0 +1,17 @@
+ROOM 1
+   WALL
+     1 1  60 1
+     60 1  60 7
+     60 7  1 7
+     1 7  1 1
+   MONSTER monster_demon_imp AT 57 4
+   AMMO ammo_shells_large AMOUNT 16 AT 12 4
+   LIGHT AT 15 3
+   LIGHT AT 37 3
+   LIGHT AT 7 5
+   LIGHT AT 18 5
+   LIGHT AT 48 5
+   SPAWN PLAYER AT 3 4
+END
+
+END.

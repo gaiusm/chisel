@@ -1,0 +1,57 @@
+(* Copyright (C) 2015 Free Software Foundation, Inc.  *)
+(* This file is part of Chisel.
+
+Chisel is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 3, or (at your option) any later
+version.
+
+Chisel is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
+
+You should have received a copy of the GNU General Public License along
+with gm2; see the file COPYING.  If not, write to the Free Software
+Foundation, 51 Franklin Street, Fifth Floor,
+Boston, MA 02110-1301, USA.  *)
+
+DEFINITION MODULE mapflex ;  (*!m2pim*)
+
+(*
+    Title      : mapflex
+    Author     : Gaius Mulley
+    System     : Chisel
+    Date       : Thu Aug  3 19:12:11 2017
+    Revision   : $Version$
+    Description:
+*)
+
+
+FROM SYSTEM IMPORT ADDRESS ;
+
+TYPE
+   (* these must remain in the same order as those defined in parser.bnf  *)
+   toktype = (eoftok, versiontok,
+              lcbratok, rcbratok,    (* { and }  *)
+	      lrbratok, rrbratok,    (* ( and )  *)
+	      brushdef3tok, patchdef2tok,
+	      integertok,
+	      identtok, longrealtok,
+	      stringtok) ;
+
+VAR
+   currenttoken  : toktype ;
+   currentinteger: INTEGER ;
+   currentstring : ADDRESS ;
+
+PROCEDURE openSource (s: ADDRESS) : BOOLEAN ;
+PROCEDURE closeSource ;
+PROCEDURE getFileName () : ADDRESS ;
+PROCEDURE getLineNo () : CARDINAL ;
+PROCEDURE getColumnNo () : CARDINAL ;
+PROCEDURE error (s: ADDRESS) ;
+PROCEDURE getToken ;
+
+
+END mapflex.

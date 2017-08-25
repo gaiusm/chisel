@@ -1,0 +1,32 @@
+BNF
+
+FileUnit := RoomDesc { RoomDesc } [ RandomTreasure ] "END." =:
+
+RoomDesc := 'ROOM' Integer
+            { WallDesc | DoorDesc | TreasureDesc } 'END' =:
+
+WallDesc := 'WALL' WallCoords { WallCoords } =:
+
+WallCoords := Integer Integer Integer Integer =:
+
+DoorDesc := 'DOOR' DoorCoords { DoorCoords } =:
+
+DoorCoords := Integer Integer Integer Integer Status
+              'LEADS' 'TO' Integer
+           =:
+
+Status := 'STATUS' ( 'OPEN'
+                      | 'CLOSED'
+                      | 'SECRET'
+                   )
+       =:
+
+TreasureDesc := 'TREASURE' 'AT' Integer Integer
+                'IS' Integer
+              =:
+
+RandomTreasure := 'RANDOMIZE' 'TREASURE' Integer
+                   { Integer }
+               =:
+
+FNB

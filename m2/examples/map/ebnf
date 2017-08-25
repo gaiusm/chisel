@@ -1,0 +1,41 @@
+POSINTEGER : /\d+/
+   FLOAT : /-?\d+(\.\d+)?/
+      QUOTESTRING : /\"[^\"]+\"/
+
+
+   q4map : version entity(s)
+
+   version : "Version" POSINTEGER
+
+   entity : "{" entitycontent(s) "}"
+
+   entitycontent : keyandvalue
+                    | brushdef3
+		                     | patchdef
+
+   keyandvalue : QUOTESTRING QUOTESTRING
+
+   brushdef3 : "{" "brushDef3" "{" facedef(s) "}" "}"
+
+   facedef : planedef texturemap texturepath
+
+   planedef : "(" FLOAT FLOAT FLOAT FLOAT ")"
+
+   texturemap : "(" "(" FLOAT FLOAT FLOAT ")" "(" FLOAT FLOAT FLOAT ")" ")"
+
+   texturepath : QUOTESTRING
+
+   patchdef : patchdef2
+               | patchdef3
+
+   patchdef2 : "{" "patchDef2" "{" texturepath patchparams2 "(" patchcol(s) ")" "}" "}"
+
+   patchparams2 : "(" POSINTEGER POSINTEGER POSINTEGER POSINTEGER POSINTEGER ")"
+
+   patchcol : "(" controlpoint(s) ")"
+
+   controlpoint : "(" FLOAT FLOAT FLOAT FLOAT FLOAT ")"
+
+   patchdef3 : "{" "patchDef3" "{" texturepath patchparams3 "(" patchcol(s) ")" "}" "}"
+
+   patchparams3 : "(" POSINTEGER POSINTEGER POSINTEGER POSINTEGER POSINTEGER POSINTEGER POSINTEGER ")"

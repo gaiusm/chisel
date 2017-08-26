@@ -65,6 +65,7 @@ toTxt, toMap = False, False
 ssName = None
 floor = []
 rooms = {}
+brushes = {}
 maxx, maxy = 0, 0
 doorValue, wallValue, emptyValue = 0, -1, -2
 versionNumber = "0.1"
@@ -89,7 +90,7 @@ defaults = { "portal":"textures/editor/visportal",
              "open_transform"   :"( ( 0.0078125 0 0 ) ( 0 0.0078125 1.5 ) )",
              "wall_transform"   :"( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) )",
              "floor_transform"  :"( ( 0.015625 0 0 ) ( 0 0.015625 0 ) )",
-             "ceiling_transform":"( ( 0.015625 0 0 ) ( 0 0.015625 0 ) )" }
+             "ceiling_transform":"( ( 0.0078125 0 0 ) ( 0 0.0078125 0 ) )" }
 
 
 #              "wall_transform"   :"( ( 0 0.0078125 0.5 ) ( -0.0078125 0 -1 ) )",
@@ -99,10 +100,10 @@ defaults = { "portal":"textures/editor/visportal",
 # the doom3 game engine units are also in inches.
 #
 
-wallThickness    = 1     # number of inches thick for a brick
-doorThickness    = 3     # number of inches thick for the lintel and posts of a door
-inchesPerUnit    = 48    # one ascii position represents this number of inches (4 feet)
+doorThickness    = 3                # number of inches thick for the lintel and posts of a door
+inchesPerUnit    = 48               # one ascii position represents this number of inches (4 feet)
 halfUnit         = inchesPerUnit/2
+wallThickness    = halfUnit         # number of inches thick for a brick
 
 #
 # the remaining contants are in inchesPerUnit
@@ -171,6 +172,7 @@ class roomInfo:
         self.ammo = []
         self.lights = []
         self.worldspawn = []
+        self.floorLevel = 0
     def addWall (self, line):
         global maxx, maxy
         line = toLine (line)
@@ -222,6 +224,14 @@ def error (format, *args):
     print str (format) % args,
     sys.exit (1)
 
+#
+#  warning - issues a warning message and exits.
+#
+
+def warning (format, *args):
+    s = str (format) % args
+    sys.stderr.write (s)
+    sys.exit (1)
 
 #
 #  debugf - issues prints if debugging is set
@@ -776,7 +786,6 @@ def generateTxtRoom (o, r):
                 o = plotLine (o, d[0], '-')
         elif d[2] == status_secret:
             o = plotLine (o, d[0], '%')
-
     return o
 
 #
@@ -984,7 +993,9 @@ def createBoxes (r, w, d):
 def onWall (wall, door):
     if isVertical (wall) and isVertical (door):
         return wall[0][0] == door[0][0]
-    return wall[0][1] == door[0][1]
+    if isHorizontal (wall) and isHorizontal (door):
+        return wall[0][1] == door[0][1]
+    return False
 
 
 #
@@ -1039,7 +1050,10 @@ def getDoors (w, d):
 #
 
 def entityWall (start, end, d):
-    return [[start, end, "wall", direction[d]]]
+    if isHorizontal ([start, end]) or isVertical ([start, end]):
+        return [[start, end, "wall", direction[d]]]
+    print start, end, "direction d=", d
+    internalError ('wall must be either vertical or horizontal')
 
 def entityDoor (start, end, d, door):
     return [[start, end, doorStatus[door[2]], direction[d]]]
@@ -1069,6 +1083,36 @@ def orderCoords (line, direction):
             return line[0], line[1]
 
 
+def addVec (pos, vec):
+    return [pos[0]+vec[0], pos[1]+vec[1]]
+
+
+#
+#  lastWallPos - p is the door coordinate.  i is the direction
+#                [left, top, right, bottom].  Return the left or
+#                lower coordinate where the end of the wall
+#                finished.
+#
+
+def lastWallPos (p, i):
+    if (i == 0) or (i == 2):
+        return [p[0], p[1]-1]
+    return [p[0]-1, p[1]]
+
+
+#
+#  nextWallPos - p is the door coordinate.  i is the direction
+#                [left, top, right, bottom].  Return the left or
+#                upper coordinate where the start of the wall
+#                continues.
+#
+
+def nextWallPos (p, i):
+    if (i == 0) or (i == 2):
+        return [p[0], p[1]+1]
+    return [p[0]+1, p[1]]
+
+
 #
 #  wallToEntity - returns a list of entities representing
 #                 the wall, w, i.  It will take into
@@ -1084,9 +1128,9 @@ def wallToEntity (w, i, d):
     p = w[0]
     for di in dl:
         f, s = orderCoords (di[0], i)
-        e += entityWall (p, f, i)
+        e += entityWall (p, lastWallPos (f, i), i)
         e += entityDoor (f, s, i, di)
-        p = s
+        p = nextWallPos (s, i)
     e += entityWall (p, w[1], i)
     return e
 
@@ -1235,59 +1279,240 @@ def brick (o, v0, v1, material):
         return hBrick (o, v0, v1, material)
 
 
-def leftWall (r, e, o):
+#
+#
+#
+
+def doorColumn (r, o, pos, bcount):
+    material = 'wall'
+    o.write ('    // primitive ' + str (bcount) + '\n')
+    o.write ('    {\n')
+    o = brushHeader (o, e, 'doorway needs a column')
+    o = vBrick (o,
+                [toInches (pos[0])  , toInches (pos[1]+1), toInches (0)],
+                [toInches (pos[0]+1), toInches (pos[1]+1), toInches (minCeilingHeight)],
+                defaults[material],
+                defaults[material+'_transform'])
+    o = brushFooter (o)
+    o.write ('    }\n')
+    return o, bcount+1
+
+
+#
+#  leftOpen - create a tiny corridor connecting to the next room on the left.
+#
+
+def leftOpen (r, e, o, bcount):
+    material = 'wall'
+    o = brushHeader (o, e, 'left doorway needs a floor')
+    o = fBrick (o,
+                [toInches (e[0][0]), toInches (e[0][1]), toInches (0, -wallThickness)],
+                [toInches (e[1][0]+1), toInches (e[1][1]+2), toInches (0)],
+                defaults[material],
+                defaults[material+'_transform'])
+    o = brushFooter (o)
+    o.write ('    }\n')
+    bcount += 1
+    o.write ('    // primitive ' + str (bcount) + '\n')
+    o.write ('    {\n')
+    o = brushHeader (o, e, 'and the left doorway needs a ceiling')
+    o = fBrick (o,
+                [toInches (e[0][0]), toInches (e[0][1]), toInches (0, -wallThickness)],
+                [toInches (e[1][0]+1), toInches (e[1][1]+2), toInches (minCeilingHeight, wallThickness)],
+                defaults[material],
+                defaults[material+'_transform'])
+    o = brushFooter (o)
+    bcount += 1
+    return o, bcount
+
+
+#
+#  rightOpen - create a tiny corridor connecting to the next room on the right.
+#
+
+def rightOpen (r, e, o, bcount):
+    material = 'wall'
+    o = brushHeader (o, e, 'right doorway needs a floor')
+    o = fBrick (o,
+                [toInches (e[0][0])  , toInches (e[0][1])  , toInches (0, -wallThickness)],
+                [toInches (e[1][0]+1), toInches (e[1][1]+2), toInches (0)],
+                defaults[material],
+                defaults[material+'_transform'])
+    o = brushFooter (o)
+    o.write ('    }\n')
+    bcount += 1
+    o.write ('    // primitive ' + str (bcount) + '\n')
+    o.write ('    {\n')
+    o = brushHeader (o, e, 'and the right doorway needs a ceiling')
+    o = fBrick (o,
+                [toInches (e[0][0])  , toInches (e[0][1])  , toInches (minCeilingHeight)],
+                [toInches (e[1][0]+1), toInches (e[1][1]+2), toInches (minCeilingHeight, wallThickness)],
+                defaults[material],
+                defaults[material+'_transform'])
+    o = brushFooter (o)
+    return o, bcount+1
+
+
+#
+#  topOpen - create a tiny corridor connecting to the next room on the top wall of
+#            a 2D pen map.
+#
+
+def topOpen (r, e, o, bcount):
+    material = 'wall'
+    o = brushHeader (o, e, 'top doorway needs a floor')
+    o = fBrick (o,
+                [toInches (e[0][0])  , toInches (e[0][1])  , toInches (0, -wallThickness)],
+                [toInches (e[1][0]+2), toInches (e[1][1]+1), toInches (0)],
+                defaults[material],
+                defaults[material+'_transform'])
+    o = brushFooter (o)
+    o.write ('    }\n')
+    bcount += 1
+    o.write ('    // primitive ' + str (bcount) + '\n')
+    o.write ('    {\n')
+    o = brushHeader (o, e, 'and the top doorway needs a ceiling')
+    o = fBrick (o,
+                [toInches (e[0][0])  , toInches (e[0][1])  , toInches (minCeilingHeight)],
+                [toInches (e[1][0]+2), toInches (e[1][1]+1), toInches (minCeilingHeight, wallThickness)],
+                defaults[material],
+                defaults[material+'_transform'])
+    o = brushFooter (o)
+    return o, bcount+1
+
+
+#
+#  bottomOpen - create a tiny corridor connecting to the next room on the bottom of
+#               a 2D pen map.
+#
+
+def bottomOpen (r, e, o, bcount):
+    material = 'wall'
+    o = brushHeader (o, e, 'bottom doorway needs a floor')
+    o = fBrick (o,
+                [toInches (e[0][0])  , toInches (e[0][1])  , toInches (0, -wallThickness)],
+                [toInches (e[1][0]+1), toInches (e[1][1]+1), toInches (0)],
+                defaults[material],
+                defaults[material+'_transform'])
+    o = brushFooter (o)
+    o.write ('    }\n')
+    bcount += 1
+    o.write ('    // primitive ' + str (bcount) + '\n')
+    o.write ('    {\n')
+    o = brushHeader (o, e, 'and the bottom doorway needs a ceiling')
+    o = fBrick (o,
+                [toInches (e[0][0])  , toInches (e[0][1])  , toInches (minCeilingHeight, -wallThickness)],
+                [toInches (e[1][0]+2), toInches (e[1][1]+1), toInches (minCeilingHeight, wallThickness)],
+                defaults[material],
+                defaults[material+'_transform'])
+    o = brushFooter (o)
+    return o, bcount+1
+
+
+def brushHeader (o, e, description):
+    o.write ('         brushDef3\n')
+    o.write ('         {\n')
+    if comments:
+        o.write ('             ')
+        o.write ("// " + str (e) + '\n')
+    if debugging:
+        print e
+    o.write ('             // ' + description + ' ' + str (e) + '\n')
+    return o
+
+def brushFooter (o):
+    o.write ('         }\n')
+    return o
+
+
+def leftWall (r, e, o, bcount):
     if defaults.has_key (e[-2]):
-        o.write ('             // left wall brick ' + str (e) + '\n')
+        o = brushHeader (o, e, 'left wall brick')
         material = defaults[e[-2]]
         o = vBrick (o,
-                    [toInches (e[0][0]+1, -wallThickness), toInches (e[0][1]+1), toInches (0)],
-                    [toInches (e[1][0]+1), toInches (e[1][1]), toInches (minCeilingHeight)],
+                    [toInches (e[0][0]+1, -wallThickness), toInches (e[0][1]), toInches (0)],
+                    [toInches (e[1][0]+1), toInches (e[1][1]+1), toInches (minCeilingHeight)],
                     material,
                     defaults[e[-2]+'_transform'])
+        o = brushFooter (o)
+        bcount += 1
     else:
         errorLine ('room ' + str (r) + ' has an unknown plane name ' + e[-2])
-    return o
+    return o, bcount
 
-def rightWall (r, e, o):
+
+def rightWall (r, e, o, bcount):
     if defaults.has_key (e[-2]):
-        o.write ('             // right wall brick ' + str (e) + '\n')
+        o = brushHeader (o, e, 'right wall brick')
         material = defaults[e[-2]]
         o = vBrick (o,
-                    [toInches (e[0][0]), toInches (e[0][1]+1), 0],
-                    [toInches (e[1][0], wallThickness), toInches (e[1][1]), toInches (minCeilingHeight)],
+                    [toInches (e[0][0]), toInches (e[0][1]), 0],
+                    [toInches (e[1][0], wallThickness), toInches (e[1][1]+1), toInches (minCeilingHeight)],
                     material,
                     defaults[e[-2]+'_transform'])
+        o = brushFooter (o)
+        bcount += 1
     else:
         errorLine ('room ' + str (r) + ' has an unknown plane name ' + e[-2])
-    return o
+    return o, bcount
 
-def topWall (r, e, o):
+def topWall (r, e, o, bcount):
     if defaults.has_key (e[-2]):
-        o.write ('             // top wall brick ' + str (e) + '\n')
+        o = brushHeader (o, e, 'top wall brick')
         material = defaults[e[-2]]
         o = hBrick (o,
-                   [toInches (e[0][0]+1), toInches (e[0][1]), toInches (0)],
-                   [toInches (e[1][0]), toInches (e[1][1], wallThickness), toInches (minCeilingHeight)],
+                   [toInches (e[0][0]), toInches (e[0][1]), toInches (0)],
+                   [toInches (e[1][0]+1), toInches (e[1][1], wallThickness), toInches (minCeilingHeight)],
                     material,
                     defaults[e[-2]+'_transform'])
+        o = brushFooter (o)
+        bcount += 1
     else:
         errorLine ('room ' + str (r) + ' has an unknown plane name ' + e[-2])
-    return o
+    return o, bcount
 
-def bottomWall (r, e, o):
+def bottomWall (r, e, o, bcount):
     if defaults.has_key (e[-2]):
-        o.write ('             // bottom wall brick ' + str (e) + '\n')
+        o = brushHeader (o, e, 'bottom wall brick')
         material = defaults[e[-2]]
         o = hBrick (o,
-                    [toInches (e[0][0]+1), toInches (e[0][1]+1, -wallThickness), toInches (0)],
-                    [toInches (e[1][0]), toInches (e[1][1]+1), toInches (minCeilingHeight)],
+                    [toInches (e[0][0]), toInches (e[0][1]+1, -wallThickness), toInches (0)],
+                    [toInches (e[1][0]+1), toInches (e[1][1]+1), toInches (minCeilingHeight)],
                     material,
                     defaults[e[-2]+'_transform'])
+        o = brushFooter (o)
+        bcount += 1
     else:
         errorLine ('room ' + str (r) + ' has an unknown plane name ' + e[-2])
-    return o
+    return o, bcount
 
-entityFunc = {'left':leftWall, 'top':topWall, 'right':rightWall, 'bottom':bottomWall}
+entityFunc = {'leftwall':leftWall, 'topwall':topWall, 'rightwall':rightWall, 'bottomwall':bottomWall,
+              'leftopen': leftOpen, 'rightopen': rightOpen, 'topopen':topOpen, 'bottomopen':bottomOpen}
+
+
+#
+#  generateKey - return a textual key for the entity.
+#
+
+def generateKey (e):
+    return "%s %d% d %d %d" % (e[-2], e[0][0], e[0][1], e[1][0], e[1][1])
+
+
+#
+#  alreadyBuilt - return True if this entity has already been built
+#                 (This will occur for doors as each room knows about
+#                  the same door).
+#
+
+def alreadyBuilt (e):
+    global brushes
+    if e[-2] == 'wall':
+        return False
+    return brushes.has_key (generateKey (e))
+
+def setBrushBuilt (e):
+    global brushes
+    brushes[generateKey (e)] = True
 
 
 #
@@ -1296,21 +1521,23 @@ entityFunc = {'left':leftWall, 'top':topWall, 'right':rightWall, 'bottom':bottom
 #
 
 def generateBrushes (r, e, o, bcount):
-    if entityFunc[e[-1]] == None:
+    if debugging:
+        print "room", r, e,
+    if entityFunc[e[-1]+e[-2]] == None:
+        warning ("do not know how to build brush" + str (e) + "in room " + r)
         return o, bcount
+    if alreadyBuilt (e):
+        if debugging:
+            print "aready built"
+        return o, bcount
+    if debugging:
+        print "building"
     o.write ('    // primitive ' + str (bcount) + '\n')
     o.write ('    {\n')
-    o.write ('         brushDef3\n')
-    o.write ('         {\n')
-    if comments:
-        o.write ('             ')
-        o.write ("// " + str (e) + '\n')
-    if debugging:
-        print e
-    o = entityFunc[e[-1]] (r, e, o)
-    o.write ('         }\n')
+    o, bcount = entityFunc[e[-1]+e[-2]] (r, e, o, bcount)
     o.write ('    }\n')
-    return o, bcount+1
+    setBrushBuilt (e)
+    return o, bcount
 
 
 def generateFloor (r, e, o, bcount):
@@ -1383,29 +1610,22 @@ def findMinMax (r):
 
 def generateEntities (o):
     bcount = 0
-    ecount = 0
+    o.write ('// entity 0   (contains all room walls, floors, ceilings, lightblocks)\n')
+    o.write ('{\n')
+    # first entity must have these attributes set
+    o.write ('    "classname" "worldspawn"\n')
+    o.write ('    "spawnflags" "1"\n')
     for r in rooms.keys():
         el = roomToEntities (r)
         p = findMinMax (r)
-        o.write ("// room " + r + "\n")
-        o.write ('// entity ' + str (ecount) + '\n')
-        o.write ('{\n')
-        if ecount == 0:
-            # first entity must have these attributes set
-            o.write ('    "classname" "worldspawn"\n')
-            o.write ('    "spawnflags" "1"\n')
-        else:
-            # darkradiant wants every entity to have a classname
-            o.write ('    "classname" "room' + r + '"\n')
+        o.write ("    // room " + r + "\n")
         for e in el:
             o, bcount = generateBrushes (r, e, o, bcount)
         o, bcount = generateCeiling (r, p, o, bcount)
         o, bcount = generateFloor (r, p, o, bcount)
         o, bcount = generateLightBlocks (r, o, bcount)
-        ecount += 1
-        o.write ('}\n\n')
-    return o, ecount
-
+    o.write ('}\n\n')
+    return o, 1
 
 def writePos (o, p):
     o.write (str (-toInches (int (p[1]))) + " " + str (-toInches (int (p[0]))))
@@ -1494,7 +1714,8 @@ def generateMonsters (o, e):
 def generateAmmo (o, e):
     n = 1
     for r in rooms.keys():
-        print rooms[r].ammo
+        if debugging:
+            print rooms[r].ammo
         for t, a, p in rooms[r].ammo:
             o.write ("// entity " + str (e) + '\n')
             o.write ("{\n")
@@ -1521,7 +1742,7 @@ def generateMap (o):
     o, e = generateAmmo (o, e)
     if statistics:
         print "Total rooms =", len (rooms.keys ())
-        print "Total entities used =", e, "available unused =", maxEntities-e
+        print "Total entities used =", e, "entities unused =", maxEntities-e
     return o
 
 #

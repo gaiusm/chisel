@@ -1,16 +1,19 @@
 ROOM 1
    WALL
-     1 1  60 1
-     60 1  60 7
-     60 7  1 7
-     1 7  1 1
-   MONSTER monster_demon_imp AT 57 4
+     1 7  60 7
+     60 7  60 1
+     60 1  1 1
+     1 1  1 7
+   MONSTER monster_demon_hellknight AT 55 4
+   MONSTER monster_demon_imp AT 30 3
    AMMO ammo_shells_large AMOUNT 16 AT 12 4
-   LIGHT AT 15 3
-   LIGHT AT 37 3
-   LIGHT AT 7 5
-   LIGHT AT 18 5
-   LIGHT AT 48 5
+   LIGHT AT 8 6
+   LIGHT AT 10 6
+   LIGHT AT 12 6
+   LIGHT AT 14 6
+   LIGHT AT 37 5
+   LIGHT AT 18 3
+   LIGHT AT 48 3
    SPAWN PLAYER AT 3 4
 END
 

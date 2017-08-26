@@ -3,17 +3,20 @@ define 1 room 1
 define 2 room 2
 define 3 room 3
 define s worldspawn
-define o ogre
+define o monster monster_demon_imp
+define n monster monster_demon_hellknight
+define i light
+define a ammo ammo_shells_large 16
 
 ##################################
 # 1              # 2             #
 #                #               #
-# s              #               #
-#                .               #
-#                .               #
+#  s             #               #
+#                #               #
+#          i     .               #
 #                #             o #
 #                #               #
-####...#################...#######
+####.......#############...#######
 # 3                              #
 #                                #
 #                                #
@@ -22,7 +25,7 @@ define o ogre
 #                                #
 #                                #
 #                                #
-#                                #
+#                         n      #
 #                                #
 #                                #
 #                                #

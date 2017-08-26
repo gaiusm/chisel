@@ -284,6 +284,10 @@ def scanRoom (topleft, p, mapGrid, walls, doors):
     doorStartPoint = None
     doorEndPoint = None
     while True:
+        if (doorStartPoint == None) and lookingLeft (p, leftVec[d], mapGrid, '. '):
+            # first point on the wall is a door
+            doorStartPoint = addVec (p, leftVec[d])
+            doorEndPoint = doorStartPoint
         if lookingLeft (addVec (p, forwardVec[d]), leftVec[d], mapGrid, '. '):
             if doorStartPoint == None:
                 doorStartPoint = addVec (addVec (p, forwardVec[d]), leftVec[d])
@@ -297,10 +301,29 @@ def scanRoom (topleft, p, mapGrid, walls, doors):
         if lookingLeft (addVec (p, forwardVec[d]), leftVec[d], mapGrid, 'x '):
             # carry on
             p = addVec (p, forwardVec[d])
+        elif lookingLeft (addVec (p, forwardVec[d]), leftVec[d], mapGrid, 'x.'):
+            if debugging:
+                print "wall corner (x.)", p
+            walls, a = addWall (walls, a, addVec (addVec (p, forwardVec[d]), leftVec[d]))
+            # end of door?
+            if doorEndPoint != None:
+                doors += [[doorStartPoint, doorEndPoint]]
+            doorStartPoint = None
+            doorEndPoint = None
+            # turn right
+            d = (d + 1) % 4
+            if s == p:
+                # back to the start
+                return walls, doors
         elif lookingLeft (addVec (p, forwardVec[d]), leftVec[d], mapGrid, 'xx'):
             if debugging:
                 print "wall corner (xx)", p
             walls, a = addWall (walls, a, addVec (addVec (p, forwardVec[d]), leftVec[d]))
+            # end of door?
+            if doorEndPoint != None:
+                doors += [[doorStartPoint, doorEndPoint]]
+            doorStartPoint = None
+            doorEndPoint = None
             # turn right
             d = (d + 1) % 4
             if s == p:
@@ -323,7 +346,8 @@ def scanRoom (topleft, p, mapGrid, walls, doors):
             printf ("something went wrong here\n")
 
 def printCoord (c, o):
-    o.write (str (c[0]+1) + " " + str (c[1]+1))
+    global maxy
+    o.write (str (c[0]+1) + " " + str ((maxy-c[1])+1))
     return o
 
 def printMonsters (mlist, o):

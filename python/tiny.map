@@ -9,14 +9,14 @@ Version 2
     {
          brushDef3
          {
-             // [[1, 1], [1, 7], 'wall', 'left']
-             // left wall brick [[1, 1], [1, 7], 'wall', 'left']
+             // [[1, 1], [1, 5], 'wall', 'left']
+             // left wall brick [[1, 1], [1, 5], 'wall', 'left']
              // floor of vbrick
              ( 0 0 -1 0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
              // ceiling of vbrick
              ( 0 0 1 -288 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
              // top most horizontal of vbrick
-             ( -1 0 0 -384 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             ( -1 0 0 -288 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
              // left most vertical of vbrick
              ( 0 -1 0 -96 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
              // bottom most horizontal of vbrick
@@ -29,54 +29,114 @@ Version 2
     {
          brushDef3
          {
-             // [[1, 7], [60, 7], 'wall', 'top']
-             // top wall brick [[1, 7], [60, 7], 'wall', 'top']
+             // [[1, 5], [6, 5], 'wall', 'top']
+             // top wall brick [[1, 5], [6, 5], 'wall', 'top']
              // floor of hbrick
              ( 0 0 -1 0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
              // ceiling of hbrick
              ( 0 0 1 -288 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
              // left most vertical of hbrick
-             ( 0 -1 0 -2928 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             ( 0 -1 0 -312 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
              // bottom most horizontal of hbrick
-             ( 1 0 0 336 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             ( 1 0 0 240 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
              // right most vertical of hbrick
              ( 0 1 0 48 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
              // top most horizontal of hbrick
-             ( -1 0 0 -360 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             ( -1 0 0 -264 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
          }
     }
     // primitive 2
     {
          brushDef3
          {
-             // [[60, 1], [60, 7], 'wall', 'right']
-             // right wall brick [[60, 1], [60, 7], 'wall', 'right']
+             // [[6, 1], [6, 1], 'wall', 'right']
+             // right wall brick [[6, 1], [6, 1], 'wall', 'right']
              // floor of vbrick
              ( 0 0 -1 0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
              // ceiling of vbrick
              ( 0 0 1 -288 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
              // top most horizontal of vbrick
-             ( -1 0 0 -384 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             ( -1 0 0 -96 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
              // left most vertical of vbrick
-             ( 0 -1 0 -2904 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             ( 0 -1 0 -312 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
              // bottom most horizontal of vbrick
              ( 1 0 0 48 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
              // right most vertical of vbrick
-             ( 0 1 0 2880 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             ( 0 1 0 288 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
          }
     }
     // primitive 3
     {
          brushDef3
          {
-             // [[1, 1], [60, 1], 'wall', 'bottom']
-             // bottom wall brick [[1, 1], [60, 1], 'wall', 'bottom']
+             // [[6, 2], [6, 4], 'open', 'right']
+             // right doorway needs a floor [[6, 2], [6, 4], 'open', 'right']
+             // floor of fbrick
+             ( 0 0 -1 -24 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // ceiling of fbrick
+             ( 0 0 1 0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // top most horizontal of fbrick
+             ( -1 0 0 -288 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // left most vertical of fbrick
+             ( 0 -1 0 -336 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // bottom most horizontal of fbrick
+             ( 1 0 0 96 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // right most vertical of fbrick
+             ( 0 1 0 288 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+         }
+    }
+    // primitive 4
+    {
+         brushDef3
+         {
+             // [[6, 2], [6, 4], 'open', 'right']
+             // and the right doorway needs a ceiling [[6, 2], [6, 4], 'open', 'right']
+             // floor of fbrick
+             ( 0 0 -1 288 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // ceiling of fbrick
+             ( 0 0 1 -312 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // top most horizontal of fbrick
+             ( -1 0 0 -288 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // left most vertical of fbrick
+             ( 0 -1 0 -336 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // bottom most horizontal of fbrick
+             ( 1 0 0 96 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // right most vertical of fbrick
+             ( 0 1 0 288 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+         }
+    }
+    // primitive 5
+    {
+         brushDef3
+         {
+             // [[6, 5], [6, 5], 'wall', 'right']
+             // right wall brick [[6, 5], [6, 5], 'wall', 'right']
+             // floor of vbrick
+             ( 0 0 -1 0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // ceiling of vbrick
+             ( 0 0 1 -288 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // top most horizontal of vbrick
+             ( -1 0 0 -288 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // left most vertical of vbrick
+             ( 0 -1 0 -312 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // bottom most horizontal of vbrick
+             ( 1 0 0 240 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // right most vertical of vbrick
+             ( 0 1 0 288 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+         }
+    }
+    // primitive 6
+    {
+         brushDef3
+         {
+             // [[1, 1], [6, 1], 'wall', 'bottom']
+             // bottom wall brick [[1, 1], [6, 1], 'wall', 'bottom']
              // floor of hbrick
              ( 0 0 -1 0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
              // ceiling of hbrick
              ( 0 0 1 -288 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
              // left most vertical of hbrick
-             ( 0 -1 0 -2928 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             ( 0 -1 0 -312 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
              // bottom most horizontal of hbrick
              ( 1 0 0 72 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
              // right most vertical of hbrick
@@ -85,7 +145,7 @@ Version 2
              ( -1 0 0 -96 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
          }
     }
-    // primitive 4
+    // primitive 7
     // ceiling for room 1
     {
          brushDef3
@@ -95,18 +155,18 @@ Version 2
              // ceiling of fbrick
              ( 0 0 1 -312 ) ( ( 0.0078125 0 0 ) ( 0 0.0078125 0 ) ) "textures/hell/wood1" 0 0 0
              // top most horizontal of fbrick
-             ( -1 0 0 -336 ) ( ( 0.0078125 0 0 ) ( 0 0.0078125 0 ) ) "textures/hell/wood1" 0 0 0
+             ( -1 0 0 -240 ) ( ( 0.0078125 0 0 ) ( 0 0.0078125 0 ) ) "textures/hell/wood1" 0 0 0
              // left most vertical of fbrick
-             ( 0 -1 0 -2880 ) ( ( 0.0078125 0 0 ) ( 0 0.0078125 0 ) ) "textures/hell/wood1" 0 0 0
+             ( 0 -1 0 -288 ) ( ( 0.0078125 0 0 ) ( 0 0.0078125 0 ) ) "textures/hell/wood1" 0 0 0
              // bottom most horizontal of fbrick
              ( 1 0 0 96 ) ( ( 0.0078125 0 0 ) ( 0 0.0078125 0 ) ) "textures/hell/wood1" 0 0 0
              // right most vertical of fbrick
              ( 0 1 0 96 ) ( ( 0.0078125 0 0 ) ( 0 0.0078125 0 ) ) "textures/hell/wood1" 0 0 0
          }
     }
-    // primitive 5
+    // primitive 8
     // floor for room 1
-     // [[1, 1], [60, 7]]
+     // [[1, 1], [6, 5]]
     {
          brushDef3
          {
@@ -115,146 +175,353 @@ Version 2
              // ceiling of fbrick
              ( 0 0 1 0 ) ( ( 0.015625 0 0 ) ( 0 0.015625 0 ) ) "textures/hell/qfloor" 0 0 0
              // top most horizontal of fbrick
-             ( -1 0 0 -336 ) ( ( 0.015625 0 0 ) ( 0 0.015625 0 ) ) "textures/hell/qfloor" 0 0 0
+             ( -1 0 0 -240 ) ( ( 0.015625 0 0 ) ( 0 0.015625 0 ) ) "textures/hell/qfloor" 0 0 0
              // left most vertical of fbrick
-             ( 0 -1 0 -2880 ) ( ( 0.015625 0 0 ) ( 0 0.015625 0 ) ) "textures/hell/qfloor" 0 0 0
+             ( 0 -1 0 -288 ) ( ( 0.015625 0 0 ) ( 0 0.015625 0 ) ) "textures/hell/qfloor" 0 0 0
              // bottom most horizontal of fbrick
              ( 1 0 0 96 ) ( ( 0.015625 0 0 ) ( 0 0.015625 0 ) ) "textures/hell/qfloor" 0 0 0
              // right most vertical of fbrick
              ( 0 1 0 96 ) ( ( 0.015625 0 0 ) ( 0 0.015625 0 ) ) "textures/hell/qfloor" 0 0 0
          }
     }
-    // primitive 6
-    // light block
+    // room 3
+    // primitive 9
     {
          brushDef3
          {
+             // [[10, 1], [10, 1], 'wall', 'left']
+             // left wall brick [[10, 1], [10, 1], 'wall', 'left']
              // floor of vbrick
              ( 0 0 -1 0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
              // ceiling of vbrick
-             ( 0 0 1 -96 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             ( 0 0 1 -288 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
              // top most horizontal of vbrick
-             ( -1 0 0 -300.0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             ( -1 0 0 -96 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
              // left most vertical of vbrick
-             ( 0 -1 0 -396.0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             ( 0 -1 0 -528 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
              // bottom most horizontal of vbrick
-             ( 1 0 0 288 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             ( 1 0 0 48 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
              // right most vertical of vbrick
-             ( 0 1 0 384 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             ( 0 1 0 504 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
          }
     }
-    // primitive 6
-    // light block
+    // primitive 10
     {
          brushDef3
          {
-             // floor of vbrick
-             ( 0 0 -1 0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
-             // ceiling of vbrick
-             ( 0 0 1 -96 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
-             // top most horizontal of vbrick
-             ( -1 0 0 -300.0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
-             // left most vertical of vbrick
-             ( 0 -1 0 -492.0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
-             // bottom most horizontal of vbrick
-             ( 1 0 0 288 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
-             // right most vertical of vbrick
+             // [[10, 2], [10, 4], 'open', 'left']
+             // left doorway needs a floor [[10, 2], [10, 4], 'open', 'left']
+             // floor of fbrick
+             ( 0 0 -1 -24 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // ceiling of fbrick
+             ( 0 0 1 0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // top most horizontal of fbrick
+             ( -1 0 0 -288 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // left most vertical of fbrick
+             ( 0 -1 0 -528 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // bottom most horizontal of fbrick
+             ( 1 0 0 96 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // right most vertical of fbrick
              ( 0 1 0 480 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
          }
     }
-    // primitive 6
-    // light block
+    // primitive 11
     {
          brushDef3
          {
-             // floor of vbrick
-             ( 0 0 -1 0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
-             // ceiling of vbrick
-             ( 0 0 1 -96 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
-             // top most horizontal of vbrick
-             ( -1 0 0 -300.0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
-             // left most vertical of vbrick
-             ( 0 -1 0 -588.0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
-             // bottom most horizontal of vbrick
-             ( 1 0 0 288 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
-             // right most vertical of vbrick
-             ( 0 1 0 576 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // [[10, 2], [10, 4], 'open', 'left']
+             // and the left doorway needs a ceiling [[10, 2], [10, 4], 'open', 'left']
+             // floor of fbrick
+             ( 0 0 -1 -24 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // ceiling of fbrick
+             ( 0 0 1 -312 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // top most horizontal of fbrick
+             ( -1 0 0 -288 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // left most vertical of fbrick
+             ( 0 -1 0 -528 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // bottom most horizontal of fbrick
+             ( 1 0 0 96 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // right most vertical of fbrick
+             ( 0 1 0 480 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
          }
     }
-    // primitive 6
-    // light block
+    // primitive 12
     {
          brushDef3
          {
+             // [[10, 5], [10, 5], 'wall', 'left']
+             // left wall brick [[10, 5], [10, 5], 'wall', 'left']
              // floor of vbrick
              ( 0 0 -1 0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
              // ceiling of vbrick
-             ( 0 0 1 -96 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             ( 0 0 1 -288 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
              // top most horizontal of vbrick
-             ( -1 0 0 -300.0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             ( -1 0 0 -288 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
              // left most vertical of vbrick
-             ( 0 -1 0 -684.0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
-             // bottom most horizontal of vbrick
-             ( 1 0 0 288 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
-             // right most vertical of vbrick
-             ( 0 1 0 672 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
-         }
-    }
-    // primitive 6
-    // light block
-    {
-         brushDef3
-         {
-             // floor of vbrick
-             ( 0 0 -1 0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
-             // ceiling of vbrick
-             ( 0 0 1 -96 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
-             // top most horizontal of vbrick
-             ( -1 0 0 -252.0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
-             // left most vertical of vbrick
-             ( 0 -1 0 -1788.0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             ( 0 -1 0 -528 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
              // bottom most horizontal of vbrick
              ( 1 0 0 240 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
              // right most vertical of vbrick
-             ( 0 1 0 1776 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             ( 0 1 0 504 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
          }
     }
-    // primitive 6
-    // light block
+    // primitive 13
     {
          brushDef3
          {
+             // [[10, 5], [18, 5], 'wall', 'top']
+             // top wall brick [[10, 5], [18, 5], 'wall', 'top']
+             // floor of hbrick
+             ( 0 0 -1 0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // ceiling of hbrick
+             ( 0 0 1 -288 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // left most vertical of hbrick
+             ( 0 -1 0 -888 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // bottom most horizontal of hbrick
+             ( 1 0 0 240 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // right most vertical of hbrick
+             ( 0 1 0 480 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // top most horizontal of hbrick
+             ( -1 0 0 -264 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+         }
+    }
+    // primitive 14
+    {
+         brushDef3
+         {
+             // [[18, 1], [18, 5], 'wall', 'right']
+             // right wall brick [[18, 1], [18, 5], 'wall', 'right']
              // floor of vbrick
              ( 0 0 -1 0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
              // ceiling of vbrick
-             ( 0 0 1 -96 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             ( 0 0 1 -288 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
              // top most horizontal of vbrick
-             ( -1 0 0 -156.0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             ( -1 0 0 -288 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
              // left most vertical of vbrick
-             ( 0 -1 0 -876.0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             ( 0 -1 0 -888 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
              // bottom most horizontal of vbrick
-             ( 1 0 0 144 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             ( 1 0 0 48 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
              // right most vertical of vbrick
              ( 0 1 0 864 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
          }
     }
-    // primitive 6
-    // light block
+    // primitive 15
     {
          brushDef3
          {
+             // [[10, 1], [18, 1], 'wall', 'bottom']
+             // bottom wall brick [[10, 1], [18, 1], 'wall', 'bottom']
+             // floor of hbrick
+             ( 0 0 -1 0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // ceiling of hbrick
+             ( 0 0 1 -288 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // left most vertical of hbrick
+             ( 0 -1 0 -888 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // bottom most horizontal of hbrick
+             ( 1 0 0 72 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // right most vertical of hbrick
+             ( 0 1 0 480 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // top most horizontal of hbrick
+             ( -1 0 0 -96 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+         }
+    }
+    // primitive 16
+    // ceiling for room 3
+    {
+         brushDef3
+         {
+             // floor of fbrick
+             ( 0 0 -1 288 ) ( ( 0.0078125 0 0 ) ( 0 0.0078125 0 ) ) "textures/hell/wood1" 0 0 0
+             // ceiling of fbrick
+             ( 0 0 1 -312 ) ( ( 0.0078125 0 0 ) ( 0 0.0078125 0 ) ) "textures/hell/wood1" 0 0 0
+             // top most horizontal of fbrick
+             ( -1 0 0 -240 ) ( ( 0.0078125 0 0 ) ( 0 0.0078125 0 ) ) "textures/hell/wood1" 0 0 0
+             // left most vertical of fbrick
+             ( 0 -1 0 -864 ) ( ( 0.0078125 0 0 ) ( 0 0.0078125 0 ) ) "textures/hell/wood1" 0 0 0
+             // bottom most horizontal of fbrick
+             ( 1 0 0 96 ) ( ( 0.0078125 0 0 ) ( 0 0.0078125 0 ) ) "textures/hell/wood1" 0 0 0
+             // right most vertical of fbrick
+             ( 0 1 0 528 ) ( ( 0.0078125 0 0 ) ( 0 0.0078125 0 ) ) "textures/hell/wood1" 0 0 0
+         }
+    }
+    // primitive 17
+    // floor for room 3
+     // [[10, 1], [18, 5]]
+    {
+         brushDef3
+         {
+             // floor of fbrick
+             ( 0 0 -1 -24 ) ( ( 0.015625 0 0 ) ( 0 0.015625 0 ) ) "textures/hell/qfloor" 0 0 0
+             // ceiling of fbrick
+             ( 0 0 1 0 ) ( ( 0.015625 0 0 ) ( 0 0.015625 0 ) ) "textures/hell/qfloor" 0 0 0
+             // top most horizontal of fbrick
+             ( -1 0 0 -240 ) ( ( 0.015625 0 0 ) ( 0 0.015625 0 ) ) "textures/hell/qfloor" 0 0 0
+             // left most vertical of fbrick
+             ( 0 -1 0 -864 ) ( ( 0.015625 0 0 ) ( 0 0.015625 0 ) ) "textures/hell/qfloor" 0 0 0
+             // bottom most horizontal of fbrick
+             ( 1 0 0 96 ) ( ( 0.015625 0 0 ) ( 0 0.015625 0 ) ) "textures/hell/qfloor" 0 0 0
+             // right most vertical of fbrick
+             ( 0 1 0 528 ) ( ( 0.015625 0 0 ) ( 0 0.015625 0 ) ) "textures/hell/qfloor" 0 0 0
+         }
+    }
+    // room 2
+    // primitive 18
+    {
+         brushDef3
+         {
+             // [[6, 1], [6, 1], 'wall', 'left']
+             // left wall brick [[6, 1], [6, 1], 'wall', 'left']
              // floor of vbrick
              ( 0 0 -1 0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
              // ceiling of vbrick
-             ( 0 0 1 -96 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             ( 0 0 1 -288 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
              // top most horizontal of vbrick
-             ( -1 0 0 -156.0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             ( -1 0 0 -96 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
              // left most vertical of vbrick
-             ( 0 -1 0 -2316.0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             ( 0 -1 0 -336 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
              // bottom most horizontal of vbrick
-             ( 1 0 0 144 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             ( 1 0 0 48 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
              // right most vertical of vbrick
-             ( 0 1 0 2304 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             ( 0 1 0 312 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+         }
+    }
+    // primitive 19
+    {
+         brushDef3
+         {
+             // [[6, 5], [6, 5], 'wall', 'left']
+             // left wall brick [[6, 5], [6, 5], 'wall', 'left']
+             // floor of vbrick
+             ( 0 0 -1 0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // ceiling of vbrick
+             ( 0 0 1 -288 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // top most horizontal of vbrick
+             ( -1 0 0 -288 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // left most vertical of vbrick
+             ( 0 -1 0 -336 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // bottom most horizontal of vbrick
+             ( 1 0 0 240 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // right most vertical of vbrick
+             ( 0 1 0 312 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+         }
+    }
+    // primitive 20
+    {
+         brushDef3
+         {
+             // [[6, 5], [10, 5], 'wall', 'top']
+             // top wall brick [[6, 5], [10, 5], 'wall', 'top']
+             // floor of hbrick
+             ( 0 0 -1 0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // ceiling of hbrick
+             ( 0 0 1 -288 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // left most vertical of hbrick
+             ( 0 -1 0 -504 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // bottom most horizontal of hbrick
+             ( 1 0 0 240 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // right most vertical of hbrick
+             ( 0 1 0 288 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // top most horizontal of hbrick
+             ( -1 0 0 -264 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+         }
+    }
+    // primitive 21
+    {
+         brushDef3
+         {
+             // [[10, 1], [10, 1], 'wall', 'right']
+             // right wall brick [[10, 1], [10, 1], 'wall', 'right']
+             // floor of vbrick
+             ( 0 0 -1 0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // ceiling of vbrick
+             ( 0 0 1 -288 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // top most horizontal of vbrick
+             ( -1 0 0 -96 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // left most vertical of vbrick
+             ( 0 -1 0 -504 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // bottom most horizontal of vbrick
+             ( 1 0 0 48 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // right most vertical of vbrick
+             ( 0 1 0 480 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+         }
+    }
+    // primitive 22
+    {
+         brushDef3
+         {
+             // [[10, 5], [10, 5], 'wall', 'right']
+             // right wall brick [[10, 5], [10, 5], 'wall', 'right']
+             // floor of vbrick
+             ( 0 0 -1 0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // ceiling of vbrick
+             ( 0 0 1 -288 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // top most horizontal of vbrick
+             ( -1 0 0 -288 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // left most vertical of vbrick
+             ( 0 -1 0 -504 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // bottom most horizontal of vbrick
+             ( 1 0 0 240 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // right most vertical of vbrick
+             ( 0 1 0 480 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+         }
+    }
+    // primitive 23
+    {
+         brushDef3
+         {
+             // [[6, 1], [10, 1], 'wall', 'bottom']
+             // bottom wall brick [[6, 1], [10, 1], 'wall', 'bottom']
+             // floor of hbrick
+             ( 0 0 -1 0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // ceiling of hbrick
+             ( 0 0 1 -288 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // left most vertical of hbrick
+             ( 0 -1 0 -504 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // bottom most horizontal of hbrick
+             ( 1 0 0 72 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // right most vertical of hbrick
+             ( 0 1 0 288 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // top most horizontal of hbrick
+             ( -1 0 0 -96 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+         }
+    }
+    // primitive 24
+    // ceiling for room 2
+    {
+         brushDef3
+         {
+             // floor of fbrick
+             ( 0 0 -1 288 ) ( ( 0.0078125 0 0 ) ( 0 0.0078125 0 ) ) "textures/hell/wood1" 0 0 0
+             // ceiling of fbrick
+             ( 0 0 1 -312 ) ( ( 0.0078125 0 0 ) ( 0 0.0078125 0 ) ) "textures/hell/wood1" 0 0 0
+             // top most horizontal of fbrick
+             ( -1 0 0 -240 ) ( ( 0.0078125 0 0 ) ( 0 0.0078125 0 ) ) "textures/hell/wood1" 0 0 0
+             // left most vertical of fbrick
+             ( 0 -1 0 -480 ) ( ( 0.0078125 0 0 ) ( 0 0.0078125 0 ) ) "textures/hell/wood1" 0 0 0
+             // bottom most horizontal of fbrick
+             ( 1 0 0 96 ) ( ( 0.0078125 0 0 ) ( 0 0.0078125 0 ) ) "textures/hell/wood1" 0 0 0
+             // right most vertical of fbrick
+             ( 0 1 0 336 ) ( ( 0.0078125 0 0 ) ( 0 0.0078125 0 ) ) "textures/hell/wood1" 0 0 0
+         }
+    }
+    // primitive 25
+    // floor for room 2
+     // [[6, 1], [10, 5]]
+    {
+         brushDef3
+         {
+             // floor of fbrick
+             ( 0 0 -1 -24 ) ( ( 0.015625 0 0 ) ( 0 0.015625 0 ) ) "textures/hell/qfloor" 0 0 0
+             // ceiling of fbrick
+             ( 0 0 1 0 ) ( ( 0.015625 0 0 ) ( 0 0.015625 0 ) ) "textures/hell/qfloor" 0 0 0
+             // top most horizontal of fbrick
+             ( -1 0 0 -240 ) ( ( 0.015625 0 0 ) ( 0 0.015625 0 ) ) "textures/hell/qfloor" 0 0 0
+             // left most vertical of fbrick
+             ( 0 -1 0 -480 ) ( ( 0.015625 0 0 ) ( 0 0.015625 0 ) ) "textures/hell/qfloor" 0 0 0
+             // bottom most horizontal of fbrick
+             ( 1 0 0 96 ) ( ( 0.015625 0 0 ) ( 0 0.015625 0 ) ) "textures/hell/qfloor" 0 0 0
+             // right most vertical of fbrick
+             ( 0 1 0 336 ) ( ( 0.015625 0 0 ) ( 0 0.015625 0 ) ) "textures/hell/qfloor" 0 0 0
          }
     }
 }
@@ -263,113 +530,14 @@ Version 2
 {
     "classname" "info_player_start"
     "name" "info_player_start_1"
-    "origin" "-168 -120 96"
+    "origin" "-120 -120 96"
     "angle" "180"
 }
 // entity 2
 {
-    "classname" "light"
-    "name" "light_1"
-    "origin" "-264 -360 144"
-    "noshadows" "0"
-    "nospecular" "0"
-    "nodiffuse" "0"
-    "falloff" "0.000000"
-    "_color" "0.78 0.78 0.84"
-    "light_radius" "225 225 225"
-}
-// entity 3
-{
-    "classname" "light"
-    "name" "light_2"
-    "origin" "-264 -456 144"
-    "noshadows" "0"
-    "nospecular" "0"
-    "nodiffuse" "0"
-    "falloff" "0.000000"
-    "_color" "0.78 0.78 0.84"
-    "light_radius" "225 225 225"
-}
-// entity 4
-{
-    "classname" "light"
-    "name" "light_3"
-    "origin" "-264 -552 144"
-    "noshadows" "0"
-    "nospecular" "0"
-    "nodiffuse" "0"
-    "falloff" "0.000000"
-    "_color" "0.78 0.78 0.84"
-    "light_radius" "225 225 225"
-}
-// entity 5
-{
-    "classname" "light"
-    "name" "light_4"
-    "origin" "-264 -648 144"
-    "noshadows" "0"
-    "nospecular" "0"
-    "nodiffuse" "0"
-    "falloff" "0.000000"
-    "_color" "0.78 0.78 0.84"
-    "light_radius" "225 225 225"
-}
-// entity 6
-{
-    "classname" "light"
-    "name" "light_5"
-    "origin" "-216 -1752 144"
-    "noshadows" "0"
-    "nospecular" "0"
-    "nodiffuse" "0"
-    "falloff" "0.000000"
-    "_color" "0.78 0.78 0.84"
-    "light_radius" "225 225 225"
-}
-// entity 7
-{
-    "classname" "light"
-    "name" "light_6"
-    "origin" "-120 -840 144"
-    "noshadows" "0"
-    "nospecular" "0"
-    "nodiffuse" "0"
-    "falloff" "0.000000"
-    "_color" "0.78 0.78 0.84"
-    "light_radius" "225 225 225"
-}
-// entity 8
-{
-    "classname" "light"
-    "name" "light_7"
-    "origin" "-120 -2280 144"
-    "noshadows" "0"
-    "nospecular" "0"
-    "nodiffuse" "0"
-    "falloff" "0.000000"
-    "_color" "0.78 0.78 0.84"
-    "light_radius" "225 225 225"
-}
-// entity 9
-{
-    "classname" "monster_demon_hellknight"
-    "name" "monster_demon_hellknight_1"
-    "anim" "idle"
-    "origin" "-168 -2616 96"
-    "ambush" "1"
-}
-// entity 10
-{
     "classname" "monster_demon_imp"
-    "name" "monster_demon_imp_2"
+    "name" "monster_demon_imp_1"
     "anim" "idle"
-    "origin" "-120 -1416 96"
+    "origin" "-120 -744 96"
     "ambush" "1"
-}
-// entity 11
-{
-    "inv_item" "4"
-    "classname" "ammo_shells_large"
-    "name" "ammo_shells_large_1"
-    "origin" "-168 -552 24.0"
 }

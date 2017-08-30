@@ -92,6 +92,7 @@ class roomInfo:
 def printf (format, *args):
     print str(format) % args,
 
+
 #
 #  error - issues an error message and exits.
 #
@@ -110,6 +111,7 @@ def debugf (format, *args):
     if debugging:
         print str (format) % args,
 
+
 def usage (code):
     print "Usage: txt2pen [-dhvV] [-o outputfile] inputfile"
     print "  -d debugging"
@@ -118,6 +120,7 @@ def usage (code):
     print "  -v version"
     print "  -o outputfile name"
     sys.exit (code)
+
 
 #
 #  handleOptions -
@@ -137,7 +140,7 @@ def handleOptions ():
            elif opt[0] == '-o':
                outputName = opt[1]
            elif opt[0] == '-v':
-               printf ("txtpen version " + versionNumber + "\n")
+               printf ("txtpen version " + str (versionNumber) + "\n")
                sys.exit (0)
            elif opt[0] == '-V':
                verbose = True
@@ -173,6 +176,7 @@ def addDef (c, line, l):
 
 def isSubstr (s, c):
     return (len (s) > len (c)) and (s[:len(c)] == c)
+
 
 def readDefines (i):
     l = 1
@@ -229,14 +233,18 @@ def getListOfRooms (mapGrid, start, i):
 def isWall (pos, grid):
     return grid[pos[1]][pos[0]] == '#'
 
+
 def isDoor (pos, grid):
     return (grid[pos[1]][pos[0]] == '-') or (grid[pos[1]][pos[0]] == '|') or (grid[pos[1]][pos[0]] == '.')
+
 
 def isPlane (pos, grid):
     return isWall (pos, grid) or isDoor (pos, grid)
 
+
 def addVec (pos, vec):
     return [pos[0]+vec[0], pos[1]+vec[1]]
+
 
 def moveBy (pos, vec, grid):
     if vec[0] != 0:
@@ -256,11 +264,15 @@ def addWall (walls, start, end):
 
 
 def lookingLeft (pos, left, grid, s):
+    if debugging:
+        print pos, left, s
     if s[1] == ' ' and isPlane (pos, grid):
         return False
     if s[1] == 'x' and (not isPlane (pos, grid)):
         return False
     if s[1] == '.' and (not isDoor (pos, grid)):
+        if debugging:
+            print "no door at", pos
         return False
     if s[0] == ' ' and isPlane (addVec (pos, left), grid):
         return False
@@ -270,6 +282,8 @@ def lookingLeft (pos, left, grid, s):
         return False
     return True
 
+def mystop ():
+    pass
 
 def scanRoom (topleft, p, mapGrid, walls, doors):
     global debuging
@@ -284,11 +298,17 @@ def scanRoom (topleft, p, mapGrid, walls, doors):
     doorStartPoint = None
     doorEndPoint = None
     while True:
+        if debugging:
+            print "point currently at", p, d
         if (doorStartPoint == None) and lookingLeft (p, leftVec[d], mapGrid, '. '):
+            if debugging:
+                print "seen first point", p
             # first point on the wall is a door
             doorStartPoint = addVec (p, leftVec[d])
             doorEndPoint = doorStartPoint
         if lookingLeft (addVec (p, forwardVec[d]), leftVec[d], mapGrid, '. '):
+            if debugging:
+                print "seen a door point", p,
             if doorStartPoint == None:
                 doorStartPoint = addVec (addVec (p, forwardVec[d]), leftVec[d])
             doorEndPoint = addVec (addVec (p, forwardVec[d]), leftVec[d])
@@ -345,10 +365,12 @@ def scanRoom (topleft, p, mapGrid, walls, doors):
         else:
             printf ("something went wrong here\n")
 
+
 def printCoord (c, o):
     global maxy
     o.write (str (c[0]+1) + " " + str ((maxy-c[1])+1))
     return o
+
 
 def printMonsters (mlist, o):
     if mlist != []:
@@ -358,6 +380,7 @@ def printMonsters (mlist, o):
             o.write ("\n")
     return o
 
+
 def printSpawnPlayer (m, o):
     if m != []:
         for pos in m:
@@ -365,6 +388,7 @@ def printSpawnPlayer (m, o):
             printCoord (pos, o)
             o.write ("\n")
     return o
+
 
 def printAmmo (m, o):
     if m != []:
@@ -374,6 +398,7 @@ def printAmmo (m, o):
             o.write ("\n")
     return o
 
+
 def printWeapons (w, o):
     if w != []:
         for name, pos in w:
@@ -382,6 +407,7 @@ def printWeapons (w, o):
             o.write ("\n")
     return o
 
+
 def printLights (l, o):
     if l != []:
         for pos in l:
@@ -389,6 +415,7 @@ def printLights (l, o):
             printCoord (pos, o)
             o.write ("\n")
     return o
+
 
 def printRoom (r, o):
     o.write ("ROOM " + str (r) + "\n")
@@ -428,6 +455,7 @@ def generateRoom (r, p, mapGrid, start, i):
         print walls
     rooms[r] = roomInfo (walls, doors)
 
+
 def plot (w, value):
     x0 = min (w[0][0], w[1][0])
     x1 = max (w[0][0], w[1][0])
@@ -457,40 +485,119 @@ def findMax (r):
             maxx = max (c[0], maxx)
             maxy = max (c[1], maxy)
 
+
+def dumpFloor ():
+    print "the map"
+    for r in floor:
+        for c in r:
+            if c == emptyValue:
+                print " ",
+            elif c == doorValue:
+                print ".",
+            elif c == wallValue:
+                print "#",
+            else:
+                print str (c),
+        print " "
+    print " "
+
+
 def floodFloor (r, p):
     if p[0] >= 0 and p[1] >= 0:
+        if r == 4:
+            print p
+            dumpFloor ()
         if getFloor (p[0], p[1]) == emptyValue:
             setFloor (p[0], p[1], r)
             floodFloor (r, [p[0]-1, p[1]])
             floodFloor (r, [p[0]+1, p[1]])
             floodFloor (r, [p[0], p[1]-1])
             floodFloor (r, [p[0], p[1]+1])
+        else:
+            if r == 4:
+                print "p =", p, "not empty", getFloor (p[0], p[1])
 
 
 def floodRoom (r, p):
     floodFloor (int (r), p)
 
+
+#
+#  isVertical - return True if, c, is a vertical line.
+#
+
+def isVertical (c):
+    return c[0][0] == c[1][0]
+
+#
+#  isHorizontal - return True if, c, is a horizontal line.
+#
+
+def isHorizontal (c):
+    return c[0][1] == c[1][1]
+
+
+#
+#  isUpon - returns true if line, d, is upon, w.
+#
+
+def isUpon (d, w):
+    if isVertical (w):
+        if w[0][0] != d[0][0]:
+            return False
+        d0 = min (d[0][1], d[1][1])
+        d1 = max (d[0][1], d[1][1])
+        w0 = min (w[0][1], w[1][1])
+        w1 = max (w[0][1], w[1][1])
+    else:
+        if w[0][1] != d[0][1]:
+            return False
+        d0 = min (d[0][0], d[1][0])
+        d1 = max (d[0][0], d[1][0])
+        w0 = min (w[0][0], w[1][0])
+        w1 = max (w[0][0], w[1][0])
+    return (d0 > w0) and (d1 < w1)
+
+
+#
+#  findWall - return the wall which door, d, is upon.
+#
+
+def findWall (r, d):
+    for w in rooms[r].walls:
+        if isUpon (d, w):
+            return w
+
 def findDoors (r, p):
     for d in rooms[r].doors:
-        if d[0][0] == d[1][0]:
-            # vertical door
+        w = findWall (r, d)
+        if isVertical (w):
+            # vertical door as it is on a vertical wall
             if getFloor (d[0][0]+1, d[0][1]) != int (r):
                 rooms[r].doorLeadsTo += [getFloor (d[0][0]+1, d[0][1])]
             else:
                 rooms[r].doorLeadsTo += [getFloor (d[0][0]-1, d[0][1])]
         else:
-            # horizontal
+            # horizontal door as it is on a horizontal wall
             if getFloor (d[0][0], d[0][1]+1) != int (r):
                 rooms[r].doorLeadsTo += [getFloor (d[0][0], d[0][1]+1)]
             else:
                 rooms[r].doorLeadsTo += [getFloor (d[0][0], d[0][1]-1)]
 
+
 def findEntities (g, room, p):
+    if debugging:
+        for l in g:
+            print l,
+        for l in floor:
+            print l
     for y, r in enumerate (g):
         for x in range (maxx+1):
             if getFloor (x, y) == int (room):
                 c = r[x]
                 if defines.has_key (c):
+                    if debugging:
+                        print "seen", c, "at", x, y
                     k = defines[c]
                     if isSubstr (k, 'worldspawn'):
                         rooms[room].worldspawn += [[x, y]]
@@ -549,7 +656,7 @@ def generatePen (mapGrid, start, i, o):
 
 
 #
-#
+#  processMap
 #
 
 def processMap (i, o):
@@ -580,5 +687,6 @@ def main ():
         o = open (io[1], 'w')
     o = processMap (i.readlines (), o)
     o.flush ()
+
 
 main ()

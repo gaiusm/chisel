@@ -79,6 +79,8 @@ curPos = None
 direction = ["left", "top", "right", "bottom"]
 doorStatus = ["open", "closed", "secret"]
 maxEntities = 4096    # doom3 limitation
+singlePlayer, deathMatch = range (2)
+gameType = singlePlayer
 
 
 defaults = { "portal":"textures/editor/visportal",
@@ -299,6 +301,7 @@ def usage (code):
     print "  -c filename.ss    use filename.ss as the defaults for the map file"
     print "  -d                debugging"
     print "  -e                provide comments in the map file"
+    print "  -g type           game type.  The type must be 'single' or 'deathmatch'"
     print "  -h                help"
     print "  -m                create a doom3 map file from the pen file"
     print "  -s                generate statistics about the map file"
@@ -314,11 +317,11 @@ def usage (code):
 #
 
 def handleOptions ():
-    global debugging, verbose, outputName, toTxt, toMap, ssName, comments, statistics
+    global debugging, verbose, outputName, toTxt, toMap, ssName, comments, statistics, gameType
 
     outputName = None
     try:
-        optlist, l = getopt.getopt(sys.argv[1:], ':c:dehmo:stvV')
+        optlist, l = getopt.getopt(sys.argv[1:], ':c:deg:hmo:stvV')
         for opt in optlist:
             if opt[0] == '-c':
                 ssName = opt[1]
@@ -326,6 +329,13 @@ def handleOptions ():
                 debugging = True
             elif opt[0] == '-e':
                 comments = True
+            elif opt[0] == '-g':
+                if opt[1] == 'single':
+                    gameType = singlePlayer
+                elif opt[1] == 'deathmatch':
+                    gameType = deathMatch
+                else:
+                    usage (1)
             elif opt[0] == '-h':
                 usage (0)
             elif opt[0] == '-o':
@@ -409,7 +419,7 @@ def floodFloor (r, p):
 
 
 def floodRoom (r, p):
-    print "floodRoom", r, p,
+    # print "floodRoom", r, p,
     if getFloor (p[0], p[1]) == emptyValue:
         print "will start"
     else:
@@ -1708,8 +1718,12 @@ def generatePlayer (o, e):
         if rooms[r].worldspawn != []:
             o.write ("// entity " + str (e) + '\n')
             o.write ("{\n")
-            o.write ('    "classname" "info_player_start"\n')
-            o.write ('    "name" "info_player_start_1"\n')
+            if gameType == singlePlayer:
+                o.write ('    "classname" "info_player_start"\n')
+                o.write ('    "name" "info_player_start_1"\n')
+            else:
+                o.write ('    "classname" "info_player_deathmatch"\n')
+                o.write ('    "name" "info_player_deathmatch_1"\n')
             o.write ('    "origin" "')
             o = writeMidPos (o, rooms[r].worldspawn[0])
             o.write (' ' + str (toInches (spawnHeight)) + '"\n')
@@ -1752,25 +1766,25 @@ def onLine (line, pos):
 
 def nextTo (w, l):
     l = [int (l[0]), int (l[1])]
-    print "w =", w, "l =", l
+    # print "w =", w, "l =", l
     if w[-2] == 'wall':
         line = [[int (w[0][0]), int (w[0][1])], [int (w[1][0]), int (w[1][1])]]
-        print "line =", line,
+        # print "line =", line,
         if w[-1] == 'left':
             p = addVec (l, [-1, 0])
-            print "p =", p
+            # print "p =", p
             return onLine (line, p)
         if w[-1] == 'right':
             p = addVec (l, [1, 0])
-            print "p =", p
+            # print "p =", p
             return onLine (line, p)
         if w[-1] == 'top':
             p = addVec (l, [0, 1])
-            print "p =", p
+            # print "p =", p
             return onLine (line, p)
         if w[-1] == 'bottom':
             p = addVec (l, [0, -1])
-            print "p =", p
+            # print "p =", p
             return onLine (line, p)
     return False
 
@@ -1799,14 +1813,14 @@ def generateLightPillar (r, o, l, el):
             # place pillar next to the wall using the offset above
             p0 = addVec ([float (l[0]), float (l[1])], pillarOffset[w[-1]])
             p1 = addVec (p0, [lightBlock, lightBlock])
-            print "light is touching a wall", l
+            # print "light is touching a wall", l
             o = vBrick (o,
                         [toInches (p0[0]), toInches (p0[1]), toInches (getFloorLevel (r))],
                         [toInches (p1[0]), toInches (p1[1]), toInches (lightBlockHeight)],
                         defaults[light_stand_material],
                         defaults[light_stand_material + '_transform'])
             return o
-    print "light is not touching a wall", l
+    # print "light is not touching a wall", l
     o = vBrick (o,
                 [toInches (int (l[0])), toInches (int (l[1])), toInches (getFloorLevel (r))],
                 [toInches (int (l[0])+lightBlock), toInches (int (l[1])+lightBlock), toInches (lightBlockHeight)],

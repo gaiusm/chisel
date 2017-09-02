@@ -1,0 +1,15 @@
+
+define 1 room 1
+define 2 room 2
+define 3 room 3
+define s worldspawn
+define o monster monster_demon_imp
+define c monster monster_demon_hellknight
+define h monster monster_demon_hellknight
+define i light
+
+##################
+#1   .2  .  3    #
+# s  .   .     o #
+#    .   .       #
+##################

@@ -504,18 +504,12 @@ def dumpFloor ():
 
 def floodFloor (r, p):
     if p[0] >= 0 and p[1] >= 0:
-        if r == 4:
-            print p
-            dumpFloor ()
         if getFloor (p[0], p[1]) == emptyValue:
             setFloor (p[0], p[1], r)
             floodFloor (r, [p[0]-1, p[1]])
             floodFloor (r, [p[0]+1, p[1]])
             floodFloor (r, [p[0], p[1]-1])
             floodFloor (r, [p[0], p[1]+1])
-        else:
-            if r == 4:
-                print "p =", p, "not empty", getFloor (p[0], p[1])
 
 
 def floodRoom (r, p):

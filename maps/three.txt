@@ -3,18 +3,22 @@ define 1 room 1
 define 2 room 2
 define 3 room 3
 define s worldspawn
-define o ogre
+define o monster monster_demon_imp
+define h monster monster_demon_hellknight
+define S monster monster_demon_tick
+define i light
+
 
 ###############################
-# 1              # 2          #
+# 1             i# 2 i        #
 #                #            #
 # s         o    .            #
 #                .            #
-#          #######            #
-#          #                  #
+#          #######         h  #
+#i         #   i              #
 #          #                  #
 ##################..###########
-# 3                           #
-#                             #
-# s                           #
+# 3                     i     #
+#    S                        #
+#             i               #
 ###############################

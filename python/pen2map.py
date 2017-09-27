@@ -18,8 +18,13 @@
 # along with Chisel; see the file COPYING.  If not, write to the
 # Free Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301, USA.
+#
+# Author Gaius Mulley <gaius@gnu.org>
+#
 
 import getopt, sys, string
+from chvec import *
+from chcuboid import *
 
 
 """
@@ -166,11 +171,75 @@ def toLine (l):
     return [[int (l[0][0]), int (l[0][1])], [int (l[1][0]), int (l[1][1])]]
 
 
+
+def vecInches (vec):
+    result = []
+    for p in vec:
+        result += [toInches (p)]
+    return result
+
+
+
+expandedCuboids = 0   #  how many cuboids have we expanded (optimized)
+cuboidno = 1          #  total number of cuboids used.
+cuboids = {}
+
+
+#
+#  addcuboid - adds a cuboid brick to the dictiorary of bricks.
+#              Each cuboid has a unique number.
+#
+
+def addcuboid (pos, size, material):
+    global cuboids, cuboidno
+
+    cuboids[cuboidno] = cuboid (pos, size, material, cuboidno)
+    cuboidno += 1
+
+
+#
+#  combined - returns True if the cuboid represented by pos, size
+#             can be combined with an existing cuboid.
+#
+
+def combined (pos, size, material):
+    if debugging:
+        print "examine cuboid", pos, size,
+    for k in cuboids.keys ():
+        b = cuboids[k]
+        if b.material != material:
+            if b.intersection (pos, size):
+                error ("brick is being overwritten   (consider giving the room number for more detail)")
+            # differing material cannot be merged.
+            if debugging:
+                print "differing material"
+            return False
+        if b.combined (pos, size, material):
+            if debugging:
+                print "combined!"
+            return True
+    if debugging:
+        print "no join"
+    return False
+
+
+#
+#  newcuboid - this is the default mechanism to build a cuboid.
+#              It checks whether it is possible to expand an
+#              existing cuboid before creating another cuboid.
+#
+
+def newcuboid (pos, size, material):
+    if not combined (pos, size, material):
+        addcuboid (pos, size, material)
+
+
 class roomInfo:
-    def __init__ (self, w, d):
-        self.walls = w
+    def __init__ (self, r, w, d):
+        self.walls = orderWalls (r, w)
         self.doors = d
         self.doorLeadsTo = []
+        self.pythonMonsters = []
         self.monsters = []
         self.weapons = []
         self.ammo = []
@@ -193,6 +262,8 @@ class roomInfo:
         self.lights += [pos]
     def addWeapon (self, weapon, pos):
         self.weapons += [[weapon, pos]]
+    def addPythonMonster (self, monType, pos):
+        self.pythonMonsters += [[monType, pos]]
     def addMonster (self, monType, pos):
         self.monsters += [[monType, pos]]
     def addPlayerSpawn (self, pos):
@@ -203,7 +274,7 @@ def newRoom (n):
     global rooms
     if rooms.has_key (n):
         error ("room " + n + " has already been defined")
-    rooms[n] = roomInfo ([], [])
+    rooms[n] = roomInfo (n, [], [])
     return rooms[n]
 
 
@@ -214,7 +285,7 @@ class boxInfo:
 
 
 def getFloorLevel (r):
-    return 0
+    return rooms[r].floorLevel
     print r,
     if r == '2':
         print 0.25
@@ -374,8 +445,7 @@ def errorLine (text):
 
 def internalError (text):
     full = "internal error: " + text + '\n'
-    print full
-    sys.stderr (full)
+    sys.stderr.write (full)
     sys.exit (1)
 
 
@@ -420,10 +490,11 @@ def floodFloor (r, p):
 
 def floodRoom (r, p):
     # print "floodRoom", r, p,
-    if getFloor (p[0], p[1]) == emptyValue:
-        print "will start"
-    else:
-        print "will not start", getFloor (p[0], p[1])
+    if debugging:
+        if getFloor (p[0], p[1]) == emptyValue:
+            print "will start"
+        else:
+            print "will not start", getFloor (p[0], p[1])
     floodFloor (int (r), p)
 
 
@@ -579,9 +650,11 @@ def status ():
             expect ('OPEN')
         elif expecting (['CLOSED']):
             curStatus = status_closed
+            curStatus = status_open    # --fixme-- closed doors would be nice!
             expect ('CLOSED')
         elif expecting (['SECRET']):
             curStatus = status_secret
+            curStatus = status_open    # --fixme-- secret doors would be nice!
             expect ('SECRET')
         return True
     return False
@@ -727,7 +800,10 @@ def monsterDesc ():
     monType = get ()
     expect ('AT')
     if posDesc ():
-        curRoom.addMonster (monType, curPos)
+        if (len (monType) > len ("python_")) and ("python_" == monType[:len ("python_")]):
+            curRoom.addPythonMonster (monType, curPos)
+        else:
+            curRoom.addMonster (monType, curPos)
         return True
     else:
         errorLine ('expecting a position for a monster')
@@ -845,7 +921,7 @@ def generateTxtRoom (o, r):
 
 def generateTxt (o):
     initFloor (maxx, maxy, ' ')
-    for r in rooms.keys():
+    for r in rooms.keys ():
         o = generateTxtRoom (o, r)
     for r in floor:
         for c in r[1:]:
@@ -963,7 +1039,7 @@ def findLowestLeftVertical (w):
 #  findJoining - find the
 #
 
-def findJoining (w, e, p):
+def findJoining (r, w, e, p):
     for i, l in enumerate (w):
         if isVertical (l) and (getLowest (l) == e):
             return i
@@ -973,10 +1049,10 @@ def findJoining (w, e, p):
             return i
         if isHorizontal (l) and (getRight (l) == e):
             return i
-    print "internal error"
     print "w =", w
     print "e =", e
     print "p =", p
+    internalError ('walls do not form a bounded room in room ' + str (r))
 
 
 def include (p, i):
@@ -992,10 +1068,14 @@ def include (p, i):
 #  orderWalls - return a clockwise ordered list of walls
 #
 
-def orderWalls (w):
+def orderWalls (r, w):
+    if w == [] or w == None:
+        return w
     w = w[:]  # make a new copy of w
     if debugging:
-        print "orderWalls, enter w=", w
+        print "orderWalls, entered"
+        for i in w:
+            print i
     n = []
     i = findLowestLeftVertical (w)
     if debugging:
@@ -1014,7 +1094,7 @@ def orderWalls (w):
         print "loop"
     del w[i]
     while w != []:
-        i = findJoining (w, e, p)
+        i = findJoining (r, w, e, p)
         n += [sortWall (w[i])]
         if debugging:
             print "i =", i
@@ -1031,15 +1111,22 @@ def orderWalls (w):
             print "3rd p =", p, "e =", e
         del w[i]
     if debugging:
-        print "orderWalls, exit n=", n
+        print "orderWalls, exiting with", n
+    if not isVertical (n[0]):
+        internalError ('expecting first wall to be vertical')
     return n
 
 
 def createBoxes (r, w, d):
+    if debugging:
+        print "createBoxes", r, w, d
     if len (w) == 4:
         # must be a single box
         return [boxInfo (w, d)]
     # more than 4 walls, split into two or more boxes
+    print "needs splitting", w, d
+    sys.exit (1)
+    return [boxInfo (w, d)]
     sys.stderr ('--fixme-- this needs completing\n')
 
 
@@ -1060,6 +1147,8 @@ def onWall (wall, door):
 #
 
 def sortWall (w):
+    if debugging:
+        print "sortwall", w
     if isVertical (w):
         if w[0][1] > w[1][1]:
             return [w[1], w[0]]
@@ -1068,6 +1157,8 @@ def sortWall (w):
         if w[0][0] > w[1][0]:
             return [w[1], w[0]]
         return w
+    print "wall problem", w
+    internalError ('wall must be horizontal or vertical')
 
 
 #
@@ -1109,6 +1200,8 @@ def getDoors (w, d):
 #
 
 def entityWall (start, end, d):
+    if debugging:
+        print "entityWall", start, end, d
     if isHorizontal ([start, end]) or isVertical ([start, end]):
         return [[start, end, "wall", direction[d]]]
     print start, end, "direction d=", d
@@ -1144,9 +1237,6 @@ def orderCoords (line, direction):
             return line[0], line[1]
 
 
-def addVec (pos, vec):
-    return [pos[0]+vec[0], pos[1]+vec[1]]
-
 
 #
 #  lastWallPos - p is the door coordinate.  i is the direction
@@ -1181,6 +1271,15 @@ def nextWallPos (p, i):
 #
 
 def wallToEntity (w, i, d):
+    if (i == 0) or (i == 2):
+        if not isVertical (w):
+            print w, i
+            internalError ('wallToEntity: expecting wall to be vertical')
+    elif (i == 1) or (i == 3):
+        if not isHorizontal (w):
+            print w, i
+            internalError ('wallToEntity: expecting wall to be horizontal')
+
     e = []
     dl = getDoors (w, d)
     if dl == []:
@@ -1211,18 +1310,126 @@ def convertBoxesToEntities (b):
     return e
 
 
-def createEntities (r, w, d):
-    if verbose:
-        print "Room", r
-    b = createBoxes (r, w, d)
-    return convertBoxesToEntities (b)
+#
+#  movesRight - returns True if wall, w, moves point, p, right.
+#
+
+def movesRight (w, p):
+    if equVec (w[0], p):
+        return w[1][0] > p[0]
+    else:
+        return w[0][0] > p[0]
+
+
+#
+#  movesLeft - returns True if wall, w, moves point, p, left.
+#
+
+def movesLeft (w, p):
+    if equVec (w[0], p):
+        return w[1][0] < p[0]
+    else:
+        return w[0][0] < p[0]
+
+
+#
+#  movesUp - returns True if wall, w, moves point, p, up.
+#
+
+def movesUp (w, p):
+    if equVec (w[0], p):
+        return w[1][1] > p[1]
+    else:
+        return w[0][1] > p[1]
+
+
+#
+#  movesDown - returns True if wall, w, moves point, p, down.
+#
+
+def movesDown (w, p):
+    if equVec (w[0], p):
+        return w[1][1] < p[1]
+    else:
+        return w[0][1] < p[1]
+
+
+#
+#  checkOnWall - performs a consistency check to see that
+#                p is at one end of w.
+#
+
+def checkOnWall (r, p, w):
+    if not (equVec (p, w[0]) or equVec (p, w[1])):
+        print "room", r, "has a problem with a wall, ", w, "p is not on either end", p
+        sys.exit (1)
+
+
+def createWallDoorList (r, walls, doors):
+    if debugging:
+        print "createWallDoorList"
+        print "=================="
+        print "room", r, "has walls"
+        for i in walls:
+            print i
+        print "room", r, "has doors"
+        for i in doors:
+            print i
+    e = []
+    d = 0   # direction is left
+    p = walls[0][0]
+    if debugging:
+        print "lowest left, p =", p
+    for i, w in enumerate (walls):
+        if debugging:
+            print "direction", d, "position", p, "looking at", w
+        checkOnWall (r, p, w)
+        if (d == 0) or (d == 2):
+            # on left or right vertical wall
+            if movesRight (w, p):
+                d = 1  # from left to top wall
+                if debugging:
+                    print "moves to top because of wall", w
+            elif movesLeft (w, p):
+                d = 3  # from left to bottom wall
+                if debugging:
+                    print "moves to bottom because of wall", w
+        else:
+            # must be on either top or bottom wall
+            if movesUp (w, p):
+                d = 0  # from top/bottom to left vertical wall
+                if debugging:
+                    print "moves to left because of wall", w
+            elif movesDown (w, p):
+                d = 2  # from top/bottom to right vertical wall
+                if debugging:
+                    print "moves to right because of wall", w
+        if (d == 0) or (d == 2):
+            if not isVertical (w):
+                print w, d
+                internalError ('createWallDoorList: expecting wall to be vertical')
+        elif (d == 1) or (d == 3):
+            if not isHorizontal (w):
+                print w, d
+                internalError ('createWallDoorList: expecting wall to be horizontal')
+
+        e += wallToEntity (w, d, doors)
+        if equVec (p, w[0]):
+            p = w[1]
+        else:
+            p = w[0]
+        if debugging:
+            print "entity list", e
+    if debugging:
+        print "entity list is", e
+    return e
 
 
 def roomToEntities (r):
-    w = orderWalls (rooms[r].walls)
+    w = orderWalls (r, rooms[r].walls)
     if debugging:
         print "ordered walls =", w
-    return createEntities (r, w, rooms[r].doors)
+    return createWallDoorList (r, w, rooms[r].doors)
 
 
 def toInches (f, i = 0):
@@ -1340,141 +1547,61 @@ def hBrick (o, v0, v1, material, transform):
 #          v1 = [x, y, z]
 #
 
-def brick (o, v0, v1, material):
+def brick (o, v0, v1, material, transform):
+    if ((v0[2] < 0) or (v1[2] < 0) or
+        (v0[2] > minCeilingHeight) or (v1[2] > minCeilingHeight)):
+        return fBrick (o, v0, v1, material, transform)
     if v0[0] == v1[0]:
-        return vBrick (o, v0, v1, material)
+        return vBrick (o, v0, v1, material, transform)
     else:
-        return hBrick (o, v0, v1, material)
+        return hBrick (o, v0, v1, material, transform)
 
 
 #
-#
-#
-
-def doorColumn (r, o, pos, bcount):
-    material = 'wall'
-    o.write ('    // primitive ' + str (bcount) + '\n')
-    o.write ('    {\n')
-    o = brushHeader (o, e, 'doorway needs a column')
-    o = vBrick (o,
-                [toInches (pos[0])  , toInches (pos[1]+1), toInches (0)],
-                [toInches (pos[0]+1), toInches (pos[1]+1), toInches (minCeilingHeight)],
-                defaults[material],
-                defaults[material+'_transform'])
-    o = brushFooter (o)
-    o.write ('    }\n')
-    return o, bcount+1
-
-
-#
-#  leftOpen - create a tiny corridor connecting to the next room on the left.
+#  flushBricks - flushes all used cuboids to the output file, o
 #
 
-def leftOpen (r, e, o, bcount):
-    material = 'wall'
-    o = brushHeader (o, e, 'left doorway needs a floor')
-    o = fBrick (o,
-                [toInches (e[0][0]), toInches (e[0][1]), toInches (0, -wallThickness)],
-                [toInches (e[1][0]+1), toInches (e[1][1]+2), toInches (0)],
-                defaults[material],
-                defaults[material+'_transform'])
-    o = brushFooter (o)
-    o.write ('    }\n')
-    bcount += 1
-    o.write ('    // primitive ' + str (bcount) + '\n')
-    o.write ('    {\n')
-    o = brushHeader (o, e, 'and the left doorway needs a ceiling')
-    o = fBrick (o,
-                [toInches (e[0][0]), toInches (e[0][1]), toInches (0, -wallThickness)],
-                [toInches (e[1][0]+1), toInches (e[1][1]+2), toInches (minCeilingHeight, wallThickness)],
-                defaults[material],
-                defaults[material+'_transform'])
-    o = brushFooter (o)
-    bcount += 1
+def flushBricks (o, bcount):
+    global cuboids
+    for k in cuboids.keys ():
+        b = cuboids[k]  # Python v2 and v3 compatible
+        if debugging:
+            print "cuboid", b.pos, "size", b.size
+        o.write ('    // cuboid ' + str (k) + '\n')
+        o.write ('    {\n')
+        o.write ('         brushDef3\n')
+        o.write ('         {\n')
+        o = brick (o, vecInches (b.pos), vecInches (b.end),
+                   defaults[b.material], defaults[b.material + '_transform'])
+        o.write ('         }\n')
+        o.write ('    }\n')
+        bcount += 1
     return o, bcount
 
 
 #
-#  rightOpen - create a tiny corridor connecting to the next room on the right.
+#  doWall - an entity, e, has the format [[x0, y0], [x1, y2], orientation, 'wall'].
+#           Generate a series of small bricks which will be joined together later.
 #
 
-def rightOpen (r, e, o, bcount):
-    material = 'wall'
-    o = brushHeader (o, e, 'right doorway needs a floor')
-    o = fBrick (o,
-                [toInches (e[0][0])  , toInches (e[0][1])  , toInches (0, -wallThickness)],
-                [toInches (e[1][0]+1), toInches (e[1][1]+2), toInches (0)],
-                defaults[material],
-                defaults[material+'_transform'])
-    o = brushFooter (o)
-    o.write ('    }\n')
-    bcount += 1
-    o.write ('    // primitive ' + str (bcount) + '\n')
-    o.write ('    {\n')
-    o = brushHeader (o, e, 'and the right doorway needs a ceiling')
-    o = fBrick (o,
-                [toInches (e[0][0])  , toInches (e[0][1])  , toInches (minCeilingHeight)],
-                [toInches (e[1][0]+1), toInches (e[1][1]+2), toInches (minCeilingHeight, wallThickness)],
-                defaults[material],
-                defaults[material+'_transform'])
-    o = brushFooter (o)
-    return o, bcount+1
-
-
-#
-#  topOpen - create a tiny corridor connecting to the next room on the top wall of
-#            a 2D pen map.
-#
-
-def topOpen (r, e, o, bcount):
-    material = 'wall'
-    o = brushHeader (o, e, 'top doorway needs a floor')
-    o = fBrick (o,
-                [toInches (e[0][0])  , toInches (e[0][1])  , toInches (0, -wallThickness)],
-                [toInches (e[1][0]+2), toInches (e[1][1]+1), toInches (0)],
-                defaults[material],
-                defaults[material+'_transform'])
-    o = brushFooter (o)
-    o.write ('    }\n')
-    bcount += 1
-    o.write ('    // primitive ' + str (bcount) + '\n')
-    o.write ('    {\n')
-    o = brushHeader (o, e, 'and the top doorway needs a ceiling')
-    o = fBrick (o,
-                [toInches (e[0][0])  , toInches (e[0][1])  , toInches (minCeilingHeight)],
-                [toInches (e[1][0]+2), toInches (e[1][1]+1), toInches (minCeilingHeight, wallThickness)],
-                defaults[material],
-                defaults[material+'_transform'])
-    o = brushFooter (o)
-    return o, bcount+1
-
-
-#
-#  bottomOpen - create a tiny corridor connecting to the next room on the bottom of
-#               a 2D pen map.
-#
-
-def bottomOpen (r, e, o, bcount):
-    material = 'wall'
-    o = brushHeader (o, e, 'bottom doorway needs a floor')
-    o = fBrick (o,
-                [toInches (e[0][0])  , toInches (e[0][1])  , toInches (0, -wallThickness)],
-                [toInches (e[1][0]+1), toInches (e[1][1]+1), toInches (0)],
-                defaults[material],
-                defaults[material+'_transform'])
-    o = brushFooter (o)
-    o.write ('    }\n')
-    bcount += 1
-    o.write ('    // primitive ' + str (bcount) + '\n')
-    o.write ('    {\n')
-    o = brushHeader (o, e, 'and the bottom doorway needs a ceiling')
-    o = fBrick (o,
-                [toInches (e[0][0])  , toInches (e[0][1])  , toInches (minCeilingHeight, -wallThickness)],
-                [toInches (e[1][0]+2), toInches (e[1][1]+1), toInches (minCeilingHeight, wallThickness)],
-                defaults[material],
-                defaults[material+'_transform'])
-    o = brushFooter (o)
-    return o, bcount+1
+def doWall (r, e, o, bcount):
+    if isVertical (e):
+        a = min (e[0][1], e[1][1])
+        b = max (e[0][1], e[1][1])
+        for l in range (a, b+1):
+            pos = [e[0][0], l, rooms[r].floorLevel]
+            end = [e[1][0]+1, l+1, minCeilingHeight]
+            size = subVec (end, pos)
+            newcuboid (pos, size, e[-2])
+    elif isHorizontal (e):
+        a = min (e[0][0], e[1][0])
+        b = max (e[0][0], e[1][0])
+        for l in range (a, b+1):
+            pos = [l, e[0][1], rooms[r].floorLevel]
+            end = [l+1, e[1][1]+1, minCeilingHeight]
+            size = subVec (end, pos)
+            newcuboid (pos, size, e[-2])
+    return o, bcount
 
 
 def brushHeader (o, e, description):
@@ -1493,73 +1620,52 @@ def brushFooter (o):
     o.write ('         }\n')
     return o
 
+#
+#  doOpen - create an open door.
+#
 
-def leftWall (r, e, o, bcount):
-    if defaults.has_key (e[-2]):
-        o = brushHeader (o, e, 'left wall brick')
-        material = defaults[e[-2]]
-        o = vBrick (o,
-                    [toInches (e[0][0]+1, -wallThickness), toInches (e[0][1]), toInches (getFloorLevel (r))],
-                    [toInches (e[1][0]+1), toInches (e[1][1]+1), toInches (minCeilingHeight)],
-                    material,
-                    defaults[e[-2]+'_transform'])
-        o = brushFooter (o)
-        bcount += 1
-    else:
-        errorLine ('room ' + str (r) + ' has an unknown plane name ' + e[-2])
+def doOpen (r, e, o, bcount):
+    if debugging:
+        print "building floor and ceiling for doorway"
+    if isVertical (e):
+        a = min (e[0][1], e[1][1])
+        b = max (e[0][1], e[1][1])
+        for l in range (a, b+1):
+            h = rooms[r].floorLevel-1
+            pos = [e[0][0], l, h]
+            end = [e[1][0]+1, l+1, h+1]
+            size = subVec (end, pos)
+            newcuboid (pos, size, 'wall')   # floor
+            h = minCeilingHeight
+            pos = [e[0][0], l, h]
+            end = [e[1][0]+1, l+1, h+1]
+            size = subVec (end, pos)
+            if debugging:
+                print "vertical ceiling block at", pos, end, size
+            newcuboid (pos, size, 'wall')   # ceiling
+    elif isHorizontal (e):
+        a = min (e[0][0], e[1][0])
+        b = max (e[0][0], e[1][0])
+        for l in range (a, b+1):
+            h = rooms[r].floorLevel-1
+            pos = [l, e[0][1], h]
+            end = [l+1, e[1][1]+1, h+1]
+            size = subVec (end, pos)
+            if debugging:
+                print "horiz ceiling block at", pos, end, size
+            newcuboid (pos, size, 'wall')   # ceiling
+            h = minCeilingHeight
+            pos = [l, e[0][1], h]
+            end = [l+1, e[1][1]+1, h+1]
+            size = subVec (end, pos)
+            if debugging:
+                print "horiz ceiling block at", pos, end, size
+            newcuboid (pos, size, 'wall')   # ceiling
     return o, bcount
 
 
-def rightWall (r, e, o, bcount):
-    if defaults.has_key (e[-2]):
-        o = brushHeader (o, e, 'right wall brick')
-        material = defaults[e[-2]]
-        o = vBrick (o,
-                    [toInches (e[0][0]), toInches (e[0][1]), toInches (getFloorLevel (r))],
-                    [toInches (e[1][0], wallThickness), toInches (e[1][1]+1), toInches (minCeilingHeight)],
-                    material,
-                    defaults[e[-2]+'_transform'])
-        o = brushFooter (o)
-        bcount += 1
-    else:
-        errorLine ('room ' + str (r) + ' has an unknown plane name ' + e[-2])
-    return o, bcount
-
-
-def topWall (r, e, o, bcount):
-    if defaults.has_key (e[-2]):
-        o = brushHeader (o, e, 'top wall brick')
-        material = defaults[e[-2]]
-        o = hBrick (o,
-                   [toInches (e[0][0]), toInches (e[0][1]), toInches (getFloorLevel (r))],
-                   [toInches (e[1][0]+1), toInches (e[1][1], wallThickness), toInches (minCeilingHeight)],
-                    material,
-                    defaults[e[-2]+'_transform'])
-        o = brushFooter (o)
-        bcount += 1
-    else:
-        errorLine ('room ' + str (r) + ' has an unknown plane name ' + e[-2])
-    return o, bcount
-
-
-def bottomWall (r, e, o, bcount):
-    if defaults.has_key (e[-2]):
-        o = brushHeader (o, e, 'bottom wall brick')
-        material = defaults[e[-2]]
-        o = hBrick (o,
-                    [toInches (e[0][0]), toInches (e[0][1]+1, -wallThickness), toInches (getFloorLevel (r))],
-                    [toInches (e[1][0]+1), toInches (e[1][1]+1), toInches (minCeilingHeight)],
-                    material,
-                    defaults[e[-2]+'_transform'])
-        o = brushFooter (o)
-        bcount += 1
-    else:
-        errorLine ('room ' + str (r) + ' has an unknown plane name ' + e[-2])
-    return o, bcount
-
-
-entityFunc = {'leftwall':leftWall, 'topwall':topWall, 'rightwall':rightWall, 'bottomwall':bottomWall,
-              'leftopen': leftOpen, 'rightopen': rightOpen, 'topopen':topOpen, 'bottomopen':bottomOpen}
+brickFunc = {'leftwall':doWall, 'topwall':doWall, 'rightwall':doWall, 'bottomwall':doWall,
+              'leftopen': doOpen, 'rightopen': doOpen, 'topopen':doOpen, 'bottomopen':doOpen}
 
 
 #
@@ -1583,9 +1689,33 @@ def alreadyBuilt (e):
     return brushes.has_key (generateKey (e))
 
 
-def setBrushBuilt (e):
+#
+#  setBuild - record that we have built, e.
+#
+
+def setBuilt (e):
     global brushes
     brushes[generateKey (e)] = True
+
+
+#
+#  generateBricks - convert a pen wall into a sequence of bricks (cuboids).
+#
+
+def generateBricks (r, e, o, bcount):
+    if debugging:
+        print "room", r, e,
+    if brickFunc[e[-1]+e[-2]] == None:
+        warning ("do not know how to build " + str (e) + " in room " + r)
+    #
+    # doorways are known about from both rooms, but we only need to build it once
+    #
+    if alreadyBuilt (e):
+        if debugging:
+            print "aready built"
+    else:
+        brickFunc[e[-1]+e[-2]] (r, e, o, bcount)
+    setBuilt (e)
 
 
 #
@@ -1690,17 +1820,19 @@ def generateEntities (o):
     o.write ('    "spawnflags" "1"\n')
     for r in rooms.keys():
         el = roomToEntities (r)
-        print "Room", r
-        print el
+        if debugging:
+            print "Room", r
+            print el
         p = findMinMax (r)
         o.write ("    // room " + r + "\n")
         for e in el:
-            o, bcount = generateBrushes (r, e, o, bcount)
+            generateBricks (r, e, o, bcount)
         o, bcount = generateCeiling (r, p, o, bcount)
         o, bcount = generateFloor (r, p, o, bcount)
         o, bcount = generateLightBlocks (r, o, el, bcount)
+    o, bcount = flushBricks (o, bcount)
     o.write ('}\n\n')
-    return o, 1
+    return o, 1, bcount
 
 
 def writePos (o, p):
@@ -1809,7 +1941,8 @@ def generateLightPillar (r, o, l, el):
     light_stand_material = 'wall'
     for w in el:
         if nextTo (w, l):
-            print "light at", l, "is next to wall", w, "in room", r
+            if debugging:
+                print "light at", l, "is next to wall", w, "in room", r
             # place pillar next to the wall using the offset above
             p0 = addVec ([float (l[0]), float (l[1])], pillarOffset[w[-1]])
             p1 = addVec (p0, [lightBlock, lightBlock])
@@ -1842,6 +1975,25 @@ def generateLightBlocks (r, o, el, bcount):
         o.write ('    }\n')
         bcount += 1
     return o, bcount
+
+
+def generatePythonMonsters (o, e):
+    n = 1
+    for r in rooms.keys():
+        for t, p in rooms[r].pythonMonsters:
+            o.write ("// entity " + str (e) + '\n')
+            o.write ("{\n")
+            o.write ('    "classname" "' + t + '"\n')
+            o.write ('    "name" "' + t + '_' + str (n) + '"\n')
+            o.write ('    "anim" "idle"\n')
+            o.write ('    "origin" "')
+            o = writeMidPos (o, p)
+            o.write (' ' + str (toInches (spawnHeight)) + '"\n')
+            o.write ('    "ambush" "1"\n')
+            o.write ("}\n")
+            n += 1
+            e += 1
+    return o, e
 
 
 def generateMonsters (o, e):
@@ -1885,15 +2037,19 @@ def generateAmmo (o, e):
 
 def generateMap (o):
     o.write ("// automatically created from: " + inputFile + "\n")
-    o    = generateVersion (o)
-    o, e = generateEntities (o)
-    o, e = generatePlayer (o, e)
-    o, e = generateLights (o, e)
-    o, e = generateMonsters (o, e)
-    o, e = generateAmmo (o, e)
+    o       = generateVersion (o)
+    o, e, b = generateEntities (o)
+    o, e    = generatePlayer (o, e)
+    o, e    = generatePythonMonsters (o, e)
+    o, e    = generateMonsters (o, e)
+    o, e    = generateLights (o, e)
+    o, e    = generateAmmo (o, e)
     if statistics:
         print "Total rooms =", len (rooms.keys ())
+        print "Total cuboids =", len (cuboids.keys ())
+        print "Total cuboids expanded (optimised) =", expandedCuboids
         print "Total entities used =", e, "entities unused =", maxEntities-e
+        print "Total brushes used  =", b
     return o
 
 

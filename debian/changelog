@@ -1,0 +1,13 @@
+chisel (0.0.1-1.1) UNRELEASED; urgency=medium
+
+  * Non-maintainer upload.
+  * tidied up code base and made it more Makefile.am compliant.
+
+ -- Gaius Mulley <gaius@gnu.org>  Wed, 27 Sep 2017 15:04:59 +0100
+
+chisel (0.0.1-1.0) UNRELEASED; urgency=medium
+
+  * Release 0.0.1-1.0 generated.
+  * Initial release.
+
+ -- Gaius Mulley <gaius@gnu.org>  Sat, 23 Sep 2017 19:57:42 +0000

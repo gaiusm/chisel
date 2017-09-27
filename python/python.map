@@ -1,0 +1,1058 @@
+// automatically created from: /tmp/txt2map.32410
+Version 2
+// entity 0   (contains all room walls, floors, ceilings, lightblocks)
+{
+    "classname" "worldspawn"
+    "spawnflags" "1"
+    // room 1
+    // primitive 0
+    // ceiling for room 1
+    {
+         brushDef3
+         {
+             // floor of fbrick
+             ( 0 0 -1 288 ) ( ( 0.0078125 0 0 ) ( 0 0.0078125 0 ) ) "textures/hell/wood1" 0 0 0
+             // ceiling of fbrick
+             ( 0 0 1 -312 ) ( ( 0.0078125 0 0 ) ( 0 0.0078125 0 ) ) "textures/hell/wood1" 0 0 0
+             // top most horizontal of fbrick
+             ( -1 0 0 -1008 ) ( ( 0.0078125 0 0 ) ( 0 0.0078125 0 ) ) "textures/hell/wood1" 0 0 0
+             // left most vertical of fbrick
+             ( 0 -1 0 -864 ) ( ( 0.0078125 0 0 ) ( 0 0.0078125 0 ) ) "textures/hell/wood1" 0 0 0
+             // bottom most horizontal of fbrick
+             ( 1 0 0 96 ) ( ( 0.0078125 0 0 ) ( 0 0.0078125 0 ) ) "textures/hell/wood1" 0 0 0
+             // right most vertical of fbrick
+             ( 0 1 0 96 ) ( ( 0.0078125 0 0 ) ( 0 0.0078125 0 ) ) "textures/hell/wood1" 0 0 0
+         }
+    }
+    // primitive 1
+    // floor for room 1
+    {
+         brushDef3
+         {
+             // floor of fbrick
+             ( 0 0 -1 -24 ) ( ( 0.015625 0 0 ) ( 0 0.015625 0 ) ) "textures/hell/qfloor" 0 0 0
+             // ceiling of fbrick
+             ( 0 0 1 0 ) ( ( 0.015625 0 0 ) ( 0 0.015625 0 ) ) "textures/hell/qfloor" 0 0 0
+             // top most horizontal of fbrick
+             ( -1 0 0 -1008 ) ( ( 0.015625 0 0 ) ( 0 0.015625 0 ) ) "textures/hell/qfloor" 0 0 0
+             // left most vertical of fbrick
+             ( 0 -1 0 -864 ) ( ( 0.015625 0 0 ) ( 0 0.015625 0 ) ) "textures/hell/qfloor" 0 0 0
+             // bottom most horizontal of fbrick
+             ( 1 0 0 96 ) ( ( 0.015625 0 0 ) ( 0 0.015625 0 ) ) "textures/hell/qfloor" 0 0 0
+             // right most vertical of fbrick
+             ( 0 1 0 96 ) ( ( 0.015625 0 0 ) ( 0 0.015625 0 ) ) "textures/hell/qfloor" 0 0 0
+         }
+    }
+    // primitive 2
+    // light block
+    {
+         brushDef3
+         {
+             // floor of vbrick
+             ( 0 0 -1 0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // ceiling of vbrick
+             ( 0 0 1 -96 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // top most horizontal of vbrick
+             ( -1 0 0 -1008.0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // left most vertical of vbrick
+             ( 0 -1 0 -588.0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // bottom most horizontal of vbrick
+             ( 1 0 0 996.0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // right most vertical of vbrick
+             ( 0 1 0 576.0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+         }
+    }
+    // primitive 3
+    // light block
+    {
+         brushDef3
+         {
+             // floor of vbrick
+             ( 0 0 -1 0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // ceiling of vbrick
+             ( 0 0 1 -96 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // top most horizontal of vbrick
+             ( -1 0 0 -780.0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // left most vertical of vbrick
+             ( 0 -1 0 -108.0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // bottom most horizontal of vbrick
+             ( 1 0 0 768.0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // right most vertical of vbrick
+             ( 0 1 0 96.0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+         }
+    }
+    // primitive 4
+    // light block
+    {
+         brushDef3
+         {
+             // floor of vbrick
+             ( 0 0 -1 0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // ceiling of vbrick
+             ( 0 0 1 -96 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // top most horizontal of vbrick
+             ( -1 0 0 -780.0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // left most vertical of vbrick
+             ( 0 -1 0 -864.0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // bottom most horizontal of vbrick
+             ( 1 0 0 768.0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // right most vertical of vbrick
+             ( 0 1 0 852.0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+         }
+    }
+    // primitive 5
+    // light block
+    {
+         brushDef3
+         {
+             // floor of vbrick
+             ( 0 0 -1 0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // ceiling of vbrick
+             ( 0 0 1 -96 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // top most horizontal of vbrick
+             ( -1 0 0 -684.0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // left most vertical of vbrick
+             ( 0 -1 0 -108.0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // bottom most horizontal of vbrick
+             ( 1 0 0 672.0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // right most vertical of vbrick
+             ( 0 1 0 96.0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+         }
+    }
+    // primitive 6
+    // light block
+    {
+         brushDef3
+         {
+             // floor of vbrick
+             ( 0 0 -1 0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // ceiling of vbrick
+             ( 0 0 1 -96 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // top most horizontal of vbrick
+             ( -1 0 0 -684.0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // left most vertical of vbrick
+             ( 0 -1 0 -636.0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // bottom most horizontal of vbrick
+             ( 1 0 0 672 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // right most vertical of vbrick
+             ( 0 1 0 624 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+         }
+    }
+    // primitive 7
+    // light block
+    {
+         brushDef3
+         {
+             // floor of vbrick
+             ( 0 0 -1 0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // ceiling of vbrick
+             ( 0 0 1 -96 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // top most horizontal of vbrick
+             ( -1 0 0 -588.0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // left most vertical of vbrick
+             ( 0 -1 0 -108.0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // bottom most horizontal of vbrick
+             ( 1 0 0 576.0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // right most vertical of vbrick
+             ( 0 1 0 96.0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+         }
+    }
+    // primitive 8
+    // light block
+    {
+         brushDef3
+         {
+             // floor of vbrick
+             ( 0 0 -1 0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // ceiling of vbrick
+             ( 0 0 1 -96 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // top most horizontal of vbrick
+             ( -1 0 0 -588.0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // left most vertical of vbrick
+             ( 0 -1 0 -864.0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // bottom most horizontal of vbrick
+             ( 1 0 0 576.0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // right most vertical of vbrick
+             ( 0 1 0 852.0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+         }
+    }
+    // primitive 9
+    // light block
+    {
+         brushDef3
+         {
+             // floor of vbrick
+             ( 0 0 -1 0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // ceiling of vbrick
+             ( 0 0 1 -96 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // top most horizontal of vbrick
+             ( -1 0 0 -492.0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // left most vertical of vbrick
+             ( 0 -1 0 -300.0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // bottom most horizontal of vbrick
+             ( 1 0 0 480 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // right most vertical of vbrick
+             ( 0 1 0 288 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+         }
+    }
+    // primitive 10
+    // light block
+    {
+         brushDef3
+         {
+             // floor of vbrick
+             ( 0 0 -1 0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // ceiling of vbrick
+             ( 0 0 1 -96 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // top most horizontal of vbrick
+             ( -1 0 0 -444.0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // left most vertical of vbrick
+             ( 0 -1 0 -108.0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // bottom most horizontal of vbrick
+             ( 1 0 0 432.0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // right most vertical of vbrick
+             ( 0 1 0 96.0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+         }
+    }
+    // primitive 11
+    // light block
+    {
+         brushDef3
+         {
+             // floor of vbrick
+             ( 0 0 -1 0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // ceiling of vbrick
+             ( 0 0 1 -96 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // top most horizontal of vbrick
+             ( -1 0 0 -444.0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // left most vertical of vbrick
+             ( 0 -1 0 -864.0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // bottom most horizontal of vbrick
+             ( 1 0 0 432.0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // right most vertical of vbrick
+             ( 0 1 0 852.0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+         }
+    }
+    // primitive 12
+    // light block
+    {
+         brushDef3
+         {
+             // floor of vbrick
+             ( 0 0 -1 0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // ceiling of vbrick
+             ( 0 0 1 -96 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // top most horizontal of vbrick
+             ( -1 0 0 -396.0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // left most vertical of vbrick
+             ( 0 -1 0 -636.0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // bottom most horizontal of vbrick
+             ( 1 0 0 384 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // right most vertical of vbrick
+             ( 0 1 0 624 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+         }
+    }
+    // primitive 13
+    // light block
+    {
+         brushDef3
+         {
+             // floor of vbrick
+             ( 0 0 -1 0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // ceiling of vbrick
+             ( 0 0 1 -96 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // top most horizontal of vbrick
+             ( -1 0 0 -348.0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // left most vertical of vbrick
+             ( 0 -1 0 -300.0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // bottom most horizontal of vbrick
+             ( 1 0 0 336 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // right most vertical of vbrick
+             ( 0 1 0 288 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+         }
+    }
+    // primitive 14
+    // light block
+    {
+         brushDef3
+         {
+             // floor of vbrick
+             ( 0 0 -1 0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // ceiling of vbrick
+             ( 0 0 1 -96 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // top most horizontal of vbrick
+             ( -1 0 0 -300.0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // left most vertical of vbrick
+             ( 0 -1 0 -108.0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // bottom most horizontal of vbrick
+             ( 1 0 0 288.0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // right most vertical of vbrick
+             ( 0 1 0 96.0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+         }
+    }
+    // primitive 15
+    // light block
+    {
+         brushDef3
+         {
+             // floor of vbrick
+             ( 0 0 -1 0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // ceiling of vbrick
+             ( 0 0 1 -96 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // top most horizontal of vbrick
+             ( -1 0 0 -300.0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // left most vertical of vbrick
+             ( 0 -1 0 -864.0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // bottom most horizontal of vbrick
+             ( 1 0 0 288.0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // right most vertical of vbrick
+             ( 0 1 0 852.0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+         }
+    }
+    // primitive 16
+    // light block
+    {
+         brushDef3
+         {
+             // floor of vbrick
+             ( 0 0 -1 0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // ceiling of vbrick
+             ( 0 0 1 -96 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // top most horizontal of vbrick
+             ( -1 0 0 -252.0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // left most vertical of vbrick
+             ( 0 -1 0 -636.0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // bottom most horizontal of vbrick
+             ( 1 0 0 240 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // right most vertical of vbrick
+             ( 0 1 0 624 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+         }
+    }
+    // primitive 17
+    // light block
+    {
+         brushDef3
+         {
+             // floor of vbrick
+             ( 0 0 -1 0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // ceiling of vbrick
+             ( 0 0 1 -96 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // top most horizontal of vbrick
+             ( -1 0 0 -108.0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // left most vertical of vbrick
+             ( 0 -1 0 -204.0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // bottom most horizontal of vbrick
+             ( 1 0 0 96.0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // right most vertical of vbrick
+             ( 0 1 0 192.0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+         }
+    }
+    // primitive 18
+    // light block
+    {
+         brushDef3
+         {
+             // floor of vbrick
+             ( 0 0 -1 0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // ceiling of vbrick
+             ( 0 0 1 -96 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // top most horizontal of vbrick
+             ( -1 0 0 -108.0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // left most vertical of vbrick
+             ( 0 -1 0 -732.0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // bottom most horizontal of vbrick
+             ( 1 0 0 96.0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // right most vertical of vbrick
+             ( 0 1 0 720.0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+         }
+    }
+    // room 3
+    // primitive 19
+    // ceiling for room 3
+    {
+         brushDef3
+         {
+             // floor of fbrick
+             ( 0 0 -1 288 ) ( ( 0.0078125 0 0 ) ( 0 0.0078125 0 ) ) "textures/hell/wood1" 0 0 0
+             // ceiling of fbrick
+             ( 0 0 1 -312 ) ( ( 0.0078125 0 0 ) ( 0 0.0078125 0 ) ) "textures/hell/wood1" 0 0 0
+             // top most horizontal of fbrick
+             ( -1 0 0 -1008 ) ( ( 0.0078125 0 0 ) ( 0 0.0078125 0 ) ) "textures/hell/wood1" 0 0 0
+             // left most vertical of fbrick
+             ( 0 -1 0 -2064 ) ( ( 0.0078125 0 0 ) ( 0 0.0078125 0 ) ) "textures/hell/wood1" 0 0 0
+             // bottom most horizontal of fbrick
+             ( 1 0 0 96 ) ( ( 0.0078125 0 0 ) ( 0 0.0078125 0 ) ) "textures/hell/wood1" 0 0 0
+             // right most vertical of fbrick
+             ( 0 1 0 1536 ) ( ( 0.0078125 0 0 ) ( 0 0.0078125 0 ) ) "textures/hell/wood1" 0 0 0
+         }
+    }
+    // primitive 20
+    // floor for room 3
+    {
+         brushDef3
+         {
+             // floor of fbrick
+             ( 0 0 -1 -24 ) ( ( 0.015625 0 0 ) ( 0 0.015625 0 ) ) "textures/hell/qfloor" 0 0 0
+             // ceiling of fbrick
+             ( 0 0 1 0 ) ( ( 0.015625 0 0 ) ( 0 0.015625 0 ) ) "textures/hell/qfloor" 0 0 0
+             // top most horizontal of fbrick
+             ( -1 0 0 -1008 ) ( ( 0.015625 0 0 ) ( 0 0.015625 0 ) ) "textures/hell/qfloor" 0 0 0
+             // left most vertical of fbrick
+             ( 0 -1 0 -2064 ) ( ( 0.015625 0 0 ) ( 0 0.015625 0 ) ) "textures/hell/qfloor" 0 0 0
+             // bottom most horizontal of fbrick
+             ( 1 0 0 96 ) ( ( 0.015625 0 0 ) ( 0 0.015625 0 ) ) "textures/hell/qfloor" 0 0 0
+             // right most vertical of fbrick
+             ( 0 1 0 1536 ) ( ( 0.015625 0 0 ) ( 0 0.015625 0 ) ) "textures/hell/qfloor" 0 0 0
+         }
+    }
+    // primitive 21
+    // light block
+    {
+         brushDef3
+         {
+             // floor of vbrick
+             ( 0 0 -1 0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // ceiling of vbrick
+             ( 0 0 1 -96 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // top most horizontal of vbrick
+             ( -1 0 0 -156.0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // left most vertical of vbrick
+             ( 0 -1 0 -2064.0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // bottom most horizontal of vbrick
+             ( 1 0 0 144.0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // right most vertical of vbrick
+             ( 0 1 0 2052.0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+         }
+    }
+    // room 2
+    // primitive 22
+    // ceiling for room 2
+    {
+         brushDef3
+         {
+             // floor of fbrick
+             ( 0 0 -1 288 ) ( ( 0.0078125 0 0 ) ( 0 0.0078125 0 ) ) "textures/hell/wood1" 0 0 0
+             // ceiling of fbrick
+             ( 0 0 1 -312 ) ( ( 0.0078125 0 0 ) ( 0 0.0078125 0 ) ) "textures/hell/wood1" 0 0 0
+             // top most horizontal of fbrick
+             ( -1 0 0 -1008 ) ( ( 0.0078125 0 0 ) ( 0 0.0078125 0 ) ) "textures/hell/wood1" 0 0 0
+             // left most vertical of fbrick
+             ( 0 -1 0 -1488 ) ( ( 0.0078125 0 0 ) ( 0 0.0078125 0 ) ) "textures/hell/wood1" 0 0 0
+             // bottom most horizontal of fbrick
+             ( 1 0 0 96 ) ( ( 0.0078125 0 0 ) ( 0 0.0078125 0 ) ) "textures/hell/wood1" 0 0 0
+             // right most vertical of fbrick
+             ( 0 1 0 912 ) ( ( 0.0078125 0 0 ) ( 0 0.0078125 0 ) ) "textures/hell/wood1" 0 0 0
+         }
+    }
+    // primitive 23
+    // floor for room 2
+    {
+         brushDef3
+         {
+             // floor of fbrick
+             ( 0 0 -1 -24 ) ( ( 0.015625 0 0 ) ( 0 0.015625 0 ) ) "textures/hell/qfloor" 0 0 0
+             // ceiling of fbrick
+             ( 0 0 1 0 ) ( ( 0.015625 0 0 ) ( 0 0.015625 0 ) ) "textures/hell/qfloor" 0 0 0
+             // top most horizontal of fbrick
+             ( -1 0 0 -1008 ) ( ( 0.015625 0 0 ) ( 0 0.015625 0 ) ) "textures/hell/qfloor" 0 0 0
+             // left most vertical of fbrick
+             ( 0 -1 0 -1488 ) ( ( 0.015625 0 0 ) ( 0 0.015625 0 ) ) "textures/hell/qfloor" 0 0 0
+             // bottom most horizontal of fbrick
+             ( 1 0 0 96 ) ( ( 0.015625 0 0 ) ( 0 0.015625 0 ) ) "textures/hell/qfloor" 0 0 0
+             // right most vertical of fbrick
+             ( 0 1 0 912 ) ( ( 0.015625 0 0 ) ( 0 0.015625 0 ) ) "textures/hell/qfloor" 0 0 0
+         }
+    }
+    // primitive 24
+    // light block
+    {
+         brushDef3
+         {
+             // floor of vbrick
+             ( 0 0 -1 0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // ceiling of vbrick
+             ( 0 0 1 -96 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // top most horizontal of vbrick
+             ( -1 0 0 -1008.0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // left most vertical of vbrick
+             ( 0 -1 0 -1308.0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // bottom most horizontal of vbrick
+             ( 1 0 0 996.0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // right most vertical of vbrick
+             ( 0 1 0 1296.0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+         }
+    }
+    // primitive 25
+    // light block
+    {
+         brushDef3
+         {
+             // floor of vbrick
+             ( 0 0 -1 0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // ceiling of vbrick
+             ( 0 0 1 -96 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // top most horizontal of vbrick
+             ( -1 0 0 -108.0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // left most vertical of vbrick
+             ( 0 -1 0 -1116.0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // bottom most horizontal of vbrick
+             ( 1 0 0 96.0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // right most vertical of vbrick
+             ( 0 1 0 1104.0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+         }
+    }
+    // cuboid 1
+    {
+         brushDef3
+         {
+             // floor of fbrick
+             ( 0 0 -1 0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // ceiling of fbrick
+             ( 0 0 1 -288 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // top most horizontal of fbrick
+             ( -1 0 0 -1056 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // left most vertical of fbrick
+             ( 0 -1 0 -96 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // bottom most horizontal of fbrick
+             ( 1 0 0 48 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // right most vertical of fbrick
+             ( 0 1 0 48 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+         }
+    }
+    // cuboid 2
+    {
+         brushDef3
+         {
+             // floor of fbrick
+             ( 0 0 -1 0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // ceiling of fbrick
+             ( 0 0 1 -288 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // top most horizontal of fbrick
+             ( -1 0 0 -1056 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // left most vertical of fbrick
+             ( 0 -1 0 -1536 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // bottom most horizontal of fbrick
+             ( 1 0 0 1008 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // right most vertical of fbrick
+             ( 0 1 0 96 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+         }
+    }
+    // cuboid 3
+    {
+         brushDef3
+         {
+             // floor of fbrick
+             ( 0 0 -1 0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // ceiling of fbrick
+             ( 0 0 1 -288 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // top most horizontal of fbrick
+             ( -1 0 0 -816 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // left most vertical of fbrick
+             ( 0 -1 0 -912 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // bottom most horizontal of fbrick
+             ( 1 0 0 48 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // right most vertical of fbrick
+             ( 0 1 0 864 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+         }
+    }
+    // cuboid 4
+    {
+         brushDef3
+         {
+             // floor of fbrick
+             ( 0 0 -1 -48 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // ceiling of fbrick
+             ( 0 0 1 0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // top most horizontal of fbrick
+             ( -1 0 0 -912 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // left most vertical of fbrick
+             ( 0 -1 0 -912 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // bottom most horizontal of fbrick
+             ( 1 0 0 816 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // right most vertical of fbrick
+             ( 0 1 0 864 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+         }
+    }
+    // cuboid 5
+    {
+         brushDef3
+         {
+             // floor of fbrick
+             ( 0 0 -1 288 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // ceiling of fbrick
+             ( 0 0 1 -336 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // top most horizontal of fbrick
+             ( -1 0 0 -912 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // left most vertical of fbrick
+             ( 0 -1 0 -912 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // bottom most horizontal of fbrick
+             ( 1 0 0 816 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // right most vertical of fbrick
+             ( 0 1 0 864 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+         }
+    }
+    // cuboid 6
+    {
+         brushDef3
+         {
+             // floor of fbrick
+             ( 0 0 -1 0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // ceiling of fbrick
+             ( 0 0 1 -288 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // top most horizontal of fbrick
+             ( -1 0 0 -1008 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // left most vertical of fbrick
+             ( 0 -1 0 -912 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // bottom most horizontal of fbrick
+             ( 1 0 0 912 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // right most vertical of fbrick
+             ( 0 1 0 864 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+         }
+    }
+    // cuboid 7
+    {
+         brushDef3
+         {
+             // floor of fbrick
+             ( 0 0 -1 0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // ceiling of fbrick
+             ( 0 0 1 -288 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // top most horizontal of fbrick
+             ( -1 0 0 -96 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // left most vertical of fbrick
+             ( 0 -1 0 -864 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // bottom most horizontal of fbrick
+             ( 1 0 0 48 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // right most vertical of fbrick
+             ( 0 1 0 96 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+         }
+    }
+    // cuboid 8
+    {
+         brushDef3
+         {
+             // floor of fbrick
+             ( 0 0 -1 0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // ceiling of fbrick
+             ( 0 0 1 -288 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // top most horizontal of fbrick
+             ( -1 0 0 -192 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // left most vertical of fbrick
+             ( 0 -1 0 -1536 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // bottom most horizontal of fbrick
+             ( 1 0 0 48 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // right most vertical of fbrick
+             ( 0 1 0 1488 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+         }
+    }
+    // cuboid 9
+    {
+         brushDef3
+         {
+             // floor of fbrick
+             ( 0 0 -1 -48 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // ceiling of fbrick
+             ( 0 0 1 0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // top most horizontal of fbrick
+             ( -1 0 0 -864 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // left most vertical of fbrick
+             ( 0 -1 0 -1536 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // bottom most horizontal of fbrick
+             ( 1 0 0 192 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // right most vertical of fbrick
+             ( 0 1 0 1488 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+         }
+    }
+    // cuboid 10
+    {
+         brushDef3
+         {
+             // floor of fbrick
+             ( 0 0 -1 288 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // ceiling of fbrick
+             ( 0 0 1 -336 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // top most horizontal of fbrick
+             ( -1 0 0 -864 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // left most vertical of fbrick
+             ( 0 -1 0 -1536 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // bottom most horizontal of fbrick
+             ( 1 0 0 192 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // right most vertical of fbrick
+             ( 0 1 0 1488 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+         }
+    }
+    // cuboid 11
+    {
+         brushDef3
+         {
+             // floor of fbrick
+             ( 0 0 -1 0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // ceiling of fbrick
+             ( 0 0 1 -288 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // top most horizontal of fbrick
+             ( -1 0 0 -1056 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // left most vertical of fbrick
+             ( 0 -1 0 -1536 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // bottom most horizontal of fbrick
+             ( 1 0 0 864 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // right most vertical of fbrick
+             ( 0 1 0 1488 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+         }
+    }
+    // cuboid 12
+    {
+         brushDef3
+         {
+             // floor of fbrick
+             ( 0 0 -1 0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // ceiling of fbrick
+             ( 0 0 1 -288 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // top most horizontal of fbrick
+             ( -1 0 0 -1056 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // left most vertical of fbrick
+             ( 0 -1 0 -2112 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // bottom most horizontal of fbrick
+             ( 1 0 0 1008 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // right most vertical of fbrick
+             ( 0 1 0 1536 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+         }
+    }
+    // cuboid 13
+    {
+         brushDef3
+         {
+             // floor of fbrick
+             ( 0 0 -1 0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // ceiling of fbrick
+             ( 0 0 1 -288 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // top most horizontal of fbrick
+             ( -1 0 0 -1008 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // left most vertical of fbrick
+             ( 0 -1 0 -2112 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // bottom most horizontal of fbrick
+             ( 1 0 0 48 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // right most vertical of fbrick
+             ( 0 1 0 2064 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+         }
+    }
+    // cuboid 14
+    {
+         brushDef3
+         {
+             // floor of fbrick
+             ( 0 0 -1 0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // ceiling of fbrick
+             ( 0 0 1 -288 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // top most horizontal of fbrick
+             ( -1 0 0 -96 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // left most vertical of fbrick
+             ( 0 -1 0 -2064 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // bottom most horizontal of fbrick
+             ( 1 0 0 48 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // right most vertical of fbrick
+             ( 0 1 0 1536 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+         }
+    }
+    // cuboid 15
+    {
+         brushDef3
+         {
+             // floor of fbrick
+             ( 0 0 -1 0 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // ceiling of fbrick
+             ( 0 0 1 -288 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // top most horizontal of fbrick
+             ( -1 0 0 -96 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // left most vertical of fbrick
+             ( 0 -1 0 -1488 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // bottom most horizontal of fbrick
+             ( 1 0 0 48 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+             // right most vertical of fbrick
+             ( 0 1 0 912 ) ( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) ) "textures/hell/cbrick2b" 0 0 0
+         }
+    }
+}
+
+// entity 1
+{
+    "classname" "info_player_start"
+    "name" "info_player_start_1"
+    "origin" "-840 -120 96"
+    "angle" "180"
+}
+// entity 2
+{
+    "classname" "python_doommarine_mp"
+    "name" "python_doommarine_mp_1"
+    "anim" "idle"
+    "origin" "-888 -408 96"
+    "ambush" "1"
+}
+// entity 3
+{
+    "classname" "light"
+    "name" "light_1"
+    "origin" "-960 -576 144"
+    "noshadows" "0"
+    "nospecular" "0"
+    "nodiffuse" "0"
+    "falloff" "0.000000"
+    "_color" "0.78 0.78 0.84"
+    "light_radius" "225 225 225"
+}
+// entity 4
+{
+    "classname" "light"
+    "name" "light_2"
+    "origin" "-768 -144 144"
+    "noshadows" "0"
+    "nospecular" "0"
+    "nodiffuse" "0"
+    "falloff" "0.000000"
+    "_color" "0.78 0.78 0.84"
+    "light_radius" "225 225 225"
+}
+// entity 5
+{
+    "classname" "light"
+    "name" "light_3"
+    "origin" "-768 -816 144"
+    "noshadows" "0"
+    "nospecular" "0"
+    "nodiffuse" "0"
+    "falloff" "0.000000"
+    "_color" "0.78 0.78 0.84"
+    "light_radius" "225 225 225"
+}
+// entity 6
+{
+    "classname" "light"
+    "name" "light_4"
+    "origin" "-672 -144 144"
+    "noshadows" "0"
+    "nospecular" "0"
+    "nodiffuse" "0"
+    "falloff" "0.000000"
+    "_color" "0.78 0.78 0.84"
+    "light_radius" "225 225 225"
+}
+// entity 7
+{
+    "classname" "light"
+    "name" "light_5"
+    "origin" "-648 -600 144"
+    "noshadows" "0"
+    "nospecular" "0"
+    "nodiffuse" "0"
+    "falloff" "0.000000"
+    "_color" "0.78 0.78 0.84"
+    "light_radius" "225 225 225"
+}
+// entity 8
+{
+    "classname" "light"
+    "name" "light_6"
+    "origin" "-576 -144 144"
+    "noshadows" "0"
+    "nospecular" "0"
+    "nodiffuse" "0"
+    "falloff" "0.000000"
+    "_color" "0.78 0.78 0.84"
+    "light_radius" "225 225 225"
+}
+// entity 9
+{
+    "classname" "light"
+    "name" "light_7"
+    "origin" "-576 -816 144"
+    "noshadows" "0"
+    "nospecular" "0"
+    "nodiffuse" "0"
+    "falloff" "0.000000"
+    "_color" "0.78 0.78 0.84"
+    "light_radius" "225 225 225"
+}
+// entity 10
+{
+    "classname" "light"
+    "name" "light_8"
+    "origin" "-456 -264 144"
+    "noshadows" "0"
+    "nospecular" "0"
+    "nodiffuse" "0"
+    "falloff" "0.000000"
+    "_color" "0.78 0.78 0.84"
+    "light_radius" "225 225 225"
+}
+// entity 11
+{
+    "classname" "light"
+    "name" "light_9"
+    "origin" "-432 -144 144"
+    "noshadows" "0"
+    "nospecular" "0"
+    "nodiffuse" "0"
+    "falloff" "0.000000"
+    "_color" "0.78 0.78 0.84"
+    "light_radius" "225 225 225"
+}
+// entity 12
+{
+    "classname" "light"
+    "name" "light_10"
+    "origin" "-432 -816 144"
+    "noshadows" "0"
+    "nospecular" "0"
+    "nodiffuse" "0"
+    "falloff" "0.000000"
+    "_color" "0.78 0.78 0.84"
+    "light_radius" "225 225 225"
+}
+// entity 13
+{
+    "classname" "light"
+    "name" "light_11"
+    "origin" "-360 -600 144"
+    "noshadows" "0"
+    "nospecular" "0"
+    "nodiffuse" "0"
+    "falloff" "0.000000"
+    "_color" "0.78 0.78 0.84"
+    "light_radius" "225 225 225"
+}
+// entity 14
+{
+    "classname" "light"
+    "name" "light_12"
+    "origin" "-312 -264 144"
+    "noshadows" "0"
+    "nospecular" "0"
+    "nodiffuse" "0"
+    "falloff" "0.000000"
+    "_color" "0.78 0.78 0.84"
+    "light_radius" "225 225 225"
+}
+// entity 15
+{
+    "classname" "light"
+    "name" "light_13"
+    "origin" "-288 -144 144"
+    "noshadows" "0"
+    "nospecular" "0"
+    "nodiffuse" "0"
+    "falloff" "0.000000"
+    "_color" "0.78 0.78 0.84"
+    "light_radius" "225 225 225"
+}
+// entity 16
+{
+    "classname" "light"
+    "name" "light_14"
+    "origin" "-288 -816 144"
+    "noshadows" "0"
+    "nospecular" "0"
+    "nodiffuse" "0"
+    "falloff" "0.000000"
+    "_color" "0.78 0.78 0.84"
+    "light_radius" "225 225 225"
+}
+// entity 17
+{
+    "classname" "light"
+    "name" "light_15"
+    "origin" "-216 -600 144"
+    "noshadows" "0"
+    "nospecular" "0"
+    "nodiffuse" "0"
+    "falloff" "0.000000"
+    "_color" "0.78 0.78 0.84"
+    "light_radius" "225 225 225"
+}
+// entity 18
+{
+    "classname" "light"
+    "name" "light_16"
+    "origin" "-144 -192 144"
+    "noshadows" "0"
+    "nospecular" "0"
+    "nodiffuse" "0"
+    "falloff" "0.000000"
+    "_color" "0.78 0.78 0.84"
+    "light_radius" "225 225 225"
+}
+// entity 19
+{
+    "classname" "light"
+    "name" "light_17"
+    "origin" "-144 -720 144"
+    "noshadows" "0"
+    "nospecular" "0"
+    "nodiffuse" "0"
+    "falloff" "0.000000"
+    "_color" "0.78 0.78 0.84"
+    "light_radius" "225 225 225"
+}
+// entity 20
+{
+    "classname" "light"
+    "name" "light_18"
+    "origin" "-144 -2016 144"
+    "noshadows" "0"
+    "nospecular" "0"
+    "nodiffuse" "0"
+    "falloff" "0.000000"
+    "_color" "0.78 0.78 0.84"
+    "light_radius" "225 225 225"
+}
+// entity 21
+{
+    "classname" "light"
+    "name" "light_19"
+    "origin" "-960 -1296 144"
+    "noshadows" "0"
+    "nospecular" "0"
+    "nodiffuse" "0"
+    "falloff" "0.000000"
+    "_color" "0.78 0.78 0.84"
+    "light_radius" "225 225 225"
+}
+// entity 22
+{
+    "classname" "light"
+    "name" "light_20"
+    "origin" "-144 -1104 144"
+    "noshadows" "0"
+    "nospecular" "0"
+    "nodiffuse" "0"
+    "falloff" "0.000000"
+    "_color" "0.78 0.78 0.84"
+    "light_radius" "225 225 225"
+}
+// entity 23
+{
+    "inv_item" "4"
+    "classname" "item_medkit"
+    "name" "item_medkit_1"
+    "origin" "-840 -264 24.0"
+}
+// entity 24
+{
+    "inv_item" "4"
+    "classname" "ammo_rockets_large"
+    "name" "ammo_rockets_large_2"
+    "origin" "-744 -264 24.0"
+}
+// entity 25
+{
+    "inv_item" "4"
+    "classname" "ammo_grenade_small"
+    "name" "ammo_grenade_small_3"
+    "origin" "-744 -456 24.0"
+}
+// entity 26
+{
+    "inv_item" "4"
+    "classname" "moveable_item_rocketlauncher"
+    "name" "moveable_item_rocketlauncher_4"
+    "origin" "-744 -648 24.0"
+}

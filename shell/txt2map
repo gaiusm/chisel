@@ -1,0 +1,44 @@
+#!/bin/bash
+
+#
+#  usage - generate a simple command line help message.
+#
+
+function usage () {
+    echo "Usage: txt2map [ -o dest.map ] source.txt"
+    echo "  -o  dest.map      output file is dest.map"
+    echo "  -h                help"
+    exit $1
+}
+
+
+function handleArgs () {
+    outputfile=""
+    while getopts ":o:" opt; do
+	case $opt in
+	    o)
+		outputfile=$OPTARG
+		;;
+	    h)
+		usage 0
+		;;
+	    \?)
+		echo "txt2map: invalid option" >&2
+		exit 1
+		;;
+	esac
+    done
+    shift $((OPTIND-1))
+    inputfile=$1
+    if [ "x${outputfile}" = "x" ] ; then
+	outputfile=`basename ${inputfile} .txt`.map
+    fi
+}
+
+
+handleArgs $*
+
+tempname=/tmp/txt2map.$$
+txt2pen -o ${tempname} ${inputfile}
+pen2map -o ${outputfile} ${tempname}
+rm -f ${tempname}

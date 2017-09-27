@@ -1,0 +1,87 @@
+2017-09-27      Gaius Mulley <gaius@gnu.org>
+
+	* python/pen2map.py:  huge amount of bug fixes
+          and restructing.
+	* python/chvec.py:  New file.
+	* python/chcuboid.py:  New file.
+	* maps/python.txt:  updated.
+
+2017-09-03      Gaius Mulley <gaius@gnu.org>
+
+	* python/pen2map.py:  commented out many debugging
+          prints, also introduced -g gametype option.
+          Implemented singlePlayer and deathMatch game types.
+	* maps/pacman1.txt:  New file.
+
+2017-08-30      Gaius Mulley <gaius@gnu.org>
+
+	* python/pen2map.py:  many bug fixes including
+          positioning light columns flush against a wall.
+	* python/txt2pen.py:  bug fix to ensure that
+          a door is vertical/horizontal by examining the
+	  wall orientation.
+
+2017-08-26      Gaius Mulley <gaius@gnu.org>
+
+	* maps/five.txt:  New file.
+	* maps/one.txt:  updated and enhanced.
+	* maps/simple.txt:  updated and enhanced.
+	* maps/two.txt:  updated and enhanced.
+	* python/pen2map.py:  many bugfixes applied.
+	* python/tiny.map:  rebuilt.
+	* python/tiny.pen:  rebuilt.
+	* python/txt2map:  minor changes.
+	* python/txt2pen.py:  many bugfixes applied.
+
+2017-08-25      Gaius Mulley <gaius@gnu.org>
+
+	* New files imported into git.
+	* python/tiny.pen:  New file.
+	* python/tiny.ss:  New file.
+	* python/five.pen:  New file.
+	* python/one.pen:  New file.
+	* python/txt2pen.py:  New file.
+	* python/txt2map:  New file.
+	* python/simple.pen:  New file.
+	* python/tiny.map:  New file.
+	* python/pen2map.py:  New file.
+	* python/test_box.map:  New file.
+	* version.c:  New file.
+	* ChangeLog:  New file.
+	* configure.ac:  New file.
+	* random/map/Geometry.def:  New file.
+	* random/map/testchan.mod:  New file.
+	* random/map/map:  New file.
+	* random/map/MakeBoxes.def:  New file.
+	* random/map/testcoor.mod:  New file.
+	* random/map/testmaps:  New file.
+	* random/map/Geometry.mod:  New file.
+	* random/map/BoxMap.mod:  New file.
+	* random/map/Find.mod:  New file.
+	* random/map/MakeBoxes.mod:  New file.
+	* random/map/StoreCoords.mod:  New file.
+	* random/map/makemaps:  New file.
+	* random/map/MapOptions.mod:  New file.
+	* random/map/WriteMap.mod:  New file.
+	* random/map/AdvMap.mod:  New file.
+	* random/map/Map.mod:  New file.
+	* random/map/remake:  New file.
+	* random/map/Find.def:  New file.
+	* random/map/testch2.mod:  New file.
+	* random/map/AdvMap.def:  New file.
+	* random/map/pen/m4.pen:  New file.
+	* random/map/pen/m1.pen:  New file.
+	* random/map/pen/m2.pen:  New file.
+	* random/map/pen/m6.pen:  New file.
+	* random/map/pen/m5.pen:  New file.
+	* random/map/pen/m3.pen:  New file.
+	* random/map/StoreCoords.def:  New file.
+	* random/map/RoomMap.mod:  New file.
+	* random/map/BoxMap.def:  New file.
+	* random/map/WriteMap.def:  New file.
+	* random/map/Makefile.in:  New file.
+	* random/map/Chance.def:  New file.
+	* random/map/MapOptions.def:  New file.
+	* random/map/Semantic.mod:  New file.
+	* random/map/RoomMap.def:  New file.
+	* random/map/Chance.mod:  New file.

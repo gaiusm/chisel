@@ -15,11 +15,12 @@ define h monster monster_demon_hellknight
 define S monster monster_demon_tick
 define i light
 define P monster python_demon_hellknight
+define M monster python_doommarine_mp
 
 ###############################################
 # 1        i     # 2          i   # 4         #
 #                #  o             #        c  #
-# s              .                .           #
+# s         M    .                .           #
 #                .                .           #
 #                #          S     #          i#
 #  i          i  #    i           #           #

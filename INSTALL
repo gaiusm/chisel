@@ -1,0 +1,65 @@
+Installation Instructions
+*************************
+
+Copyright (C) 2017 Free Software Foundation,
+Inc.
+
+   Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.  This file is offered as-is,
+without warranty of any kind.
+
+Basic Installation
+==================
+
+   Briefly, the shell command `./configure && make && make install'
+should configure, build, and install this package.  The following
+more-detailed instructions are generic; see the `README' file for
+instructions specific to this package.  Some packages provide this
+`INSTALL' file but do not implement all of the features documented
+below.  The lack of an optional feature in a given package is not
+necessarily a bug.  More recommendations for GNU packages can be found
+in *note Makefile Conventions: (standards)Makefile Conventions.
+
+   The `configure' shell script attempts to guess correct values for
+various system-dependent variables used during compilation.  It uses
+those values to create a `Makefile' in each directory of the package.
+It may also create one or more `.h' files containing system-dependent
+definitions.  Finally, it creates a shell script `config.status' that
+you can run in the future to recreate the current configuration, and a
+file `config.log' containing compiler output (useful mainly for
+debugging `configure').
+
+   It can also use an optional file (typically called `config.cache'
+and enabled with `--cache-file=config.cache' or simply `-C') that saves
+the results of its tests to speed up reconfiguring.  Caching is
+disabled by default to prevent problems with accidental use of stale
+cache files.
+
+   If you need to do unusual things to compile the package, please try
+to figure out how `configure' could check whether to do them, and mail
+diffs or instructions to the address given in the `README' so they can
+be considered for the next release.  If you are using the cache, and at
+some point `config.cache' contains results you don't want to keep, you
+may remove or edit it.
+
+   The file `configure.ac' (or `configure.in') is used to create
+`configure' by a program called `autoconf'.  You need `configure.ac' if
+you want to change it or regenerate `configure' using a newer version
+of `autoconf'.
+
+   The simplest way to compile this package is:
+
+  1. `cd' to the directory containing the package's source code and type
+     `./configure' to configure the package for your system.
+
+     Running `configure' might take a while.  While running, it prints
+     some messages telling which features it is checking for.
+
+  2. Type `make' to compile the package.
+
+  3. Type `make install' to install the programs and any data files and
+     documentation.  When installing into a prefix owned by root, it is
+     recommended that the package be configured and built as a regular
+     user, and only the `make install' phase executed with root
+     privileges.

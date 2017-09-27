@@ -1,9 +1,6 @@
 
-AC_INIT([doom3-map-tools], [1.0])
-
-AC_PREREQ(2.69)
-
-AM_INIT_AUTOMAKE([subdir-objects])
+AC_INIT([chisel], [0.1], [bug-automake@gnu.org])
+AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 
 AC_PROG_AWK
 AC_PROG_CPP
@@ -15,12 +12,10 @@ AC_PROG_MAKE_SET
 AC_CONFIG_SRCDIR([version.c])
 AC_CONFIG_MACRO_DIR([m4])
 
-AS_MKDIR_P(c)
+AM_PATH_PYTHON
+
 AS_MKDIR_P(m2)
 AS_MKDIR_P(python)
-
-LT_INIT
-LT_PREREQ([])
 
 AC_ARG_ENABLE([maintainer],
 [  --enable-maintainer    Turn on maintainer],
@@ -64,7 +59,6 @@ AC_SUBST([langc])
 AC_SUBST([maintainer])
 
 dnl create these files
-AC_CONFIG_FILES([Makefile m2/Makefile c/Makefile localrun.sh],
-                [chmod +x localrun.sh])
+AC_CONFIG_FILES([Makefile m2/Makefile shell/pen2map shell/txt2pen])
 
 AC_OUTPUT

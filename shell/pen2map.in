@@ -1,0 +1,12 @@
+#!/bin/bash
+
+prefix=@prefix@
+pythondir=@pythondir@
+
+if test -z "${PYTHONPATH}"; then
+   PYTHONPATH=${pythondir}
+else
+   PYTHONPATH=${pythondir}:${PYTHONPATH}
+fi
+export PYTHONPATH
+python ${pythondir}/`basename $0`.py $*

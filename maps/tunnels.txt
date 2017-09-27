@@ -5,27 +5,30 @@ define 3 room 3
 define 4 room 4
 define 5 room 5
 define 6 room 6
+define 7 room 7
+define 8 room 8
 define s worldspawn
 define o monster monster_demon_imp
 define c monster monster_demon_hellknight
 define h monster monster_demon_hellknight
+define S monster monster_demon_tick
 define i light
 
 ###############################################################
 #1              i   # 2         i      o    #  3       i      #
 # s                 .     o                 .               o #
-#       i           #   i              i    #  i              #
+#       i         S #   i         S    i    #  i              #
 ###########################################################...#
-#                                                         #i  #
-#                                                         # 4 #
-#                                                         # o #
-#                                                         #   #
-#                                                         #  i#
-#                                                         #   #
-#                                                         #   #
-#                                                         #   #
-###########################################################...#
-#6                      i              i              i   .   #
+#       i                      i                      7   #i  #
+# S            i                         i                # 4 #
+#   ###################################################...# o #
+#   #      i          i         i            i            #   #
+#i  #  h                  o               8   S   S   S   #  i#
+#   #                         o                           #   #
+#   #  h                  o                   S   S   S   #   #
+#  i#           i                    i               i    #   #
+#...#######################################################...#
+#6                      i              i              i   .S  #
 #  h                                 o                  o . 5 #
 #                                                         .  i#
 ###############################################################

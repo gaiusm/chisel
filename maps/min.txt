@@ -1,0 +1,15 @@
+
+define 1 room 1
+define s worldspawn
+define i light
+
+##########
+# 1    i #
+#        #
+# s      #
+#        #
+#        #
+#        #
+#        #
+#        #
+##########

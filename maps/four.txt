@@ -3,21 +3,23 @@ define 1 room 1
 define 2 room 2
 define 3 room 3
 define 4 room 4
+define o monster monster_demon_imp
+define c monster monster_demon_hellknight
+define h monster monster_demon_hellknight
+define S monster monster_demon_tick
+define i light
 define s worldspawn
-define o ogre
-define c cyberdaemon
-define h hellknight
 
 ###########################################
-# 1              # 2          # 4         #
+# 1       i      # 2          # 4         #
 #                #            #        c  #
 # s              . o          #           #
 #                . o          .           #
 #          #######            .           #
-#          #                  #           #
-#          #                  #      ######
+#          #                  #      i    #
+#         i#                 i#      ######
 ##################..###########      #
-# 3                           .      #
+# 3                          i.      #
 #              h       h      .      #
 #                             .      #
 ######################################

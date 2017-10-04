@@ -1,7 +1,0 @@
-#!/bin/bash
-
-for i in *.mod ; do
-   $HOME/opt/bin/gm2 -g -c $i
-done
-
-$HOME/opt/bin/gm2 -g -o map Map.mod

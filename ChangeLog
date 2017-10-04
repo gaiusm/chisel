@@ -1,3 +1,15 @@
+2017-10-04      Gaius Mulley <gaius@gnu.org>
+
+	* random:  moved all map sources into this directory
+	* random/Makefile.am:  New file.
+	* random/getopt.c:  New file.
+	* random/GetOpt.def:  New file.
+	* random/GetOpt.mod:  New file.
+	* random/Options.def:  New file.
+	* random/Options.mod:  New file.
+	* random:  general changes to allow the options to
+	  determine map limits.
+
 2017-09-27      Gaius Mulley <gaius@gnu.org>
 
 	* python/pen2map.py:  huge amount of bug fixes

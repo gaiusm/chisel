@@ -16,6 +16,7 @@ AM_PATH_PYTHON
 
 AS_MKDIR_P(m2)
 AS_MKDIR_P(python)
+AS_MKDIR_P(random)
 
 AC_ARG_ENABLE([maintainer],
 [  --enable-maintainer    Turn on maintainer],
@@ -59,6 +60,6 @@ AC_SUBST([langc])
 AC_SUBST([maintainer])
 
 dnl create these files
-AC_CONFIG_FILES([Makefile m2/Makefile shell/pen2map shell/txt2pen])
+AC_CONFIG_FILES([Makefile m2/Makefile shell/pen2map shell/txt2pen random/Makefile])
 
 AC_OUTPUT

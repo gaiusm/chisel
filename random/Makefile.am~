@@ -1,0 +1,10 @@
+bin_PROGRAMS = rndmap
+rndmap_SOURCES = AdvMap.mod Chance.mod Geometry.mod MakeBoxes.mod \
+                 MapOptions.mod RoomMap.mod StoreCoords.mod WriteMap.mod \
+                 BoxMap.mod GetOpt.mod Map.mod Options.mod
+
+%.o: %.mod
+	gm2 -fm2-g -g -c $<
+
+%.o: %.c
+	gcc -g -c $<

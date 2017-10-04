@@ -1818,6 +1818,7 @@ def generateEntities (o):
     # first entity must have these attributes set
     o.write ('    "classname" "worldspawn"\n')
     o.write ('    "spawnflags" "1"\n')
+    o.write ('    "penmap" "' + inputFile + '"\n')
     for r in rooms.keys():
         el = roomToEntities (r)
         if debugging:

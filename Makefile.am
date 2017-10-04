@@ -15,9 +15,10 @@ python_PYTHON = python/pen2map.py python/txt2pen.py python/chvec.py python/chcub
 help:  force
 	@echo "knows about:  all, clean, install
 
-all:
+help:  force
+	@echo "knows about:  all, clean, install"
 
-test: force
+SUBDIRS = random
 
 install-data-hook: force
 	rm -f $(DESTDIR)/usr/lib/python2.7/dist-packages/chcuboid.py

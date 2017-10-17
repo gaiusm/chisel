@@ -1,7 +1,7 @@
 #!/bin/bash
 
 echo -n "txt2pen: "
-if python txt2pen.py -o tiny.pen $1 ; then
+if python txt2pen.py -l -o tiny.pen $1 ; then
     echo "pass"
 else
     echo "failed"

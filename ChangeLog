@@ -1,3 +1,14 @@
+2017-10-18      Gaius Mulley <gaius@gnu.org>
+
+	* maps/doors.txt:  removed lights to allow testing.
+	* python/developer-txt2map:  added -l option.
+	* python/pen2map.py:  (toLine) added comment.
+	* python/tiny.map:  regenerated.
+	* python/tiny.pen:  regenerated.
+	* python/txt2pen.py:  added auto lights.
+          (introduceLights) New function.
+	* random/Makefile.in:  removed -v option.
+
 2017-10-04      Gaius Mulley <gaius@gnu.org>
 
 	* random:  moved all map sources into this directory

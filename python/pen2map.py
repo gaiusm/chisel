@@ -166,6 +166,12 @@ def initFloor (x, y, value):
         row = [value] * (x+1)
         floor += [row]
 
+        
+#
+#  toLine - returns a list containing two coordinates.
+#           input:  a list of two coordinates in ascii
+#           output: a list of two integer coordinates.
+#
 
 def toLine (l):
     return [[int (l[0][0]), int (l[0][1])], [int (l[1][0]), int (l[1][1])]]

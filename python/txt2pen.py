@@ -28,11 +28,13 @@ inputFile = None
 defines = {}
 verbose = False
 debugging = False
+autoLights = False
 floor = []
 rooms = {}
 maxx, maxy = 0, 0
 doorValue, wallValue, emptyValue = 0, -1, -2
 versionNumber = 0.1
+lightFrequency = 5
 
 
 def mycut (l, i):
@@ -85,6 +87,7 @@ class roomInfo:
         self.weapons = []
         self.ammo = []
         self.lights = []
+        self.autoLights = []
         self.worldspawn = []
 
 
@@ -116,9 +119,10 @@ def debugf (format, *args):
 
 
 def usage (code):
-    print "Usage: txt2pen [-dhvV] [-o outputfile] inputfile"
+    print "Usage: txt2pen [-dhlvV] [-o outputfile] inputfile"
     print "  -d debugging"
     print "  -h help"
+    print "  -l automatic lighting"
     print "  -V verbose"
     print "  -v version"
     print "  -o outputfile name"
@@ -130,16 +134,18 @@ def usage (code):
 #
 
 def handleOptions ():
-    global debugging, verbose, outputName
+    global debugging, verbose, outputName, autoLights
 
     outputName = None
     try:
-       optlist, l = getopt.getopt(sys.argv[1:], ':dho:vV')
+       optlist, l = getopt.getopt(sys.argv[1:], ':dhlo:vV')
        for opt in optlist:
            if opt[0] == '-d':
                debugging = True
            elif opt[0] == '-h':
                usage (0)
+           elif opt[0] == '-l':
+               autoLights = True
            elif opt[0] == '-o':
                outputName = opt[1]
            elif opt[0] == '-v':
@@ -368,6 +374,92 @@ def scanRoom (topleft, p, mapGrid, walls, doors):
         else:
             printf ("something went wrong here\n")
 
+def checkLight (p, l, lightCount):
+    if lightCount == lightFrequency:
+        l += [p]
+        lightCount = 0
+    else:
+        lightCount += 1
+    return l, lightCount
+
+
+def introduceLights (topleft, p, mapGrid, walls, doors):
+    global debuging
+
+    s = p
+    a = addVec (p, [-1, -1])
+    d = 1  # 0 up, 1 right, 2 down, 3 left
+    leftVec = [[-1, 0], [0, -1], [1, 0], [0, 1]]
+    forwardVec = [[0, -1], [1, 0], [0, 1], [-1, 0]]
+    if debugging:
+        print "wall corner", p
+
+    lightCount = 0
+    lights = []
+    doorStartPoint = None
+    doorEndPoint = None
+    needToAvoidDoor = False
+    while True:
+        if debugging:
+            print "point currently at", p, d
+        if (doorStartPoint == None) and lookingLeft (p, leftVec[d], mapGrid, '. '):
+            if debugging:
+                print "seen first point", p
+            # first point on the wall is a door
+            doorStartPoint = addVec (p, leftVec[d])
+            doorEndPoint = doorStartPoint
+            needToAvoidDoor = True
+        if lookingLeft (addVec (p, forwardVec[d]), leftVec[d], mapGrid, '. '):
+            if debugging:
+                print "seen a door point", p,
+            if doorStartPoint == None:
+                doorStartPoint = addVec (addVec (p, forwardVec[d]), leftVec[d])
+            doorEndPoint = addVec (addVec (p, forwardVec[d]), leftVec[d])
+            needToAvoidDoor = True
+        else:
+            # end of door?
+            if doorEndPoint != None:
+                doorStartPoint = None
+                doorEndPoint = None
+                needToAvoidDoor = True
+        if lookingLeft (addVec (p, forwardVec[d]), leftVec[d], mapGrid, 'x '):
+            # carry on
+            if not needToAvoidDoor:
+                lights, lightCount = checkLight (p, lights, lightCount)
+            needToAvoidDoor = False
+            p = addVec (p, forwardVec[d])
+        elif lookingLeft (addVec (p, forwardVec[d]), leftVec[d], mapGrid, 'x.'):
+            if debugging:
+                print "wall corner (x.)", p
+            doorStartPoint = None
+            doorEndPoint = None
+            # turn right
+            d = (d + 1) % 4
+            if s == p:
+                # back to the start
+                return lights
+        elif lookingLeft (addVec (p, forwardVec[d]), leftVec[d], mapGrid, 'xx'):
+            if debugging:
+                print "wall corner (xx)", p
+            doorStartPoint = None
+            doorEndPoint = None
+            # turn right
+            d = (d + 1) % 4
+            if s == p:
+                # back to the start
+                return lights
+        elif lookingLeft (addVec (p, forwardVec[d]), leftVec[d], mapGrid, '  '):
+            if debugging:
+                print "wall corner (  )", p,
+            # turn left
+            p = addVec (p, forwardVec[d])
+            d = (d + 3) % 4
+            if s == p:
+                # back to the start
+                return lights
+        else:
+            printf ("something went wrong here\n")
+
 
 def printCoord (c, o):
     global maxy
@@ -438,7 +530,10 @@ def printRoom (r, o):
     o = printMonsters (rooms[r].monsters, o)
     o = printAmmo (rooms[r].ammo, o)
     o = printWeapons (rooms[r].weapons, o)
-    o = printLights (rooms[r].lights, o)
+    if autoLights and (rooms[r].lights == []):
+        o = printLights (rooms[r].autoLights, o)
+    else:
+        o = printLights (rooms[r].lights, o)
     o = printSpawnPlayer (rooms[r].worldspawn, o)
     o.write ("END\n\n")
     return o
@@ -454,9 +549,11 @@ def generateRoom (r, p, mapGrid, start, i):
         print "top left is", p
     s = p
     walls, doors = scanRoom (s, p, mapGrid, [], [])
+    lights = introduceLights (s, p, mapGrid, [], [])
     if debugging:
         print walls
     rooms[r] = roomInfo (walls, doors)
+    rooms[r].autoLights += lights
 
 
 def plot (w, value):

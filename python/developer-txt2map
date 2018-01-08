@@ -1,14 +1,15 @@
 #!/bin/bash
 
+rm *.pyc
 echo -n "txt2pen: "
-if python txt2pen.py -l -o tiny.pen $1 ; then
+if PYTHONPATH=student python txt2pen.py -l -f 3 -o tiny.pen $1 ; then
     echo "pass"
 else
     echo "failed"
     exit 1
 fi
 
-if python pen2map.py -s -e -o tiny.map tiny.pen ; then
+if PYTHONPATH=student python pen2map.py -fb -c tiny.ss -s -e -o tiny.map tiny.pen ; then
     echo "pen2map: pass"
 else
     echo "pen2map: failed"

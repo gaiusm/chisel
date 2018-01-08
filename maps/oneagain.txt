@@ -1,0 +1,16 @@
+
+define 1 room 1 [a] [b] [c]
+define a default floor colour 150 150 150
+define b default mid colour 150 150 150
+define c default ceil colour 120 120 120
+define s worldspawn
+define f light type floor
+define m light type mid
+
+##############################################
+# 1    f   m   f    m    f    m              #
+#                                            #
+#  s                                         #
+#                                            #
+#      m         m        m      m           #
+##############################################

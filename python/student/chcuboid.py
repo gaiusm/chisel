@@ -26,7 +26,27 @@ from chvec import *
 
 
 expandedCuboids = 0  # how many cuboids have we optimised?
-chcuboid_enable_optimise = True
+chcuboid_enable_optimise = False
+
+
+#
+#  getexpanded - returns the number of expanded or optimised cuboids.
+#
+
+def getexpanded ():
+    return expandedCuboids
+
+
+#
+#  setOptimise - turn the optimiser on/off.
+#
+
+def setOptimise (on):
+    chcuboid_enable_optimise = on
+
+
+def regressiontest ():
+    pass
 
 
 #
@@ -64,7 +84,25 @@ class cuboid:
     #
 
     def _intersectingAxis (self, bpos, bend):
-        pass # --complete me--
+        # --complete me--
+        return False
+
+    #
+    #  interpenetration - return True if self penetrates with the proposed
+    #                    cuboid defined by pos, size.
+    #
+
+    def interpenetration (self, pos, size):
+        return self._interpenetrationAxis (pos, addVec (pos, size))
+
+    #
+    #  _interpenetrationAxis - return True if the x, y, and z axis penetrates
+    #                          between cuboid self and cuboid bpos/bend.
+    #
+
+    def _interpenetrationAxis (self, bpos, bend):
+        # --complete me--
+        return False
 
     #
     #  _limits - return True if self has the same start end limits as defined by pos, size

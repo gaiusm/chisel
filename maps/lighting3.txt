@@ -1,0 +1,48 @@
+
+define 1 room 1 [defroom]
+define 2 room 2 [defroom]
+define 3 room 3 [defroom]
+define 4 room 4 [defroom]
+define 5 room 5 [defroom]
+define 6 room 6 [defroom]
+define s worldspawn
+
+define R ammo ammo_rockets_large 16
+define G ammo ammo_grenade_small 16
+define L ammo moveable_item_rocketlauncher 1
+define A ammo item_medkit 1
+
+define O monster monster_demon_imp
+define H monster monster_demon_hellknight
+define S monster monster_demon_tick
+
+define l light
+define d default ceil colour 210 199 130
+
+
+define yellow colour 190 180 170
+define darkyellow colour 190 185 66
+define flame colour 170 107 7
+
+define red colour 180 0 0
+define blue colour 0 0 180
+define green colour 0 180 0
+
+define f light type floor
+define m light type mid
+define defroom default mid [yellow] default ceil [flame]
+
+##################################
+# 1              # 2             #
+#                #               #
+#       s        #               #
+#                .               #
+#                .               #
+#              S #           O   #
+#                #               #
+###..#############################
+# 3    #  4   # 5   #  6  #
+#      .      .     .     #
+#      .      .     .  H  #
+#      #      #     #     #
+###########################

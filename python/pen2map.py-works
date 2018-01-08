@@ -96,7 +96,7 @@ curCol = []
 defaultOn = "MID"
 curOn = defaultOn
 defaultColour = [150, 150, 150]
-autoBeams = False
+
 
 defaults = { "portal":"textures/editor/visportal",
              "open":"textures/editor/visportal",
@@ -130,7 +130,7 @@ wallThickness      = halfUnit         # number of inches thick for a brick
 minDoorHeight      = 6         # 6x48 inches doors minimum
 minCeilingHeight   = 6         # 6x48 inches minimum
 spawnHeight        = 0.5       # players spawn 2 feet off the floor
-invSpawnHeight     = 0.25      # 1 foot off the floor
+invSpawnHeight     = 0.25       # 2 feet off the floor
 lightBlock         = 0.25      # 1 foot block
 lightHeight        = 2.0       # 8 foot high
 lightBlockHeight   = 1.0       # 4 foot high
@@ -431,7 +431,6 @@ def readDefaults (name):
 
 def usage (code):
     print "Usage: pen2map [-c filename.ss] [-defhmtvV] [-o outputfile] inputfile"
-    print "  -b                introduce beams and ceiling candle lights"
     print "  -c filename.ss    use filename.ss as the defaults for the map file"
     print "  -d                debugging"
     print "  -e                provide comments in the map file"
@@ -452,15 +451,13 @@ def usage (code):
 #
 
 def handleOptions ():
-    global debugging, verbose, outputName, toTxt, toMap, ssName, comments, statistics, gameType, genSteps, optimise, regressionRequired, autoBeams
+    global debugging, verbose, outputName, toTxt, toMap, ssName, comments, statistics, gameType, genSteps, optimise, regressionRequired
 
     outputName = None
     try:
-        optlist, l = getopt.getopt(sys.argv[1:], ':bc:defg:hmo:rstvVO')
+        optlist, l = getopt.getopt(sys.argv[1:], ':c:defg:hmo:rstvVO')
         for opt in optlist:
-            if opt[0] == '-b':
-                autoBeams = True
-            elif opt[0] == '-c':
+            if opt[0] == '-c':
                 ssName = opt[1]
             elif opt[0] == '-d':
                 debugging = True
@@ -1708,20 +1705,12 @@ def brick (o, v0, v1, material, transform):
     assert (mag (v0) < mag (v1))
     if debugging:
         print v0, v1
-    if True:
-        o = zPlane (o, -1, -v0[2], material, transform, 'floor of brick')
-        o = zPlane (o,  1,  v1[2], material, transform, 'ceiling of brick')
-        o = xPlane (o, -1, -v1[0], material, transform, 'top most horizontal of brick')
-        o = yPlane (o,  1,  v0[1], material, transform, 'right most vertical of brick')
-        o = xPlane (o,  1,  v0[0], material, transform, 'bottom most horizontal of brick')
-        o = yPlane (o, -1, -v1[1], material, transform, 'left most vertical of brick')
-    else:
-        o = zPlane (o, -1, -v0[2], material, transform, 'floor of brick')
-        o = zPlane (o,  1,  v1[2], material, transform, 'ceiling of brick')
-        o = xPlane (o, -1, -v1[1], material, transform, 'top most horizontal of brick')
-        o = yPlane (o,  1,  v0[0], material, transform, 'right most vertical of brick')
-        o = xPlane (o,  1,  v0[1], material, transform, 'bottom most horizontal of brick')
-        o = yPlane (o, -1, -v1[0], material, transform, 'left most vertical of brick')
+    o = zPlane (o, -1, -v0[2], material, transform, 'floor of brick')
+    o = zPlane (o,  1,  v1[2], material, transform, 'ceiling of brick')
+    o = xPlane (o, -1, -v1[1], material, transform, 'top most horizontal of brick')
+    o = yPlane (o,  1,  v0[0], material, transform, 'right most vertical of brick')
+    o = xPlane (o,  1,  v0[1], material, transform, 'bottom most horizontal of brick')
+    o = yPlane (o, -1, -v1[0], material, transform, 'left most vertical of brick')
     return o
 
 
@@ -2084,13 +2073,13 @@ def inBetween (c, a, b):
     b = max (a, b)
     return (c >= a) and (c <= b)
 
-
+    
 #
 #  onDoor - return True if point, x, y, is on a door in room, r.
 #
 
 def onDoor (r, x, y):
-    print "is", x, y, "on door in room", r,
+    print "is", x, y, "on door in room", r,    
     for d in rooms[r].doors:
         coords = d[0]
         if coords[0][0] == coords[1][0]:
@@ -2101,19 +2090,19 @@ def onDoor (r, x, y):
         else:
             # horizontal
             if (y == coords[0][1]) and inBetween (x, coords[0][0], coords[1][0]):
-                print "yes"
+                print "yes"                
                 return True
-    print "no"
+    print "no"            
     return False
 
-
-#
-#  generateBeams - generate beams and light for 4 sided rooms.
-#
-
-def generateBeams (r, e):
+def generateCeiling (r, e):
+    for x in range (1, maxx):
+        for y in range (1, maxy):
+            if getFloor (x, y) == int (r):
+                pos = [x, y, rooms[r].floorLevel+minCeilingHeight]
+                size = [1, 1, 1]
+                newcuboid (pos, size, 'ceiling')
     if len (rooms[r].walls) == 4:
-        print "room", r, "beams being created"
         p = findMinMax (r)
         w0, w1 = None, None
         if debugging:
@@ -2140,7 +2129,7 @@ def generateBeams (r, e):
                 if (not onDoor (r, x, y0)) and (not onDoor (r, x, y1)):
                     makeBeamX (x, y0, y1, rooms[r].floorLevel+minCeilingHeight-1)
             for x in range (w0[0][0]+2, w0[1][0], 2):
-                if (not onDoor (r, x, y0)) and (not onDoor (r, x, y1)):
+                if (not onDoor (r, x, y0)) and (not onDoor (r, x, y1)):                
                     makeCandleX (r, x, y0, y1, rooms[r].floorLevel+minCeilingHeight-2)
         else:
             # vertical corridor, therefore create horizontal beams
@@ -2156,23 +2145,10 @@ def generateBeams (r, e):
             if debugging:
                 print w0, w1
             for y in range (w0[0][1]+1, w0[1][1], 2):
-                if (not onDoor (r, x0, y)) and (not onDoor (r, x1, y)):
+                if (not onDoor (r, x0, y)) and (not onDoor (r, x1, y)):                
                     makeBeamY (x0, x1, y, rooms[r].floorLevel+minCeilingHeight-1)
             for y in range (w0[0][1]+2, w0[1][1], 2):
-                if (not onDoor (r, x0, y)) and (not onDoor (r, x1, y)):
-                    makeCandleY (r, x0, x1, y, rooms[r].floorLevel+minCeilingHeight-2)
-
-
-
-def generateCeiling (r, e):
-    for x in range (1, maxx):
-        for y in range (1, maxy):
-            if getFloor (x, y) == int (r):
-                pos = [x, y, rooms[r].floorLevel+minCeilingHeight]
-                size = [1, 1, 1]
-                newcuboid (pos, size, 'ceiling')
-    if autoBeams:
-        generateBeams (r, e)
+                if (not onDoor (r, x0, y)) and (not onDoor (r, x1, y)):                                                    makeCandleY (r, x0, x1, y, rooms[r].floorLevel+minCeilingHeight-2)
 
 
 def generateFloor (r, e):
@@ -2220,13 +2196,8 @@ def pen2MidPos (pos):
     for p in pos:
         print p
         v += vecInches2 ([[int (p), halfUnit]])
+    print v
     return v
-
-
-def pen2Pos (pos):
-    minvec = [minx-1, miny-1, minz-1]
-    pos = subVec (pos, minvec)
-    return vecInches (pos)
 
 
 #
@@ -2234,8 +2205,8 @@ def pen2Pos (pos):
 #
 
 def writePos (o, p):
-    v = pen2Pos (p)
-    o.write ('-%f -%f ' % (v[0], v[1]))
+    v = vecInches ([int (p[0]), int (p[1])])
+    o.write (str (-v[1]) + " " + str (-v[0]))
     return o
 
 
@@ -2244,8 +2215,9 @@ def writePos (o, p):
 #
 
 def writeMidPos (o, p):
-    v = pen2MidPos (p)
-    o.write ('-%f -%f ' % (v[0], v[1]))
+    v = vecInches2 ([[int (p[0]), -halfUnit],
+                     [int (p[1]), -halfUnit]])
+    o.write (str (-v[1]) + " " + str (-v[0]))
     return o
 
 
@@ -2263,7 +2235,7 @@ def generatePlayer (o, e):
             o.write ('    "origin" "')
             pos = rooms[r].worldspawn[0] + [getFloorLevel (r) + spawnHeight]
             v = pen2MidPos (pos)
-            o.write ('%f %f %f"\n' % (-v[0], -v[1], v[2]))
+            o.write ('-%f -%f %f"\n' % (v[1], v[0], v[2]))
             o.write ('    "angle" "180"\n')
             o.write ("}\n")
     return o, e+1
@@ -2273,9 +2245,9 @@ def generatePlayer (o, e):
 #  writeLightSource -
 #
 
-def writeLightSource (o, p):
-    v = pen2Pos (p)
-    o.write ('%f %f %f"\n' % (-v[0], -v[1], v[2]))
+def writeLightSource (o, l):
+    v = vecInches (l)
+    o.write ('-%f -%f %f"\n' % (v[1], v[0], v[2]))
     return o
 
 
@@ -2365,7 +2337,8 @@ def calcLightOrigin (pos, size):
 
 def newlight (pos, size, desc):
     global lightPoints
-
+    minvec = [minx-1, miny-1, minz-1]
+    pos = subVec (pos, minvec)
     lightPoints += [[calcLightOrigin (pos, size), desc]]
 
 
@@ -2420,7 +2393,7 @@ def generateFloorLight (r, l, walls):
             newlight (pos, size, li)
             return
     # print "light is not touching a wall", l
-    pos = [int (lp[0]), int (lp[1]), getFloorLevel (r)]
+    pos = [int (l[0]), int (l[1]), getFloorLevel (r)]
     size = [lightBlock, lightBlock, lightFloorHeight]
     if debugging:
         print pos, size
@@ -2473,9 +2446,8 @@ def generatePythonMonsters (o, e):
             o.write ('    "name" "' + t + '_' + str (n) + '"\n')
             o.write ('    "anim" "idle"\n')
             o.write ('    "origin" "')
-            pos = p + [getFloorLevel (r) + spawnHeight]
-            v = pen2MidPos (pos)
-            o.write ('%f %f %f"\n' % (-v[0], -v[1], v[2]))
+            o = writeMidPos (o, p)
+            o.write (' ' + str (toInches (getFloorLevel (r) + spawnHeight - minz + 1.0)) + '"\n')
             o.write ('    "ambush" "1"\n')
             o.write ("}\n")
             n += 1
@@ -2493,9 +2465,8 @@ def generateMonsters (o, e):
             o.write ('    "name" "' + t + '_' + str (n) + '"\n')
             o.write ('    "anim" "idle"\n')
             o.write ('    "origin" "')
-            pos = p + [getFloorLevel (r) + spawnHeight]
-            v = pen2MidPos (pos)
-            o.write ('%f %f %f"\n' % (-v[0], -v[1], v[2]))
+            o = writeMidPos (o, p)
+            o.write (' ' + str (toInches (getFloorLevel (r) + spawnHeight - minz + 1.0)) + '"\n')
             o.write ('    "ambush" "1"\n')
             o.write ("}\n")
             n += 1
@@ -2515,9 +2486,8 @@ def generateAmmo (o, e):
             o.write ('    "classname" "' + t + '"\n')
             o.write ('    "name" "' + t + '_' + str (n) + '"\n')
             o.write ('    "origin" "')
-            pos = p + [getFloorLevel (r) + invSpawnHeight]
-            v = pen2MidPos (pos)
-            o.write ('%f %f %f"\n' % (-v[0], -v[1], v[2]))
+            o = writeMidPos (o, p)
+            o.write (' ' + str (toInches (getFloorLevel (r) + invSpawnHeight - minz + 1.0)) + '"\n')
             o.write ("}\n")
             n += 1
             e += 1

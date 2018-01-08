@@ -1,0 +1,39 @@
+
+define 1 room 1
+define 2 room 2
+define 3 room 3
+define 4 room 4
+define 5 room 5
+define 6 room 6
+define 7 room 7
+define 8 room 8
+define 9 room 9
+
+define s worldspawn
+define o monster monster_demon_imp
+define c monster monster_demon_hellknight
+define h monster monster_demon_hellknight
+define S monster monster_demon_tick
+define i light
+define P monster python_demon_hellknight
+
+##############       ##################      ###########################################################################
+# 1          #       # 2              #      # 3                             # 4            # 5                        #
+#          S #       #                #      #                               .         h    #                          #
+# s          #       #                #      #                               .              #                          #
+#            #       #                #      #                               .         h    #                  h       #
+#            #       #                ########                       #########              #                          #
+#            #       ######..######...#      .                       #       #######   h    .                          #
+#            #            #                  .                       #             #        .                          #
+#            #            #                  #         h             #             ####     ############################
+#..###...#...##############                  .                       #                #     #     #                    #
+#                         #                  .                       #                #     #     #                    #
+# 6                       # 7                #################...#...#####            #     #     #                    #
+#        S   S   S   S    #                    #        #    9           #            #     #     #                    #
+#    S                    #                    #        #                #            #     #     #                    #
+#        S   S   S   S    #                    #        #             S  ####################     #                    #
+#                         #                    #        #                #   8              #     #                    #
+#    S       S   S   S    .                    #        #             S  .   S    o   o   o #     #                    #
+#        S                .        S        o  #        #                . S   o    o   o   #     #                    #
+#                         #                    #        #                #                  #     #                    #
+########################################################################################################################

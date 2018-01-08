@@ -83,3 +83,13 @@ def equVec (a, b):
         if i != j:
             return False
     return True
+
+#
+#
+#
+
+def intVec (v):
+    r = []
+    for i in v:
+        r += [int (i)]
+    return r

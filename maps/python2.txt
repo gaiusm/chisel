@@ -1,0 +1,38 @@
+
+define 1 room 1
+define 2 room 2
+define 3 room 3
+define s worldspawn
+define o monster monster_demon_imp
+define h monster monster_demon_hellknight
+define S monster monster_demon_tick
+define i light
+define P monster python_demon_hellknight
+define M monster python_doommarine_mp
+define R ammo ammo_rockets_large 16
+define G ammo ammo_grenade_small 16
+define L ammo moveable_item_rocketlauncher 1
+define A ammo item_medkit 1
+define f light type floor
+
+###########################################
+# 1  i   i   i  i# 2   i     i# 3         #
+#i               #            #           #
+#        s       .            #           #
+#                .f          f.           #
+#i               #            .           #
+#    i      i   i#           f.           #
+#                #            .           #
+#        M       #           f.           #
+#i              i#            .           #
+#                #i          f.           #
+#    i       i   #            .           #
+#i              i#           f.           #
+#                #i           .           #
+#                #           f.           #
+#i  R         L i#            .           #
+#        G       #           f.           #
+#                #i           .           #
+#i    A         i#            #           #
+# i   i    i   i #   i   i  i #           #
+###########################################

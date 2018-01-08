@@ -28,14 +28,11 @@ inputFile = None
 defines = {}
 verbose = False
 debugging = False
-autoLights = False
 floor = []
 rooms = {}
 maxx, maxy = 0, 0
 doorValue, wallValue, emptyValue = 0, -1, -2
-versionNumber = 0.2
-lightFrequency = 5
-defaultColour = None
+versionNumber = 0.1
 
 
 def mycut (l, i):
@@ -88,10 +85,7 @@ class roomInfo:
         self.weapons = []
         self.ammo = []
         self.lights = []
-        self.autoLights = []
         self.worldspawn = []
-        self.inside = None
-        self.defaultColour = {}
 
 
 #
@@ -122,11 +116,9 @@ def debugf (format, *args):
 
 
 def usage (code):
-    print "Usage: txt2pen [-dhlvV] [-f frequency] [-o outputfile] inputfile"
+    print "Usage: txt2pen [-dhvV] [-o outputfile] inputfile"
     print "  -d debugging"
     print "  -h help"
-    print "  -l automatic lighting"
-    print "  -f frequency    (every frequency squares place a light)"
     print "  -V verbose"
     print "  -v version"
     print "  -o outputfile name"
@@ -138,32 +130,28 @@ def usage (code):
 #
 
 def handleOptions ():
-    global debugging, verbose, outputName, autoLights, lightFrequency
+    global debugging, verbose, outputName
 
     outputName = None
     try:
-        optlist, l = getopt.getopt(sys.argv[1:], ':df:hlo:vV')
-        for opt in optlist:
-            if opt[0] == '-d':
-                debugging = True
-            elif opt[0] == '-h':
-                usage (0)
-            elif opt[0] == '-l':
-                autoLights = True
-            elif opt[0] == '-f':
-                lightFrequency = int (opt[1])
-            elif opt[0] == '-o':
-                outputName = opt[1]
-            elif opt[0] == '-v':
-                printf ("txt2pen version " + str (versionNumber) + "\n")
-                sys.exit (0)
-            elif opt[0] == '-V':
-                verbose = True
-        if l != []:
-            return (l[0], outputName)
+       optlist, l = getopt.getopt(sys.argv[1:], ':dho:vV')
+       for opt in optlist:
+           if opt[0] == '-d':
+               debugging = True
+           elif opt[0] == '-h':
+               usage (0)
+           elif opt[0] == '-o':
+               outputName = opt[1]
+           elif opt[0] == '-v':
+               printf ("txtpen version " + str (versionNumber) + "\n")
+               sys.exit (0)
+           elif opt[0] == '-V':
+               verbose = True
+       if l != []:
+           return (l[0], outputName)
 
     except getopt.GetoptError:
-        usage (1)
+       usage (1)
     return (None, outputName)
 
 
@@ -175,10 +163,9 @@ def errorLine (n, line, text):
 
 def addDef (c, line, l):
     global defines
-    w = c.split ()
-    a = w[0]
-    if len (c) > len (w[0]):
-        c = c[len (w[0]):]
+    a = c[0]
+    if len (c) > 1:
+        c = c[1:]
         c = c.lstrip ()
         defines[a] = c
     else:
@@ -191,16 +178,13 @@ def addDef (c, line, l):
 #
 
 def isSubstr (s, c):
-    return (s == c) or ((len (s) > len (c)) and (s[:len(c)] == c))
+    return (len (s) > len (c)) and (s[:len(c)] == c)
 
-
-#
-#  readDefines - read the defines and store the definitions into the dictionary.
-#
 
 def readDefines (i):
     l = 1
     for line in i:
+
         c = line.lstrip ()
         if isSubstr (c, 'define'):
             c = c[len ('define'):]
@@ -220,40 +204,12 @@ def readMap (i):
     s = 0
     for line in i:
         s += 1
-        c = line.rstrip ()
-        if c.find ('#') != -1:
+        c = line.lstrip ()
+        if (len (c) > 0) and (c[0] == '#'):
             inMap = True
         if inMap:
             mapGrid += [c]
     return mapGrid, s
-
-
-#
-#  macro - return string, t, after decoding the macro definitions.
-#
-
-def macro (t):
-    if t != "":
-        s = 0
-        i = 0
-        while i < len (t):
-            c = t[i]
-            if c == '[':
-                s = i
-                i += 1
-            elif c == ']':
-                if s < i:
-                    k = macro (t[s+1:i])
-                    if defines.has_key (k):
-                        k = defines[k]
-                        k = k.strip () + " "
-                    t = t[:s] + k + t[i+1:]
-                    i = 0
-                else:
-                    i += 1
-            else:
-                i += 1
-    return t
 
 
 #
@@ -267,7 +223,7 @@ def getListOfRooms (mapGrid, start, i):
     for y, r in enumerate (mapGrid, start=1):
         for x, c in enumerate (r, start=1):
             if defines.has_key (c):
-                k = macro (defines[c])
+                k = defines[c]
                 if isSubstr (k, 'room'):
                     pos += [[x, y]]
                     k = k.split ()[1:]
@@ -412,102 +368,6 @@ def scanRoom (topleft, p, mapGrid, walls, doors):
         else:
             printf ("something went wrong here\n")
 
-#
-#  checkLight - add a mid light if lightCount == lightFrequency
-#
-
-def checkLight (p, l, lightCount):
-    if lightCount == lightFrequency:
-        li = light ()
-        li.settype ('MID')
-        l += [p + [li]]
-        lightCount = 0
-    else:
-        lightCount += 1
-    return l, lightCount
-
-
-def introduceLights (topleft, p, mapGrid, walls, doors):
-    global debuging
-
-    s = p
-    a = addVec (p, [-1, -1])
-    d = 1  # 0 up, 1 right, 2 down, 3 left
-    leftVec = [[-1, 0], [0, -1], [1, 0], [0, 1]]
-    forwardVec = [[0, -1], [1, 0], [0, 1], [-1, 0]]
-    if debugging:
-        print "wall corner", p
-
-    lightCount = 0
-    lights = []
-    doorStartPoint = None
-    doorEndPoint = None
-    needToAvoidDoor = False
-    while True:
-        if debugging:
-            print "point currently at", p, d
-        if (doorStartPoint == None) and lookingLeft (p, leftVec[d], mapGrid, '. '):
-            if debugging:
-                print "seen first point", p
-            # first point on the wall is a door
-            doorStartPoint = addVec (p, leftVec[d])
-            doorEndPoint = doorStartPoint
-            needToAvoidDoor = True
-        if lookingLeft (addVec (p, forwardVec[d]), leftVec[d], mapGrid, '. '):
-            if debugging:
-                print "seen a door point", p,
-            if doorStartPoint == None:
-                doorStartPoint = addVec (addVec (p, forwardVec[d]), leftVec[d])
-            doorEndPoint = addVec (addVec (p, forwardVec[d]), leftVec[d])
-            needToAvoidDoor = True
-        else:
-            # end of door?
-            if doorEndPoint != None:
-                doorStartPoint = None
-                doorEndPoint = None
-                needToAvoidDoor = True
-        if lookingLeft (addVec (p, forwardVec[d]), leftVec[d], mapGrid, 'x '):
-            # carry on
-            if needToAvoidDoor:
-                li = light ()
-                li.settype ('FLOOR')
-                lights += [p + [li]]
-            else:
-                lights, lightCount = checkLight (p, lights, lightCount)
-            needToAvoidDoor = False
-            p = addVec (p, forwardVec[d])
-        elif lookingLeft (addVec (p, forwardVec[d]), leftVec[d], mapGrid, 'x.'):
-            if debugging:
-                print "wall corner (x.)", p
-            doorStartPoint = None
-            doorEndPoint = None
-            # turn right
-            d = (d + 1) % 4
-            if s == p:
-                # back to the start
-                return lights
-        elif lookingLeft (addVec (p, forwardVec[d]), leftVec[d], mapGrid, 'xx'):
-            if debugging:
-                print "wall corner (xx)", p
-            doorStartPoint = None
-            doorEndPoint = None
-            # turn right
-            d = (d + 1) % 4
-            if s == p:
-                # back to the start
-                return lights
-        elif lookingLeft (addVec (p, forwardVec[d]), leftVec[d], mapGrid, '  '):
-            if debugging:
-                print "wall corner (  )", p,
-            # turn left
-            p = addVec (p, forwardVec[d])
-            d = (d + 3) % 4
-            if s == p:
-                # back to the start
-                return lights
-        else:
-            printf ("something went wrong here\n")
-
 
 def printCoord (c, o):
     global maxy
@@ -533,18 +393,10 @@ def printSpawnPlayer (m, o):
     return o
 
 
-def printInside (inside, o):
-    if inside != None:
-        o.write ("   INSIDE AT ")
-        printCoord (inside, o)
-        o.write ("\n")
-    return o
-
-
 def printAmmo (m, o):
     if m != []:
         for name, amount, pos in m:
-            o.write ("   AMMO " + name + " AMOUNT " + str (amount) + " AT ")
+            o.write ("   AMMO " + name + " AMOUNT " + amount + " AT ")
             printCoord (pos, o)
             o.write ("\n")
     return o
@@ -559,36 +411,17 @@ def printWeapons (w, o):
     return o
 
 
-#
-#  printLights - write out the light position and characteristics.
-#
-
 def printLights (l, o):
     if l != []:
-        for i in l:
+        for pos in l:
             o.write ("   LIGHT AT ")
-            printCoord (i, o)
-            i[2].write (o)
+            printCoord (pos, o)
             o.write ("\n")
     return o
 
 
-#
-#  printDefaults - generate pen format default colour which are applied per room.
-#
-
-def printDefaults (r, o):
-    for k in rooms[r].defaultColour:
-        o.write ("   DEFAULT ")
-        o.write (k)
-        o.write (" COLOUR ")
-        c = rooms[r].defaultColour[k]
-        o.write ("%d %d %d\n" % (c[0], c[1], c[2]))
-
-
 def printRoom (r, o):
     o.write ("ROOM " + str (r) + "\n")
-    printDefaults (r, o)
     o.write ("   WALL\n")
     for p in rooms[r].walls:
         o.write ("   ")
@@ -605,12 +438,8 @@ def printRoom (r, o):
     o = printMonsters (rooms[r].monsters, o)
     o = printAmmo (rooms[r].ammo, o)
     o = printWeapons (rooms[r].weapons, o)
-    if autoLights and (rooms[r].lights == []):
-        o = printLights (rooms[r].autoLights, o)
-    else:
-        o = printLights (rooms[r].lights, o)
+    o = printLights (rooms[r].lights, o)
     o = printSpawnPlayer (rooms[r].worldspawn, o)
-    o = printInside (rooms[r].inside, o)
     o.write ("END\n\n")
     return o
 
@@ -620,7 +449,6 @@ def generateRoom (r, p, mapGrid, start, i):
 
     if verbose:
         print "room", r,
-    inside = p
     p = moveBy (p, [-1, -1], mapGrid)
     if verbose:
         print "top left is", p
@@ -629,8 +457,6 @@ def generateRoom (r, p, mapGrid, start, i):
     if debugging:
         print walls
     rooms[r] = roomInfo (walls, doors)
-    rooms[r].autoLights += introduceLights (s, p, mapGrid, [], [])
-    rooms[r].inside = inside
 
 
 def plot (w, value):
@@ -755,253 +581,6 @@ def findDoors (r, p):
             else:
                 rooms[r].doorLeadsTo += [getFloor (d[0][0], d[0][1]-1)]
 
-#
-#  light - define the characteristics of the light
-#
-
-class light:
-    def __init__ (self):
-        self.r = None
-        self.g = None
-        self.b = None
-        self.orientation = None
-    def write (self, f):
-        if self.r != None:
-            f.write (" COLOUR ")
-            f.write ("%d %d %d" % (self.r, self.g, self.b))
-        if self.orientation != None:
-            f.write (" ON ")
-            f.write (self.orientation)
-    def setcolour (self, r, g, b):
-        self.r = r
-        self.g = g
-        self.b = b
-    def settype (self, t):
-        self.orientation = t
-    def gettype (self):
-        return self.orientation
-
-
-#
-#  ebnf := worldSpawn | ammoDef | lightDef | defaultDef | monsterDef | weaponDef =:
-#
-#  worldSpawn := 'worldspawn' =:
-#  ammoDef := 'ammo' string int =:
-#  lightDef := { 'light' [ 'type' ( 'floor' | 'mid' | 'ceil' ) ] [ colourDef ] } =:
-#  defaultDef := 'default' ( 'floor' | 'mid' | 'ceil' ) colourDef =:
-#  colourDef := 'colour int int int' =:
-#  monsterDef := 'monster' string =:
-#  weaponDef := 'weapon' int =:
-#
-
-def parseColour (l, room, x, y):
-    print "parsing colour", tokens
-    expect ('colour', room, x, y)
-    r = expectInt (room, x, y, "red colour component")
-    g = expectInt (room, x, y, "green colour component")
-    b = expectInt (room, x, y, "blue colour component")
-    l.setcolour (r, g, b)
-    print "colour complete", l.r, l.g, l.b
-    return l
-
-
-#
-#  parseLight - lightDef := 'light' [ 'type' ( 'floor' | 'mid' | 'ceil' ) ] [ colourDef ] =:
-#
-
-def parseLight (room, x, y):
-    global tokens
-    expect ('light', room, x, y)
-    l = light ()
-    if expecting (['type']):
-        expect ('type', room, x, y)
-        if expecting (['floor']):
-            expect ('floor', room, x, y)
-            l.settype ('FLOOR')
-        elif expecting (['mid']):
-            expect ('mid', room, x, y)
-            l.settype ('MID')
-        elif expecting (['ceil']):
-            expect ('ceil', room, x, y)
-            l.settype ('CEIL')
-    if expecting (['colour']):
-        l = parseColour (l, room, x, y)
-    return l
-
-
-#
-#  tokenise - return string, k, after tokenising all the keywords.
-#
-
-def tokenise (k):
-    k = k.rstrip()
-    k = k.split("#")[0]
-    k = " " + k + " <eoln>"
-    for w in ['worldspawn', 'ammo', 'light', 'type', 'floor', 'mid', 'ceil', 'default', 'colour', 'monster', 'weapon', 'room']:
-        k = k.replace(" " + w + " ", " <" + w + "> ")
-    return k.lstrip ()
-
-
-#
-#  expecting - return True if any keyword in, l, matches the start token in tokens.
-#
-
-def expecting (l):
-    global tokens
-    tokens = tokens.lstrip ()
-    print "expecting", tokens
-    for w in l:
-        if isSubstr (tokens, "<" + w + ">"):
-            return True
-    return False
-
-
-#
-#  expect - expect to see symbol, w, as the next token.
-#
-
-def expect (w, r, x, y):
-    global tokens
-
-    tokens = tokens.lstrip ()
-    w = w.lstrip ()
-    print "expect", w
-    if isSubstr (tokens, "<" + w + ">"):
-        if tokens != "":
-            tokens = tokens[len (w) + 2:]
-    else:
-        print w, tokens
-        error ("expecting token " + w + " in room " +
-               str (r) + " at " + str (x) + " " + str (y))
-
-#
-#  expectInt - return an integer from the token stream.
-#
-
-def expectInt (r, x, y, message):
-    global tokens
-    tokens = tokens.lstrip ()
-    if tokens[0] == '<':
-        w = tokens.split ()[0]
-        error ("expecting integer " + message + ", not the token " + w + " in room " +
-               str (r) + " at " + str (x) + " " + str (y))
-        return 0
-    elif tokens[0].isdigit ():
-        w = tokens.split ()[0]
-        tokens = tokens[len (w):]
-        return int (w)
-    else:
-        w = tokens.split ()[0]
-        error ("expecting integer " + message + ", not " + w + " in room " +
-               str (r) + " at " + str (x) + " " + str (y))
-        return 0
-
-#
-#  expectString - return a string in the token stream.
-#
-
-def expectString (r, x, y, message):
-    global tokens
-    tokens = tokens.lstrip ()
-    if tokens[0] == '<':
-        w = tokens.split ()[0]
-        error ("expecting string " + message + ", not the token " + w + " in room " +
-               str (r) + " at " + str (x) + " " + str (y))
-        return ""
-    elif tokens[0].isdigit ():
-        w = tokens.split ()[0]
-        error ("expecting a string, not an integer " + message + " in room " +
-               str (r) + " at " + str (x) + " " + str (y))
-        return ""
-    else:
-        w = tokens.split ()[0]
-        tokens = tokens[len (w):]
-        return w
-
-
-#
-#  parseDefault - 'default' ( 'floor' | 'mid' | 'ceil' ) colourDef
-#
-
-def parseDefault (room, x, y):
-    expect ('default', room, x, y)
-    if expecting (['floor']):
-        expect ('floor', room, x, y)
-        l = parseColour (light (), room, x, y)
-        l.settype ('FLOOR')
-    elif expecting (['mid']):
-        expect ('mid', room, x, y)
-        l = parseColour (light (), room, x, y)
-        l.settype ('MID')
-    elif expecting (['ceil']):
-        print "seen ceil"
-        expect ('ceil', room, x, y)
-        print "eat ceil"
-        l = parseColour (light (), room, x, y)
-        print "finished parseColour"
-        l.settype ('CEIL')
-    else:
-        error ("expecting floor, mid or ceil after default in room " +
-               str (r) + " at " + str (x) + " " + str (y))
-    rooms[room].defaultColour[l.gettype ()] = [l.r, l.g, l.b]
-
-
-#
-#  parseEntity -
-#
-
-def parseEntity (room, x, y):
-    if expecting (['room']):
-        expect ('room', room, x, y)
-        i = expectInt (room, x, y, "room number")
-        assert (i == int (room))
-    elif expecting (['worldspawn']):
-        expect ('worldspawn', room, x, y)
-        rooms[room].worldspawn += [[x, y]]
-    elif expecting (['ammo']):
-        print "before", tokens
-        expect ('ammo', room, x, y)
-        print "after", tokens
-        s = expectString (room, x, y, 'describing ammo')
-        n = expectInt (room, x, y, 'amount of ammo')
-        rooms[room].ammo += [[s, n, [x, y]]]
-    elif expecting (['weapon']):
-        expect ('weapon', room, x, y)
-        n = expectInt (room, x, y, 'a number and quantity after the keyword weapon')
-        rooms[room].weapons += [[n, [x, y]]]
-    elif expecting (['monster']):
-        expect ('monster', room, x, y)
-        name = expectString (room, x, y, 'a string after the keyword monster')
-        rooms[room].monsters += [[name, [x, y]]]
-    elif expecting (['light']):
-        while expecting (['light']):
-            l = parseLight (room, x, y)
-            rooms[room].lights += [[x, y, l]]
-    elif expecting (['default']):
-        parseDefault (room, x, y)
-    else:
-        w = tokens.split ()[0]
-        error ("unexpected token " + w + " in room " +
-               str (room) + " at " + str (x) + " " + str (y))
-
-
-#
-#  parseEntities - parse the entities described in, k, in, room, at position, x, y.
-#
-
-def parseEntities (k, room, x, y):
-    global tokens
-
-    tokens = tokenise (k)
-    print tokens
-    while not expecting (['eoln']):
-        parseEntity (room, x, y)
-
-
-#
-#  findEntities - scan a room and use the definitions to yield a string
-#                 which is then parsed.
-#
 
 def findEntities (g, room, p):
     if debugging:
@@ -1016,10 +595,30 @@ def findEntities (g, room, p):
                 if defines.has_key (c):
                     if debugging:
                         print "seen", c, "at", x, y
-                    print "pos", x, y, c, "=>",
-                    k = macro (defines[c])
-                    print k
-                    parseEntities (k, room, x, y)
+                    k = defines[c]
+                    if isSubstr (k, 'worldspawn'):
+                        rooms[room].worldspawn += [[x, y]]
+                    elif isSubstr (k, 'light'):
+                        rooms[room].lights += [[x, y]]
+                    elif isSubstr (k, 'monster'):
+                        words = k.split ()
+                        if len (words) > 1:
+                            name = words[1]
+                            rooms[room].monsters += [[name, [x, y]]]
+                        else:
+                            error ('expecting a name after they keyword monster')
+                    elif isSubstr (k, 'ammo'):
+                        words = k.split ()
+                        if len (words) > 2:
+                            rooms[room].ammo += [[words[1], words[2], [x, y]]]
+                        else:
+                            error ('expecting a number and quantity after the keyword ammo')
+                    elif isSubstr (k, 'weapon'):
+                        words = k.split ()
+                        if len (words) > 1:
+                            rooms[room].weapons += [[words[1], [x, y]]]
+                        else:
+                            error ('expecting a number and quantity after the keyword ammo')
 
 
 #

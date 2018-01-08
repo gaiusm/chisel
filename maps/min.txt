@@ -4,9 +4,9 @@ define s worldspawn
 define i light
 
 ##########
-# 1    i #
+# 1      #
 #        #
-# s      #
+# s    P #
 #        #
 #        #
 #        #

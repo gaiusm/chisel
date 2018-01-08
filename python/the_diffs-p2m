@@ -1,0 +1,232 @@
+diff --git a/python/pen2map.py b/python/pen2map.py
+index 9b7d001..b77d0c5 100644
+--- a/python/pen2map.py
++++ b/python/pen2map.py
+@@ -86,6 +86,9 @@ doorStatus = ["open", "closed", "secret"]
+ maxEntities = 4096    # doom3 limitation
+ singlePlayer, deathMatch = range (2)
+ gameType = singlePlayer
++genSteps = False
++maxd3Units = 5000
++flipAxis = None
+
+
+ defaults = { "portal":"textures/editor/visportal",
+@@ -124,6 +127,7 @@ invSpawnHeight   = 0.5       # 2 feet off the floor
+ lightBlock       = 0.25      # 1 foot block
+ lightHeight      = 3         # 12 foot high
+ lightBlockHeight = 2         # 4 foot high
++floorStep        = 0.25      # 6 inch steps
+
+
+ def mycut (l, i):
+@@ -166,7 +170,7 @@ def initFloor (x, y, value):
+         row = [value] * (x+1)
+         floor += [row]
+
+-
++
+ #
+ #  toLine - returns a list containing two coordinates.
+ #           input:  a list of two coordinates in ascii
+ expandedCuboids = 0   #  how many cuboids have we expanded (optimized)
+ cuboidno = 1          #  total number of cuboids used.
+@@ -251,7 +297,13 @@ class roomInfo:
+         self.ammo = []
+         self.lights = []
+         self.worldspawn = []
+-        self.floorLevel = 0
++        self.floorLevel = None
++        return
++        if int (r) % 2 == 0:
++            self.floorLevel = 0
++        else:
++            self.floorLevel = -0.25
++
+     def addWall (self, line):
+         global maxx, maxy
+         line = toLine (line)
+@@ -274,7 +326,11 @@ class roomInfo:
+         self.monsters += [[monType, pos]]
+     def addPlayerSpawn (self, pos):
+         self.worldspawn += [pos]
+-
++    def getNeighbours (self):
++        n = []
++        for d in self.doors:
++            n += d[1]
++        return n
+
+ def newRoom (n):
+     global rooms
+@@ -292,15 +348,6 @@ class boxInfo:
+
+ def getFloorLevel (r):
+     return rooms[r].floorLevel
+-    print r,
+-    if r == '2':
+-        print 0.25
+-        return -0.25
+-    if r == '1':
+-        print 0.5
+-        return -0.5
+-    print rooms[r].floorLevel
+-    return rooms[r].floorLevel
+
+
+ #
+@@ -374,10 +421,11 @@ def readDefaults (name):
+
+
+ def usage (code):
+-    print "Usage: pen2map [-c filename.ss] [-dhmtvV] [-o outputfile] inputfile"
++    print "Usage: pen2map [-c filename.ss] [-defhmtvV] [-o outputfile] inputfile"
+     print "  -c filename.ss    use filename.ss as the defaults for the map file"
+     print "  -d                debugging"
+     print "  -e                provide comments in the map file"
++    print "  -f                introduce steps between rooms"
+     print "  -g type           game type.  The type must be 'single' or 'deathmatch'"
+     print "  -h                help"
+     print "  -m                create a doom3 map file from the pen file"
+@@ -394,11 +442,11 @@ def usage (code):
+ #
+
+ def handleOptions ():
+-    global debugging, verbose, outputName, toTxt, toMap, ssName, comments, statistics, gameType
++    global debugging, verbose, outputName, toTxt, toMap, ssName, comments, statistics, gameType, genSteps
+
+     outputName = None
+     try:
+-        optlist, l = getopt.getopt(sys.argv[1:], ':c:deg:hmo:stvV')
++        optlist, l = getopt.getopt(sys.argv[1:], ':c:defg:hmo:stvV')
+         for opt in optlist:
+             if opt[0] == '-c':
+                 ssName = opt[1]
+@@ -406,6 +454,8 @@ def handleOptions ():
+                 debugging = True
+             elif opt[0] == '-e':
+                 comments = True
++            elif opt[0] == '-f':
++                genSteps = True
+             elif opt[0] == '-g':
+                 if opt[1] == 'single':
+                     gameType = singlePlayer
+@@ -1438,8 +1488,19 @@ def roomToEntities (r):
+     return createWallDoorList (r, w, rooms[r].doors)
+
+
++#
++#  toInches - f/i is effectively base 48 (inches).
++#             in: f, i   f is a whole number, i is the fractional component of the doom3 value in inches.
++#             out:  return f*inchesPerUnit + i
++#
++#             the value is limit checked.
++#
++
+ def toInches (f, i = 0):
+-    return f*inchesPerUnit+i
++    d3 = f*inchesPerUnit+i
++    if d3 >= maxd3Units:
++        error ("this map is too large, it must not exceed %d doom3 units square or %d pen units square\n", d3, maxd3Units / inchesPerUnit)
++    return d3
+
+
+ #
+@@ -2042,7 +2131,17 @@ def generateAmmo (o, e):
+     return o, e
+
+
++def assignFloorLevel (f):
++    global rooms
++    for r in rooms.keys():
++        rooms[r].floorLevel = f
++
++
+ def generateMap (o):
++    if genSteps:
++        calcFloorLevel ()
++    else:
++        assignFloorLevel (0)
+     o.write ("// automatically created from: " + inputFile + "\n")
+     o       = generateVersion (o)
+     o, e, b = generateEntities (o)
+@@ -2061,6 +2160,80 @@ def generateMap (o):
+
+
+ #
++#  decFloorLevel - return the floor level of room, s, and subtract 1 ft.
++#
++
++def decFloorLevel (s):
++    if s.floorLevel is None:
++        return 0
++    else:
++        return s.floorLevel - floorStep
++
++#
++#  getSpawnRoom - return the room in which the player is spawned.
++#
++
++def getSpawnRoom ():
++    for r in rooms.keys ():
++        if rooms[r].worldspawn != []:
++            return r
++    return None
++
++#
++#  getListOfRooms - return the complete list of rooms.
++#
++
++def getListOfRooms ():
++    return rooms.keys ()
++
++#
++#  getNeighbours - return the neighbouring rooms for room, r.
++#
++
++def getNeighbours (r):
++    n = []
++    for d in r.doors:
++        n += [d[1]]
++    return n
++
++
++#
++#  lowerFloors - starting at room, s, lower all neighbouring floors
++#                This is a breadth first algorithm.
++#
++
++def lowerFloors (s, unvisited):
++    if (unvisited != []) and (s in unvisited):
++        unvisited.remove (s)
++        src = rooms[s]
++        children = getNeighbours (src)
++        for c in children:
++            r = rooms[c]
++            if r.floorLevel == None:
++                r.floorLevel = decFloorLevel (src)
++        for c in children:
++            unvisited = lowerFloors (c, unvisited)
++    return unvisited
++
++
++#
++#  calcFloorLevel - starting at the room with the spawn point
++#
++
++def calcFloorLevel ():
++    s = getSpawnRoom ()
++    rooms[s].floorLevel = 0
++    unvisited = lowerFloors (s, getListOfRooms ())
++    for r in rooms.keys ():
++        print "room", r, "has floor level",
++        if rooms[r].floorLevel is None:
++            rooms[r].floorLevel = 0
++            print "(0)"
++        else:
++            print rooms[r].floorLevel
++
++
++#
+ #  main - handle the input/output file options and call processMap.
+ #

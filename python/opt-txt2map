@@ -1,0 +1,17 @@
+#!/bin/bash
+
+rm *.pyc
+echo -n "txt2pen: "
+if PYTHONPATH=../../solutions python txt2pen.py -l -f 3 -o tiny.pen $1 ; then
+    echo "pass"
+else
+    echo "failed"
+    exit 1
+fi
+
+if PYTHONPATH=../../solutions python pen2map.py -r -O -f -s -e -o tiny.map tiny.pen ; then
+    echo "pen2map: pass"
+else
+    echo "pen2map: failed"
+    exit 1
+fi

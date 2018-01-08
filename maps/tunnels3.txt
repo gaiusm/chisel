@@ -7,6 +7,7 @@ define 5 room 5 [defroom]
 define 6 room 6 [defroom]
 define 7 room 7 [defroom]
 define 8 room 8 [defroom]
+define 9 room 9 [defroom]
 define s worldspawn
 define o monster monster_demon_imp
 define c monster monster_demon_hellknight
@@ -30,20 +31,20 @@ define defroom default mid [yellow] default ceil [flame]
 
 
 ###############################################################
-#1                  # 2                o    #  3              #
-# s                 .     o                 .               o #
-#                 S #             S         #                 #
+#1                  # 2                     #  3              #
+# s                 .                       .                 #
+#                   #                       #                 #
 ###########################################################...#
-#                                                     7   #   #
-# S                                                       # 4 #
-#   ###################################################...# o #
+#   .                                                 7   #   #
+# 9 .                                                     # 4 #
+#   ###################################################...#   #
 #   #                                                     #   #
-#   #  h                  o               8   S   S   S   #   #
-#   #                         o                           #   #
-#   #  h                  o                   S   S   S   #   #
+#   #                                     8               #   #
+#   #                                                     #   #
+#   #                                                     #   #
 #   #                                                     #   #
 #...#######################################################...#
-#6                                                        .S  #
-#  h                                 o                  o . 5 #
+#6                                                        .   #
+#                                                         . 5 #
 #                                                         .   #
 ###############################################################

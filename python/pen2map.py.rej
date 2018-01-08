@@ -1,0 +1,29 @@
+--- pen2map.py
++++ pen2map.py
+@@ -86,6 +86,9 @@ doorStatus = ["open", "closed", "secret"]
+ maxEntities = 4096    # doom3 limitation
+ singlePlayer, deathMatch = range (2)
+ gameType = singlePlayer
++genSteps = False
++maxd3Units = 5000
++flipAxis = None
+ 
+ 
+ defaults = { "portal":"textures/editor/visportal",
+@@ -124,6 +127,7 @@ invSpawnHeight   = 0.5       # 2 feet off the floor
+ lightBlock       = 0.25      # 1 foot block
+ lightHeight      = 3         # 12 foot high
+ lightBlockHeight = 2         # 4 foot high
++floorStep        = 0.25      # 6 inch steps
+ 
+ 
+ def mycut (l, i):
+@@ -166,7 +170,7 @@ def initFloor (x, y, value):
+         row = [value] * (x+1)
+         floor += [row]
+ 
+-
++
+ #
+ #  toLine - returns a list containing two coordinates.
+ #           input:  a list of two coordinates in ascii

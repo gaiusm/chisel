@@ -1,10 +1,10 @@
 
-define 1 room 1 [d]
-define 2 room 2 [d]
-define 3 room 3
-define 4 room 4
-define 5 room 5
-define 6 room 6
+define 1 room 1 [defroom]
+define 2 room 2 [defroom]
+define 3 room 3 [defroom]
+define 4 room 4 [defroom]
+define 5 room 5 [defroom]
+define 6 room 6 [defroom]
 define s worldspawn
 
 define R ammo ammo_rockets_large 16
@@ -15,25 +15,27 @@ define l light
 define d default ceil colour 210 199 130
 
 define yellow colour 190 180 170
+define darkyellow colour 190 185 66
+define flame colour 170 107 7
+
 define red colour 180 0 0
 define blue colour 0 0 180
 define green colour 0 180 0
 
-define f light type floor [green]
-define m light type mid [red]
-define c light type ceil [blue]
-define z [c] [f] [m]
+define f light type floor
+define m light type mid
+define defroom default mid [yellow] default ceil [flame]
 
 ##################################
-# 1    z   c   c # 2             #
+# 1              # 2             #
 #                #               #
-#       s       f#f              #
+#                #               #
 #                .               #
 #                .               #
-#               f#f              #
-#      c   c   c #               #
+#  s             #               #
+#                #               #
 ###..#############################
-# 3    #  4   #  5  #  6  #
+# 3    #  4   # 5   #  6  #
 #      .      .     .     #
 #      .      .     .     #
 #      #      #     #     #

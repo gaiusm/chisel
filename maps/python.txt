@@ -6,7 +6,8 @@ define s worldspawn
 define o monster monster_demon_imp
 define h monster monster_demon_hellknight
 define S monster monster_demon_tick
-define i light
+define i light type floor
+define f light type floor
 define P monster python_demon_hellknight
 define M monster python_doommarine_mp
 define R ammo ammo_rockets_large 16
@@ -15,23 +16,23 @@ define L ammo moveable_item_rocketlauncher 1
 define A ammo item_medkit 1
 
 ###########################################
-# 1        i     # 2      i   # 3         #
-#       M        #            #           #
-# s  A           .            #           #
-#                .            .           #
-#i   R   G   L  i#            .           #
-#                #            .           #
-#i          i    #            .           #
-#                #            .           #
+# 1        i     # 2          # 3         #
+#                #            #           #
+#    A iiiiii   f.            #           #
+#           i   f.            .           #
+#i  i R  G  i L  #            .           #
+#   i       i   i#            .           #
+#i  iiiiiii i    #            .           #
+#   i       i    #            .           #
+#i  i       i   i#            .           #
+#   i iiiiiiii   #            .           #
+#   i        i   #            .           #
+#i  i   i  M i  i#            .           #
+#   i   i    i   #            .           #
+#   iiiiiiiiii   #            .           #
 #i              i#            .           #
+#           f    #            .           #
 #                #            .           #
-#    i           #            .           #
-#i              i#            .           #
-#           i    #            .           #
-#    i           #            .           #
-#i              i#            .           #
-#           i    #            .           #
-#                #            .           #
-#                #            #          i#
-#  i          i  #    i       #           #
+#                #            #        s  #
+#  i          i  #            #           #
 ###########################################

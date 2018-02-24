@@ -2090,20 +2090,24 @@ def inBetween (c, a, b):
 #
 
 def onDoor (r, x, y):
-    print "is", x, y, "on door in room", r,
+    if debugging:
+        print "is", x, y, "on door in room", r,
     for d in rooms[r].doors:
         coords = d[0]
         if coords[0][0] == coords[1][0]:
             # vertical
             if (x == coords[0][0]) and inBetween (y, coords[0][1], coords[1][1]):
-                print "yes"
+                if debugging:
+                    print "yes"
                 return True
         else:
             # horizontal
             if (y == coords[0][1]) and inBetween (x, coords[0][0], coords[1][0]):
-                print "yes"
+                if debugging:
+                    print "yes"
                 return True
-    print "no"
+    if debugging:
+        print "no"
     return False
 
 
@@ -2113,7 +2117,8 @@ def onDoor (r, x, y):
 
 def generateBeams (r, e):
     if len (rooms[r].walls) == 4:
-        print "room", r, "beams being created"
+        if debugging:
+            print "room", r, "beams being created"
         p = findMinMax (r)
         w0, w1 = None, None
         if debugging:
@@ -2135,7 +2140,8 @@ def generateBeams (r, e):
                         w1 = sortWall (w)
             y0 = min (w0[0][1], w1[0][1])
             y1 = max (w0[0][1], w1[0][1])
-            print w0, w1
+            if debugging:
+                print w0, w1
             for x in range (w0[0][0]+1, w0[1][0], 2):
                 if (not onDoor (r, x, y0)) and (not onDoor (r, x, y1)):
                     makeBeamX (x, y0, y1, rooms[r].floorLevel+minCeilingHeight-1)
@@ -2218,7 +2224,8 @@ def pen2MidPos (pos):
     pos = subVec (intVec (pos), minvec)
     v = []
     for p in pos:
-        print p
+        if debugging:
+            print p
         v += vecInches2 ([[int (p), halfUnit]])
     return v
 
@@ -2619,12 +2626,15 @@ def calcFloorLevel ():
     rooms[s].floorLevel = 0
     unvisited = lowerFloors (s, getListOfRooms ())
     for r in rooms.keys ():
-        print "room", r, "has floor level",
+        if verbose:
+            print "room", r, "has floor level",
         if rooms[r].floorLevel is None:
             rooms[r].floorLevel = 0
-            print "(0)"
+            if verbose:
+                print "(0)"
         else:
-            print rooms[r].floorLevel
+            if verbose:
+                print rooms[r].floorLevel
 
 
 #

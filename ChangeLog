@@ -1,3 +1,8 @@
+2018-02-24      Gaius Mulley <gaius@gnu.org>
+
+	* python/txt2pen.py:  moved many prints to be turned on by
+	  the debugging flag.
+
 2017-10-18      Gaius Mulley <gaius@gnu.org>
 
 	* maps/doors.txt:  removed lights to allow testing.

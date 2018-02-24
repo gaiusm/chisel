@@ -801,7 +801,8 @@ def parseColour (l, room, x, y):
     g = expectInt (room, x, y, "green colour component")
     b = expectInt (room, x, y, "blue colour component")
     l.setcolour (r, g, b)
-    print "colour complete", l.r, l.g, l.b
+    if debugging:
+        print "colour complete", l.r, l.g, l.b
     return l
 
 
@@ -849,7 +850,8 @@ def tokenise (k):
 def expecting (l):
     global tokens
     tokens = tokens.lstrip ()
-    print "expecting", tokens
+    if debugging:
+        print "expecting", tokens
     for w in l:
         if isSubstr (tokens, "<" + w + ">"):
             return True
@@ -865,12 +867,14 @@ def expect (w, r, x, y):
 
     tokens = tokens.lstrip ()
     w = w.lstrip ()
-    print "expect", w
+    if debugging:
+        print "expect", w
     if isSubstr (tokens, "<" + w + ">"):
         if tokens != "":
             tokens = tokens[len (w) + 2:]
     else:
-        print w, tokens
+        if debugging:
+            print w, tokens
         error ("expecting token " + w + " in room " +
                str (r) + " at " + str (x) + " " + str (y))
 
@@ -934,11 +938,14 @@ def parseDefault (room, x, y):
         l = parseColour (light (), room, x, y)
         l.settype ('MID')
     elif expecting (['ceil']):
-        print "seen ceil"
+        if debugging:
+            print "seen ceil"
         expect ('ceil', room, x, y)
-        print "eat ceil"
+        if debugging:
+            print "eat ceil"
         l = parseColour (light (), room, x, y)
-        print "finished parseColour"
+        if debugging:
+            print "finished parseColour"
         l.settype ('CEIL')
     else:
         error ("expecting floor, mid or ceil after default in room " +
@@ -959,9 +966,11 @@ def parseEntity (room, x, y):
         expect ('worldspawn', room, x, y)
         rooms[room].worldspawn += [[x, y]]
     elif expecting (['ammo']):
-        print "before", tokens
+        if debugging:
+            print "before", tokens
         expect ('ammo', room, x, y)
-        print "after", tokens
+        if debugging:
+            print "after", tokens
         s = expectString (room, x, y, 'describing ammo')
         n = expectInt (room, x, y, 'amount of ammo')
         rooms[room].ammo += [[s, n, [x, y]]]
@@ -993,7 +1002,8 @@ def parseEntities (k, room, x, y):
     global tokens
 
     tokens = tokenise (k)
-    print tokens
+    if debugging:
+        print tokens
     while not expecting (['eoln']):
         parseEntity (room, x, y)
 
@@ -1016,9 +1026,10 @@ def findEntities (g, room, p):
                 if defines.has_key (c):
                     if debugging:
                         print "seen", c, "at", x, y
-                    print "pos", x, y, c, "=>",
+                        print "pos", x, y, c, "=>",
                     k = macro (defines[c])
-                    print k
+                    if debugging:
+                        print k
                     parseEntities (k, room, x, y)
 
 

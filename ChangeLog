@@ -1,7 +1,8 @@
 2018-02-24      Gaius Mulley <gaius@gnu.org>
 
 	* python/txt2pen.py:  moved many prints to be turned on by
-	  the debugging flag.
+          the debugging flag.
+	* python/pen2pen.py:  new tool added.
 
 2017-10-18      Gaius Mulley <gaius@gnu.org>
 

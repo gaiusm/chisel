@@ -1,3 +1,8 @@
+2018-02-26      Gaius Mulley <gaius@gnu.org>
+
+	* python/pen2pen.py:  many changes and code added.
+	  Partially complete source file.
+
 2018-02-24      Gaius Mulley <gaius@gnu.org>
 
 	* python/txt2pen.py:  moved many prints to be turned on by

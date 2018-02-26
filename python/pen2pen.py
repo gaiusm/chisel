@@ -23,6 +23,7 @@
 #
 
 import getopt, sys, string
+from chvec import *
 
 
 """
@@ -70,15 +71,18 @@ versionNumber = "0.1"
 currentLineNo = 1
 words = []
 curStatus = None
-status_open, status_closed, status_secret = range (3)
+status_open, status_closed, status_secret, status_visportal = range (4)
+doorString = ['OPEN', 'CLOSED', 'SECRET', 'VISPORTAL']
 curRoom = None
 curRoomNo = None
 curPos = None
 direction = ["left", "top", "right", "bottom"]
-doorStatus = ["open", "closed", "secret"]
+doorStatus = ["open", "closed", "secret", "visportal"]
 minx, miny, minz = None, None, None
 defaultOn = "MID"
 curOn = defaultOn
+convexTransform = False
+lastRoom = 0
 
 
 #
@@ -180,9 +184,26 @@ class roomInfo:
         self.ammo = []
         self.lights = []
         self.worldspawn = []
-        self.floorLevel = None
         self.inside = None
         self.defaultColours = {}
+        self.children = []  #  the children rooms of this room (concave -> convex).
+        self.isconvex = False
+
+    #
+    #  resetRoom - remove all entities (walls, doors, weapons in a room).
+    #
+
+    def resetRoom (self):
+        self.walls = []
+        self.doors = []
+        self.doorLeadsTo = []
+        self.pythonMonsters = []
+        self.monsters = []
+        self.weapons = []
+        self.ammo = []
+        self.lights = []
+        self.worldspawn = []
+        self.isconvex = False
 
     #
     #  addWall - Pre-condition:  line is a list of two elements.
@@ -242,13 +263,29 @@ class roomInfo:
             n += d[1]
         return n
 
+#
+#  newRoom - create a new room, n, and return the room object.
+#            The new room is added to the rooms dictionary.
+#
+
 def newRoom (n):
-    global rooms
+    global rooms, lastRoom
     if rooms.has_key (n):
         error ("room " + n + " has already been defined")
     rooms[n] = roomInfo (n, [], [])
+    if lastRoom < n:
+        lastRoom = n
     return rooms[n]
 
+#
+#  addRoom - creates a newroom and returns the room number.
+#
+
+def addRoom ():
+    global rooms, lastRoom
+    lastRoom += 1
+    r = newRoom (lastRoom)
+    return lastRoom
 
 #
 #  printf - keeps C programmers happy :-)
@@ -321,7 +358,8 @@ def readDefaults (name):
 
 
 def usage (code):
-    print "Usage: pen2map [-c filename.ss] [-defhmtvV] [-o outputfile] inputfile"
+    print "Usage: pen2map [-cdhtvV] [-o outputfile] inputfile"
+    print "  -c                transform concave rooms into multiple convex rooms"
     print "  -d                debugging"
     print "  -h                help"
     print "  -t                create a txt file from the pen file"
@@ -336,13 +374,15 @@ def usage (code):
 #
 
 def handleOptions ():
-    global debugging, verbose, outputName, toTxt
+    global debugging, verbose, outputName, toTxt, convexTransform
 
     outputName = None
     try:
-        optlist, l = getopt.getopt(sys.argv[1:], ':bc:defg:hmo:rstvVO')
+        optlist, l = getopt.getopt(sys.argv[1:], ':cdho:tvV')
         for opt in optlist:
-            if opt[0] == '-d':
+            if opt[0] == '-c':
+                convexTransform = True
+            elif opt[0] == '-d':
                 debugging = True
             elif opt[0] == '-h':
                 usage (0)
@@ -963,10 +1003,6 @@ def generateTxtRoom (r):
 #
 
 def generateTxt (o):
-    initFloor (maxx, maxy, ' ')
-    for r in rooms.keys ():
-        generateTxtRoom (r)
-    floor.reverse ()
     for r in floor:
         for c in r[1:]:
             o.write (c)
@@ -1557,8 +1593,214 @@ def getNeighbours (r):
     return n
 
 
-def generatePen (o):
+#
+#  generatePenRoom - generate a pen description of the room, r, to file, o.
+#
+
+def generatePenRoom (o, r):
+    o.write ('ROOM %s\n' % (r))
+    o.write ('   WALL\n')
+    for w in rooms[r].walls:
+        o.write ('      %d %d  %d %d\n' % (w[0][0], w[0][1], w[1][0], w[1][1]))
+    for d in rooms[r].doors:
+        o.write ('   DOOR %d %d  %d %d STATUS ' % (d[0][0][0], d[0][0][1], d[0][1][0], d[0][1][1]))
+        o.write (doorString[d[2]])
+        o.write (' LEADS TO %s\n' % (d[1]))
+    o.write ('END\n\n')
     return o
+
+#
+#  generatePen - generate a pen map.
+#
+
+def generatePen (o):
+    for r in rooms.keys ():
+        o = generatePenRoom (o, r)
+    o.write ("END.\n")
+    return o
+
+
+#
+#  isWall - returns
+#
+
+def isWall (pos):
+    return getFloor (pos[1], pos[0]) == '#'
+
+
+def isDoor (pos):
+    return (getFloor (pos[1], pos[0]) == '-') or (getFloor (pos[1], pos[0]) == '|') or (getFloor (pos[1], pos[0]) == '.') or (getFloor (pos[1], pos[0]) == '~')
+
+
+def isPlane (pos):
+    return isWall (pos) or isDoor (pos)
+
+
+def addVec (pos, vec):
+    return [pos[0]+vec[0], pos[1]+vec[1]]
+
+
+def moveBy (pos, vec):
+    if vec[0] != 0:
+        while not isPlane (addVec (pos, [vec[0], 0])):
+            pos = addVec (pos, [vec[0], 0])
+    if vec[1] != 0:
+        while not isPlane (addVec (pos, [0, vec[1]])):
+            pos = addVec (pos, [0, vec[1]])
+    return pos
+
+
+#
+#  moveToBotleft - move to bottom left corner in the current 2d cuboid
+#
+
+def moveToBotLeft (r):
+    pos = intVec (rooms[r].inside)
+    return moveBy (pos, [-1, -1])
+
+
+#
+#  scanRoom - find the walls and doors for room, r, given the
+#             bottom left coord inside the room is, p.
+#
+#             --fixme-- this is unfinished, see
+#             scanRoom inside txt2pen.py for the wall/door
+#             discover algorithm.  It walks around clockwise
+#             touching the wall on its left.  Every time it turns
+#             it records the previous wall and remembers
+#             the current point (which is the start of the
+#             next wall).
+#
+
+def scanRoom (r, p):
+    a = addVec (p, [-1, -1])   # start corner of a wall
+    d = 1  # direction 0 up, 1 right, 2 down, 3 left.
+
+"""
+    leftVec = [[-1, 0], [0, -1], [1, 0], [0, 1]]
+    forwardVec = [[0, 1], [1, 0], [0, -1], [-1, 0]]
+    if debugging:
+        print "wall corner", p
+
+    doorStartPoint = None
+    doorEndPoint = None
+    while True:
+        if debugging:
+            print "point currently at", p, "direction", d
+        if (doorStartPoint == None) and lookingLeft (p, leftVec[d], mapGrid, '. '):
+            if debugging:
+                print "seen first point", p
+            # first point on the wall is a door
+            doorStartPoint = addVec (p, leftVec[d])
+            doorEndPoint = doorStartPoint
+        if lookingLeft (addVec (p, forwardVec[d]), leftVec[d], mapGrid, '. '):
+            if debugging:
+                print "seen a door point", p,
+            if doorStartPoint == None:
+                doorStartPoint = addVec (addVec (p, forwardVec[d]), leftVec[d])
+            doorEndPoint = addVec (addVec (p, forwardVec[d]), leftVec[d])
+        else:
+            # end of door?
+            if doorEndPoint != None:
+                doors += [[doorStartPoint, doorEndPoint]]
+                doorStartPoint = None
+                doorEndPoint = None
+        if lookingLeft (addVec (p, forwardVec[d]), leftVec[d], mapGrid, 'x '):
+            # carry on
+            p = addVec (p, forwardVec[d])
+        elif lookingLeft (addVec (p, forwardVec[d]), leftVec[d], mapGrid, 'x.'):
+            if debugging:
+                print "wall corner (x.)", p
+            walls, a = addWall (walls, a, addVec (addVec (p, forwardVec[d]), leftVec[d]))
+            # end of door?
+            if doorEndPoint != None:
+                doors += [[doorStartPoint, doorEndPoint]]
+            doorStartPoint = None
+            doorEndPoint = None
+            # turn right
+            d = (d + 1) % 4
+            if s == p:
+                # back to the start
+                return walls, doors
+        elif lookingLeft (addVec (p, forwardVec[d]), leftVec[d], mapGrid, 'xx'):
+            if debugging:
+                print "wall corner (xx)", p
+            walls, a = addWall (walls, a, addVec (addVec (p, forwardVec[d]), leftVec[d]))
+            # end of door?
+            if doorEndPoint != None:
+                doors += [[doorStartPoint, doorEndPoint]]
+            doorStartPoint = None
+            doorEndPoint = None
+            # turn right
+            d = (d + 1) % 4
+            if s == p:
+                # back to the start
+                return walls, doors
+        elif lookingLeft (addVec (p, forwardVec[d]), leftVec[d], mapGrid, '  '):
+            if debugging:
+                print "wall corner (  )", p,
+            # walls, a = addWall (walls, a, addVec (addVec (p, forwardVec[d]), leftVec[d]))
+            walls, a = addWall (walls, a, addVec (p, leftVec[d]))
+            if debugging:
+                print "at point", a
+            # turn left
+            p = addVec (p, forwardVec[d])
+            d = (d + 3) % 4
+            if s == p:
+                # back to the start
+                return walls, doors
+        else:
+            printf ("something went wrong here\n")
+"""
+
+#
+#  walkRoom -
+#
+
+def walkRoom (r):
+    global rooms
+
+    rooms[r].resetRoom ()
+    print rooms[r].walls
+    bl = moveToBotLeft (r)
+    print r, bl
+    scanRoom (r, bl)
+
+
+#
+#  allConvex - return True if all rooms are convex.
+#
+
+def allConvex ():
+    for r in rooms.keys ():
+        if not rooms[r].isconvex:
+            if len (rooms[r].walls) == 4:
+                rooms[r].isconvex = True
+            else:
+                walkRoom (r)
+                return False
+    return True  # all done, all convex
+
+
+#
+#  convert2Convex - keep splitting rooms until they are all convex
+#
+
+def convert2Convex ():
+    while not allConvex ():
+        pass
+
+
+#
+#  placeRoomsOnFloor - places the rooms on the floor 2D array.
+#
+
+def placeRoomsOnFloor ():
+    global floor
+    initFloor (maxx, maxy, ' ')
+    for r in rooms.keys ():
+        generateTxtRoom (r)
+    floor.reverse ()
 
 
 #
@@ -1583,6 +1825,9 @@ def main ():
 
     words = lexicalPen (i)
     if parsePen ():
+        placeRoomsOnFloor ()
+        if convexTransform:
+            convert2Convex ()
         if toTxt:
             o = generateTxt (o)
         else:

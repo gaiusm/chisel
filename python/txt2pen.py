@@ -303,11 +303,16 @@ def moveBy (pos, vec, grid):
     return pos
 
 
-def addWall (walls, start, end):
-    if start != end:
-        walls += [[start, end]]
-        return walls, end
-    return walls, start
+#
+#  addWall - return the walls list and current point.
+#            Providing that the start is different to the current
+#            point then a new wall is added to the walls list.
+#
+
+def addWall (walls, start, current):
+    if start != current:
+        walls += [[start, current]]
+    return walls, current
 
 
 def lookingLeft (pos, left, grid, s):

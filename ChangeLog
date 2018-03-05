@@ -1,3 +1,8 @@
+2018-03-05      Gaius Mulley <gaius@gnu.org>
+
+	* python/pen2pen.py:  many bug fixes and comments
+	  added (overall still incomplete though).
+
 2018-02-26      Gaius Mulley <gaius@gnu.org>
 
 	* python/pen2pen.py:  many changes and code added.

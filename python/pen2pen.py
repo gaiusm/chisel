@@ -273,8 +273,8 @@ def newRoom (n):
     if rooms.has_key (n):
         error ("room " + n + " has already been defined")
     rooms[n] = roomInfo (n, [], [])
-    if lastRoom < n:
-        lastRoom = n
+    if lastRoom < int (n):
+        lastRoom = int (n)
     return rooms[n]
 
 #
@@ -284,8 +284,8 @@ def newRoom (n):
 def addRoom ():
     global rooms, lastRoom
     lastRoom += 1
-    r = newRoom (lastRoom)
-    return lastRoom
+    r = newRoom (str (lastRoom))
+    return r
 
 #
 #  printf - keeps C programmers happy :-)
@@ -1003,6 +1003,7 @@ def generateTxtRoom (r):
 #
 
 def generateTxt (o):
+    o.write ('\n')
     for r in floor:
         for c in r[1:]:
             o.write (c)
@@ -1625,11 +1626,11 @@ def generatePen (o):
 #
 
 def isWall (pos):
-    return getFloor (pos[1], pos[0]) == '#'
+    return getFloor (pos[0], pos[1]) == '#'
 
 
 def isDoor (pos):
-    return (getFloor (pos[1], pos[0]) == '-') or (getFloor (pos[1], pos[0]) == '|') or (getFloor (pos[1], pos[0]) == '.') or (getFloor (pos[1], pos[0]) == '~')
+    return (getFloor (pos[0], pos[1]) == '-') or (getFloor (pos[0], pos[1]) == '|') or (getFloor (pos[0], pos[1]) == '.') or (getFloor (pos[0], pos[1]) == '~')
 
 
 def isPlane (pos):
@@ -1639,6 +1640,10 @@ def isPlane (pos):
 def addVec (pos, vec):
     return [pos[0]+vec[0], pos[1]+vec[1]]
 
+
+#
+#  moveBy -
+#
 
 def moveBy (pos, vec):
     if vec[0] != 0:
@@ -1660,23 +1665,90 @@ def moveToBotLeft (r):
 
 
 #
+#  addWall - return the walls list and current point.
+#            Providing that the start is different to the current
+#            point then a new wall is added to the walls list.
+#
+
+def addWall (walls, start, current):
+    if start != current:
+        walls += [[start, current]]
+    return walls, current
+
+
+#
+#  lookingLeft - return True if the next square ahead is s[1]
+#                and the next ahead on the next and left s[0].
+#                It achieves this by testing for conflicts
+#                and returns False if a conflict is found.
+#
+
+def lookingLeft (pos, left, s):
+    if debugging:
+        print pos, left, s
+    #
+    #  direct ahead requests a space and found a wall
+    #
+    if s[1] == ' ' and isPlane (pos):
+        return False
+    #
+    #  direct ahead requests a wall and not found a wall
+    #
+    if s[1] == 'x' and (not isPlane (pos)):
+        return False
+    #
+    #  direct ahead requests an open door and not found a door
+    #
+    if s[1] == '.' and (not isDoor (pos)):
+        if debugging:
+            print "no door at", pos
+        return False
+    #
+    #  direct ahead requests an visportal and not found a door
+    #
+    if s[1] == '~' and (not isDoor (pos)):
+        return False
+    #
+    #  ahead, left requests a space and found a wall
+    #
+    if s[0] == ' ' and isPlane (addVec (pos, left)):
+        return False
+    #
+    #  ahead, left requests a wall and not found a wall
+    #
+    if s[0] == 'x' and (not isPlane (addVec (pos, left))):
+        return False
+    #
+    #  ahead, left requests an open door and not found a door
+    #
+    if s[0] == '.' and (not isDoor (addVec (pos, left))):
+        return False
+    #
+    #  ahead, left requests a visportal and not found a door
+    #
+    if s[0] == '~' and (not isDoor (addVec (pos, left))):
+        return False
+    return True
+
+
+#
 #  scanRoom - find the walls and doors for room, r, given the
 #             bottom left coord inside the room is, p.
 #
-#             --fixme-- this is unfinished, see
-#             scanRoom inside txt2pen.py for the wall/door
-#             discover algorithm.  It walks around clockwise
+#             It walks around clockwise
 #             touching the wall on its left.  Every time it turns
 #             it records the previous wall and remembers
 #             the current point (which is the start of the
 #             next wall).
 #
+#             It returns True if the room was scanned.  It will
+#             return False if a concave room is found (in which case
+#             a visportal is added to divide up the room.
+#
 
 def scanRoom (r, p):
     a = addVec (p, [-1, -1])   # start corner of a wall
     d = 1  # direction 0 up, 1 right, 2 down, 3 left.
-
-"""
     leftVec = [[-1, 0], [0, -1], [1, 0], [0, 1]]
     forwardVec = [[0, 1], [1, 0], [0, -1], [-1, 0]]
     if debugging:
@@ -1687,28 +1759,42 @@ def scanRoom (r, p):
     while True:
         if debugging:
             print "point currently at", p, "direction", d
-        if (doorStartPoint == None) and lookingLeft (p, leftVec[d], mapGrid, '. '):
+        #
+        #  no door yet and just seen the door on the left where a wall resides.
+        #
+        if (doorStartPoint == None) and lookingLeft (p, leftVec[d], '. '):
             if debugging:
                 print "seen first point", p
             # first point on the wall is a door
             doorStartPoint = addVec (p, leftVec[d])
-            doorEndPoint = doorStartPoint
-        if lookingLeft (addVec (p, forwardVec[d]), leftVec[d], mapGrid, '. '):
+            doorEndPoint = doorStartPoint  # end of the door at the first square so far.
+        #
+        # have we seen a door on the left?
+        #
+        if lookingLeft (addVec (p, forwardVec[d]), leftVec[d], '. '):
             if debugging:
                 print "seen a door point", p,
             if doorStartPoint == None:
                 doorStartPoint = addVec (addVec (p, forwardVec[d]), leftVec[d])
             doorEndPoint = addVec (addVec (p, forwardVec[d]), leftVec[d])
         else:
-            # end of door?
+            # no door, so was this the end of a door?
             if doorEndPoint != None:
+                # yes, door was in progress, end the door and record it.
                 doors += [[doorStartPoint, doorEndPoint]]
                 doorStartPoint = None
                 doorEndPoint = None
-        if lookingLeft (addVec (p, forwardVec[d]), leftVec[d], mapGrid, 'x '):
-            # carry on
+        #
+        #  have we a wall on the left?
+        #
+        if lookingLeft (addVec (p, forwardVec[d]), leftVec[d], 'x '):
+            # yes, carry on
             p = addVec (p, forwardVec[d])
-        elif lookingLeft (addVec (p, forwardVec[d]), leftVec[d], mapGrid, 'x.'):
+        #
+        #  or have we a wall on the left and a door in front?
+        #  in which case we need to turn and record a door start
+        #
+        elif lookingLeft (addVec (p, forwardVec[d]), leftVec[d], 'x.'):
             if debugging:
                 print "wall corner (x.)", p
             walls, a = addWall (walls, a, addVec (addVec (p, forwardVec[d]), leftVec[d]))
@@ -1721,10 +1807,13 @@ def scanRoom (r, p):
             d = (d + 1) % 4
             if s == p:
                 # back to the start
-                return walls, doors
-        elif lookingLeft (addVec (p, forwardVec[d]), leftVec[d], mapGrid, 'xx'):
+                return walls, doors, True
+        #
+        #  are we facing a wall going right?
+        #
+        elif lookingLeft (addVec (p, forwardVec[d]), leftVec[d], 'xx'):
             if debugging:
-                print "wall corner (xx)", p
+                print "wall corner (xx)", p, "direction", d
             walls, a = addWall (walls, a, addVec (addVec (p, forwardVec[d]), leftVec[d]))
             # end of door?
             if doorEndPoint != None:
@@ -1735,23 +1824,26 @@ def scanRoom (r, p):
             d = (d + 1) % 4
             if s == p:
                 # back to the start
-                return walls, doors
-        elif lookingLeft (addVec (p, forwardVec[d]), leftVec[d], mapGrid, '  '):
+                return walls, doors, True
+        #
+        #  does the room left wall turn left?
+        #
+        elif lookingLeft (addVec (p, forwardVec[d]), leftVec[d], '  '):
             if debugging:
                 print "wall corner (  )", p,
-            # walls, a = addWall (walls, a, addVec (addVec (p, forwardVec[d]), leftVec[d]))
             walls, a = addWall (walls, a, addVec (p, leftVec[d]))
             if debugging:
                 print "at point", a
-            # turn left
+            #
+            #  we would need to turn left at this point, however a
+            #  left turn means the room is concave, so we will add a visportal
+            #  and bail out
+            #
             p = addVec (p, forwardVec[d])
-            d = (d + 3) % 4
-            if s == p:
-                # back to the start
-                return walls, doors
+            return walls, doors, False
         else:
             printf ("something went wrong here\n")
-"""
+
 
 #
 #  walkRoom -
@@ -1763,8 +1855,171 @@ def walkRoom (r):
     rooms[r].resetRoom ()
     print rooms[r].walls
     bl = moveToBotLeft (r)
-    print r, bl
-    scanRoom (r, bl)
+    print "room", r, "bottom left", bl
+    walls, doors, convex = scanRoom (r, bl)
+    if convex:
+        printf ("walls and doors need to be saved in room: %d\n", r)
+    return convex
+
+
+#
+#  addVisportal - adds a visportal to room, r, at position,
+#                 p0, using vector v0 or at p1 using vector v1.
+#                 It chooses the smallest visportal.
+#
+
+def addVisportal (r, p0, v0, p1, v1):
+    print "visportal", r, p0, v0
+    d0 = 0
+    p = addVec (p0, [0, 0])
+    print "*************", p
+    while not isPlane (p):
+        d0 += 1
+        p = addVec (p, v0)
+        print "*************", p
+    d1 = 0
+    print r, p0, v0, p1, v1
+    p = addVec (p1, [0, 0])
+    print "*************", p
+    while not isPlane (p):
+        d1 += 1
+        p = addVec (p, v1)
+    print "d0 =", d0, "d1 =", d1
+    if d0 < d1:
+        p = addVec (p0, [0, 0])
+        while not isPlane (p):
+            setFloor (p[0], p[1], '~')
+            p = addVec (p, v0)
+    else:
+        p = addVec (p1, [0, 0])
+        while not isPlane (p):
+            setFloor (p[0], p[1], '~')
+            p = addVec (p, v1)
+
+
+#
+#  createNewRoom - check to see if pos is on the floor, if so then create a new
+#                  room with, pos, as the inside.
+#
+
+def createNewRoom (pos):
+    if isPlane (pos):
+        printf ("the visportal is too close to a wall to create another room (--fixme--)\n")
+    else:
+        r = addRoom ()
+        r.addInside (pos)
+
+
+#
+#  checkConvexRoom - find the walls and doors for room, r, given the
+#                    bottom left coord inside the room is, p.
+#
+#                    It walks around clockwise
+#                    touching the wall on its left.  Every time it turns
+#                    it records the previous wall and remembers
+#                    the current point (which is the start of the
+#                    next wall).
+#
+#                    It returns True if the room was scanned and was convex.
+#                    It will return False if a concave room is found (in which case
+#                    a visportal is added to divide up the room.
+#
+
+def checkConvexRoom (r, p):
+    d = 1  # direction 0 up, 1 right, 2 down, 3 left.
+    leftVec = [[-1, 0], [0, -1], [1, 0], [0, 1]]
+    forwardVec = [[0, -1], [1, 0], [0, 1], [-1, 0]]
+    s = addVec (p, [0, 0])
+    if debugging:
+        print "wall corner", p
+
+    while True:
+        setFloor (p[0], p[1], '?')
+        if debugging:
+            print "point currently at", p, "direction", d
+        #
+        # have we seen a door on the left?
+        #
+        if lookingLeft (addVec (p, forwardVec[d]), leftVec[d], '. '):
+            setFloor (p[0], p[1], 'd')
+            if debugging:
+                print "seen a door point", p,
+            # yes, carry on
+            p = addVec (p, forwardVec[d])
+        #
+        #  have we a wall on the left?
+        #
+        elif lookingLeft (addVec (p, forwardVec[d]), leftVec[d], 'x '):
+            setFloor (p[0], p[1], 'w')
+            if debugging:
+                print "seen a wall point", p,
+            # yes, carry on
+            p = addVec (p, forwardVec[d])
+        #
+        #  or have we a wall on the left and a door in front?
+        #  in which case we need to turn and record a door start
+        #
+        elif lookingLeft (addVec (p, forwardVec[d]), leftVec[d], 'x.'):
+            setFloor (p[0], p[1], 'R')
+            if debugging:
+                print "wall corner (x.)", p
+            # turn right
+            d = (d + 1) % 4
+            if s == p:
+                # back to the start
+                return True
+        #
+        #  are we facing a wall going right?
+        #
+        elif lookingLeft (addVec (p, forwardVec[d]), leftVec[d], 'xx'):
+            setFloor (p[0], p[1], 'r')
+            if debugging:
+                print "wall corner (xx)", p, "turning right"
+            # turn right
+            d = (d + 1) % 4
+            if s == p:
+                # back to the start
+                return True
+        #
+        #  does the room wall turn left?
+        #
+        elif lookingLeft (addVec (p, forwardVec[d]), leftVec[d], '  '):
+            setFloor (p[0], p[1], 'l')
+            if debugging:
+                print "wall corner (  )", p,
+                print "about to add visportal", p
+            #
+            #  we would need to turn left at this point, however a
+            #  left turn means the room is concave, so we will add a visportal
+            #  and bail out
+            #
+            addVisportal (r,
+                          p, leftVec[(d + 2) % 4],
+                          addVec (addVec (p, leftVec[d]), forwardVec[d]), forwardVec[d])
+            #
+            #  now reset the room entities as we will have to discover them again
+            #
+            rooms[r].resetRoom ()
+            #
+            #  and create a new room in the other side of the visportal.
+            #
+            createNewRoom (addVec (addVec (addVec (p, leftVec[d]), forwardVec[d]), leftVec[d]))
+            return False
+        else:
+            printf ("something went wrong here\n")
+
+
+#
+#  convexRoom -
+#
+
+def convexRoom (r):
+    global rooms
+
+    rooms[r].resetRoom ()
+    bl = moveToBotLeft (r)
+    print "room", r, "bottom left", bl
+    return checkConvexRoom (r, bl)
 
 
 #
@@ -1777,8 +2032,8 @@ def allConvex ():
             if len (rooms[r].walls) == 4:
                 rooms[r].isconvex = True
             else:
-                walkRoom (r)
-                return False
+                if not convexRoom (r):
+                    return False
     return True  # all done, all convex
 
 
@@ -1786,9 +2041,9 @@ def allConvex ():
 #  convert2Convex - keep splitting rooms until they are all convex
 #
 
-def convert2Convex ():
+def convert2Convex (o):
     while not allConvex ():
-        pass
+        o = generateTxt (o)
 
 
 #
@@ -1827,7 +2082,7 @@ def main ():
     if parsePen ():
         placeRoomsOnFloor ()
         if convexTransform:
-            convert2Convex ()
+            convert2Convex (o)
         if toTxt:
             o = generateTxt (o)
         else:

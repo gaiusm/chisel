@@ -1,7 +1,7 @@
 
 define 1 room 1
 define s worldspawn
-define o ogre
+define o monster monster_demon_imp
 
 ##################
 # 1              #

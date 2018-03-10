@@ -1642,16 +1642,22 @@ def addVec (pos, vec):
 
 
 #
-#  moveBy -
+#  moveBy - keep moving, pos, by either component of vec so long as it does not hit a plane.
 #
 
-def moveBy (pos, vec):
-    if vec[0] != 0:
-        while not isPlane (addVec (pos, [vec[0], 0])):
-            pos = addVec (pos, [vec[0], 0])
-    if vec[1] != 0:
-        while not isPlane (addVec (pos, [0, vec[1]])):
-            pos = addVec (pos, [0, vec[1]])
+def moveBy (pos, vec, grid):
+    movingx, movingy = True, True
+    while movingx or movingy:
+        if vec[0] != 0:
+            while not isPlane (addVec (pos, [vec[0], 0]), grid):
+                pos = addVec (pos, [vec[0], 0])
+                movingy = True
+            movingx = False
+        if vec[1] != 0:
+            while not isPlane (addVec (pos, [0, vec[1]]), grid):
+                pos = addVec (pos, [0, vec[1]])
+                movingx = True
+            movingy = False
     return pos
 
 

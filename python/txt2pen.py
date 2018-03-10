@@ -103,6 +103,17 @@ def printf (format, *args):
 
 
 #
+#  vprintf - printf if verbose was set.
+#
+
+def vprintf (format, *args):
+    global verbose
+    if verbose:
+        print str(format) % args,
+        sys.stdout.flush ()
+
+
+#
 #  error - issues an error message and exits.
 #
 
@@ -293,13 +304,23 @@ def addVec (pos, vec):
     return [pos[0]+vec[0], pos[1]+vec[1]]
 
 
+#
+#  moveBy - keep moving, pos, by either component of vec so long as it does not hit a plane.
+#
+
 def moveBy (pos, vec, grid):
-    if vec[0] != 0:
-        while not isPlane (addVec (pos, [vec[0], 0]), grid):
-            pos = addVec (pos, [vec[0], 0])
-    if vec[1] != 0:
-        while not isPlane (addVec (pos, [0, vec[1]]), grid):
-            pos = addVec (pos, [0, vec[1]])
+    movingx, movingy = True, True
+    while movingx or movingy:
+        if vec[0] != 0:
+            while not isPlane (addVec (pos, [vec[0], 0]), grid):
+                pos = addVec (pos, [vec[0], 0])
+                movingy = True
+            movingx = False
+        if vec[1] != 0:
+            while not isPlane (addVec (pos, [0, vec[1]]), grid):
+                pos = addVec (pos, [0, vec[1]])
+                movingx = True
+            movingy = False
     return pos
 
 
@@ -339,7 +360,9 @@ def mystop ():
 
 def scanRoom (topleft, p, mapGrid, walls, doors):
     global debuging
-    s = p
+    if debugging:
+        print "scanning room, start pos in room = ", p
+    s = addVec (p, [0, 0])
     a = addVec (p, [-1, -1])
     d = 1  # 0 up, 1 right, 2 down, 3 left
     leftVec = [[-1, 0], [0, -1], [1, 0], [0, 1]]
@@ -623,11 +646,9 @@ def printRoom (r, o):
 def generateRoom (r, p, mapGrid, start, i):
     global verbose, rooms, debugging
 
-    if verbose:
-        print "room", r,
     inside = p
     p = moveBy (p, [-1, -1], mapGrid)
-    if verbose:
+    if debugging:
         print "top left is", p
     s = p
     walls, doors = scanRoom (s, p, mapGrid, [], [])
@@ -1051,18 +1072,29 @@ def generatePen (mapGrid, start, i, o):
         errorLine (start, mapGrid[0], "the map must have at least one room defined")
     else:
         for r, p in zip (listOfRooms, pos):
+            vprintf ("[%s]", r)
             generateRoom (r, p, mapGrid, start, i)
+        vprintf ("\n")
         for r in listOfRooms:
             findMax (r)
         initFloor (maxx, maxy, emptyValue)
         for r in listOfRooms:
             onFloor (r)
+        vprintf ("floor: ")
         for r, p in zip (listOfRooms, pos):
+            vprintf ("[%s]", r)
             floodRoom (r, p)
+        vprintf ("\n")
+        vprintf ("doors: ")
         for r, p in zip (listOfRooms, pos):
+            vprintf ("[%s]", r)
             findDoors (r, p)
+        vprintf ("\n")
+        vprintf ("entities: ")
         for r, p in zip (listOfRooms, pos):
+            vprintf ("[%s]", r)
             findEntities (mapGrid, r, p)
+        vprintf ("\n")
         for r in listOfRooms:
             o = printRoom (r, o)
         o.write ("END.\n")
@@ -1074,9 +1106,16 @@ def generatePen (mapGrid, start, i, o):
 #
 
 def processMap (i, o):
+    global verbose
+    vprintf ("reading defines: ")
     i = readDefines (i)
+    vprintf ("done\n")
+    vprintf ("reading map: ")
     g, s = readMap (i)
+    vprintf ("done\n")
+    vprintf ("generate pen map: ")
     generatePen (g, s, i, o)
+    vprintf ("done\n")
     return o
 
 

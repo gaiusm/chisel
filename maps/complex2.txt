@@ -1,0 +1,66 @@
+
+define 1 room 1
+define 2 room 2
+define 3 room 3
+define 4 room 4
+define 5 room 5
+define 6 room 6
+define 7 room 7
+define 8 room 8
+define 9 room 9
+define a room 10
+define b room 11
+define c room 12
+define d room 13
+define e room 14
+define f room 15
+define g room 16
+define h room 17
+define i room 18
+define j room 19
+
+define s worldspawn
+define n monster monster_demon_hellknight
+
+
+
+############   #####   #####      ######
+#          #   #   #   #   #      #    #
+# 1        #   # h #   # 2 #      # 3  #
+#          #   #   #   #   #      #    #
+#          #   #   #   #   #      #    #
+#       ####   #   #   #   ##########..#
+#       #      #   #####..##           #
+#       #     ##..##       .           #
+#       #     #    .  6    .   7       #
+#       #     # 5  .       #           #
+#       #     #    #..###########..#...#
+#       #     #         #     #        #
+#       #    #######    # 9   .  8     #
+#     ########     #    #     .        #
+#     #            ###..##    #        #
+#     #                  #    #        #
+#     .         s        #    #        #
+#     .  4               #    #        #
+#     .                  #    #        #
+#     ##..###########...###..###########
+#     #    #        #   #      #       #
+#...###    #        #   #      #       #
+#   #      #        .   .      #       #
+# a #  i   #   b    . c .  d   ##      #
+#   #      #        .   .       #      #
+#####      #        #####       ########
+#         ##       ##   #              #
+#         #        #    #              #
+#    ######        #  g .              #
+#    #    #        #    .              #
+#    #    .        ########...#..#######
+#    #    .        .             #
+######    .        .             #
+#         ##...#...#             #
+#                  .             #
+#  e               .   f         #######
+#         n        .                   #
+#                  #                   #
+#                  #                   #
+########################################

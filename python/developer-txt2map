@@ -1,5 +1,7 @@
 #!/bin/bash
 
+FLOOR=
+
 rm *.pyc
 echo -n "txt2pen: "
 if PYTHONPATH=student python txt2pen.py -l -f 3 -o tiny.pen $1 ; then
@@ -9,7 +11,7 @@ else
     exit 1
 fi
 
-if PYTHONPATH=student python pen2map.py -fb -c tiny.ss -s -e -o tiny.map tiny.pen ; then
+if PYTHONPATH=student python pen2map.py ${FLOOR} -b -c tiny.ss -s -e -o tiny.map tiny.pen ; then
     echo "pen2map: pass"
 else
     echo "pen2map: failed"

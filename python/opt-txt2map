@@ -5,7 +5,7 @@ FLOOR=
 
 rm *.pyc
 echo -n "txt2pen: "
-if PYTHONPATH=../../solutions python txt2pen.py -l -f 3 -o tiny.pen $1 ; then
+if PYTHONPATH=../../solutions python txt2pen.py -l -f 5 -o tiny.pen $1 ; then
     echo "pass"
 else
     echo "failed"

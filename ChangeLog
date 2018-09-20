@@ -10,7 +10,10 @@
 	* python/txt2pen.py:  handle sounds and emit them
           to file.
 	* random/Makefile.am:  configure source file extension
-	  to .mod.
+          to .mod.
+	* debian/control:  add gm2 and libpth-dev as dependencies.
+	* version.c: set to 1.0.1.
+	* Makefile.am:  corrected path to chcuboid.py.
 
 2018-03-10      Gaius Mulley <gaius@gnu.org>
 

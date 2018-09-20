@@ -10,7 +10,7 @@ exec_prefix=@exec_prefix@
 bindir= @bindir@
 INSTALL_PROGRAM = install
 
-python_PYTHON = python/pen2map.py python/txt2pen.py python/chvec.py python/chcuboid.py
+python_PYTHON = python/pen2map.py python/txt2pen.py python/chvec.py python/student/chcuboid.py
 
 help:  force
 	@echo "knows about:  all, clean, install

@@ -1,3 +1,17 @@
+chisel (1.0.1-1.0) UNRELEASED; urgency=medium
+
+  * Non-maintainer upload.
+  * version 1.0.1 relased.
+
+ -- Gaius Mulley <gaius@gnu.org>  Thu, 20 Sep 2018 17:43:38 +0100
+
+chisel (0.0.1-1.2) UNRELEASED; urgency=medium
+
+  * Non-maintainer upload.
+  * added sounds, lights and many bug fixes.
+
+ -- Gaius Mulley <gaius@gnu.org>  Thu, 20 Sep 2018 17:41:48 +0100
+
 chisel (0.0.1-1.1) UNRELEASED; urgency=medium
 
   * Non-maintainer upload.

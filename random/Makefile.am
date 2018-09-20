@@ -1,5 +1,5 @@
 
-
+AM_DEFAULT_SOURCE_EXT = .mod
 
 bin_PROGRAMS = rndmap
 

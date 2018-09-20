@@ -1,3 +1,17 @@
+2018-09-20      Gaius Mulley <gaius@southwales.ac.uk>
+
+	* TODO:  New file.
+	* maps/five.txt:  changed definition of ammo.
+	* python/developer-txt2map:  added FLOOR and VISPORTALS.
+	* python/pen2map.py:  added sound, steps and option for
+          visportals (although code is unimplemented).  Many
+          changes to implement sounds and floor level code
+          rewritten.
+	* python/txt2pen.py:  handle sounds and emit them
+          to file.
+	* random/Makefile.am:  configure source file extension
+	  to .mod.
+
 2018-03-10      Gaius Mulley <gaius@gnu.org>
 
 	* python/developer-txt2map:  removed the automatic floor

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright (C) 2017
+# Copyright (C) 2017, 2018
 #               Free Software Foundation, Inc.
 # This file is part of Chisel.
 #
@@ -19,7 +19,7 @@
 # Free Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301, USA.
 #
-# Author Gaius Mulley <gaius@gnu.org>
+# Author Gaius Mulley <gaius@southwales.ac.uk>
 #
 
 import getopt, sys, string
@@ -33,7 +33,7 @@ EBNF of the pen file format
 FileUnit := RoomDesc { RoomDesc } [ RandomTreasure ] "END." =:
 
 RoomDesc := 'ROOM' Integer
-            { WallDesc | DoorDesc | TreasureDesc } 'END' =:
+            { WallDesc | DoorDesc | TreasureDesc | SoundDesc } 'END' =:
 
 WallDesc := 'WALL' WallCoords { WallCoords } =:
 
@@ -58,6 +58,9 @@ TreasureDesc := 'TREASURE' 'AT' Integer Integer
 RandomTreasure := 'RANDOMIZE' 'TREASURE' Integer
                    { Integer }
                =:
+soundDesc := 'SOUND' 'AT' Integer Integer filename
+             { 'VOLUME' Integer | "LOOPING" | "WAIT" int } =:
+
 """
 
 inputFile = None
@@ -97,6 +100,8 @@ defaultOn = "MID"
 curOn = defaultOn
 defaultColour = [150, 150, 150]
 autoBeams = False
+enableVisportals = False
+minFloor, maxFloor = 0, 0
 
 defaults = { "portal":"textures/editor/visportal",
              "open":"textures/editor/visportal",
@@ -136,8 +141,10 @@ lightHeight        = 2.0       # 8 foot high
 lightBlockHeight   = 1.0       # 4 foot high
 lightFloorHeight   = 0.0625    # 3 inches
 lightFloorHeight   = 0.125     # 6 inches
+lightFloorHeight   = 0.125     # 6 inches
 lightCeilingHeight = minCeilingHeight - 1.5
 floorStep          = 0.25      # 1 foot
+noSteps            = 4         # how many steps
 
 
 def mycut (l, i):
@@ -294,6 +301,7 @@ class roomInfo:
         self.floorLevel = None
         self.inside = None
         self.defaultColours = {}
+        self.sounds = []
 
     def addWall (self, line):
         global maxx, maxy
@@ -324,6 +332,8 @@ class roomInfo:
         for d in self.doors:
             n += d[1]
         return n
+    def addSound (self, s, pos):
+        self.sounds += [[s, pos]]
 
 def newRoom (n):
     global rooms
@@ -452,11 +462,11 @@ def usage (code):
 #
 
 def handleOptions ():
-    global debugging, verbose, outputName, toTxt, toMap, ssName, comments, statistics, gameType, genSteps, optimise, regressionRequired, autoBeams
+    global debugging, verbose, outputName, toTxt, toMap, ssName, comments, statistics, gameType, genSteps, optimise, regressionRequired, autoBeams, enableVisportals
 
     outputName = None
     try:
-        optlist, l = getopt.getopt(sys.argv[1:], ':bc:defg:hmo:rstvVO')
+        optlist, l = getopt.getopt(sys.argv[1:], ':bc:defg:hmo:prstvVO')
         for opt in optlist:
             if opt[0] == '-b':
                 autoBeams = True
@@ -477,6 +487,8 @@ def handleOptions ():
                     usage (1)
             elif opt[0] == '-h':
                 usage (0)
+            elif opt[0] == '-p':
+                enableVisportals = True
             elif opt[0] == '-o':
                 outputName = opt[1]
             elif opt[0] == '-v':
@@ -743,7 +755,7 @@ def status ():
 def integer ():
     global curInteger
     i = peek ()
-    if i.isdigit ():
+    if i.isdigit () or (i[0] == '-'):
         curInteger = get ()
         # print "found integer", curInteger, "next token is", peek ()
         return True
@@ -1001,6 +1013,52 @@ def defaultDesc ():
         errorLine ("expecting FLOOR, MID or CEILING after DEFAULT")
 
 
+class sound:
+    def __init__ (self, filename):
+        self.filename = filename
+        self.volume = 0.0
+        self.looping = 1
+        self.wait = 0.0
+        self.mindist = 3.0
+        self.maxdist = 25.0
+    def setVolume (self, volume):
+        self.volume = volume
+    def setLooping (self):
+        self.looping = True
+    def setWait (self, wait):
+        self.wait = wait
+
+
+#
+#
+#
+
+def soundDesc ():
+    expect ("SOUND")
+    expect ("AT")
+    if posDesc ():
+        soundPos = curPos
+        filename = get ()
+        s = sound (filename)
+        while expecting (['VOLUME', 'LOOPING', 'WAIT']):
+            if expecting (['VOLUME']):
+                expect ('VOLUME')
+                if integer ():
+                    s.setVolume (curInteger)
+                else:
+                    errorLine ('expecting an integer after the VOLUME keyword')
+            elif expecting (['LOOPING']):
+                expect ('LOOPING')
+                s.setLooping ()
+            elif expecting (['WAIT']):
+                expect ('WAIT')
+                if integer ():
+                    s.setWait (curInteger)
+                else:
+                    errorLine ('expecting an integer after the WAIT keyword')
+        curRoom.addSound (s, soundPos)
+
+
 #
 #  roomDesc := "ROOM" integer { doorDesc | wallDesc | treasureDesc | ammoDesc | lightDesc | insideDesc | weaponDesc | monsterDesc | spawnDesc } =:
 #
@@ -1014,7 +1072,7 @@ def roomDesc ():
             curRoom = newRoom (curRoomNo)
             if verbose:
                 print "roomDesc", curRoomNo
-            while expecting (['DOOR', 'WALL', 'TREASURE', 'AMMO', 'WEAPON', 'LIGHT', 'INSIDE', 'MONSTER', 'SPAWN', 'DEFAULT']):
+            while expecting (['DOOR', 'WALL', 'TREASURE', 'AMMO', 'WEAPON', 'LIGHT', 'INSIDE', 'MONSTER', 'SPAWN', 'DEFAULT', 'SOUND']):
                 if expecting (['DOOR']):
                     doorDesc ()
                 elif expecting (['WALL']):
@@ -1037,6 +1095,8 @@ def roomDesc ():
                     spawnDesc ()
                 elif expecting (['DEFAULT']):
                     defaultDesc ()
+                elif expecting (['SOUND']):
+                    soundDesc ()
             expect ('END')
             return True
         else:
@@ -1753,11 +1813,13 @@ def flushBricks (o, bcount):
 #
 
 def doWall (r, e):
+    global minFloor, maxFloor
     if isVertical (e):
         a = min (e[0][1], e[1][1])
         b = max (e[0][1], e[1][1])
         for l in range (a, b+1):
-            pos = [e[0][0], l, rooms[r].floorLevel]
+            # pos = [e[0][0], l, rooms[r].floorLevel]
+            pos = [e[0][0], l, minFloor-1]
             end = [e[1][0]+1, l+1, minCeilingHeight]
             size = subVec (end, pos)
             newcuboid (pos, size, e[-2])
@@ -1765,7 +1827,8 @@ def doWall (r, e):
         a = min (e[0][0], e[1][0])
         b = max (e[0][0], e[1][0])
         for l in range (a, b+1):
-            pos = [l, e[0][1], rooms[r].floorLevel]
+            # pos = [l, e[0][1], rooms[r].floorLevel]
+            pos = [l, e[0][1], minFloor-1]
             end = [l+1, e[1][1]+1, minCeilingHeight]
             size = subVec (end, pos)
             newcuboid (pos, size, e[-2])
@@ -1788,23 +1851,76 @@ def brushFooter (o):
     return o
 
 #
+#  generateStepsVerticalWall - generate a sequence of steps on a vertical wall.
+#
+
+def generateStepsVerticalWall (r, e, l):
+    print "vertical steps in room", r, e
+    leftLevel  = rooms[str (getFloor (e[0][0]-1, e[0][1]))].floorLevel
+    rightLevel = rooms[str (getFloor (e[0][0]+1, e[0][1]))].floorLevel
+    winc = 1.0/float (noSteps)
+    if leftLevel == rightLevel:
+        hinc = 0
+    else:
+        hinc = floorStep
+    widthOffset = 0
+    heightOffset = 0
+    for s in range (noSteps):
+        pos = [e[0][0]+widthOffset, l, minFloor-1]
+        print leftLevel, rightLevel, widthOffset, heightOffset
+        widthOffset += winc
+        heightOffset += hinc
+        if leftLevel < rightLevel:
+            end = [e[1][0]+widthOffset, l+1, leftLevel + heightOffset]
+        else:
+            end = [e[1][0]+widthOffset, l+1, leftLevel - heightOffset]
+        size = subVec (end, pos)
+        newcuboid (pos, size, 'wall')
+
+
+#
+#  generateStepsHorizontalWall - generate a sequence of steps on a horizontal wall.
+#
+
+def generateStepsHorizontalWall (r, e, l):
+    print "horizontal steps in room", r, e
+    botLevel = rooms[str (getFloor (e[0][0], e[0][1]-1))].floorLevel
+    topLevel = rooms[str (getFloor (e[0][0], e[0][1]+1))].floorLevel
+    winc = 1.0/float (noSteps)
+    if topLevel == botLevel:
+        hinc = 0
+    else:
+        hinc = floorStep
+    widthOffset = 0
+    heightOffset = 0
+    for s in range (noSteps):
+        pos = [l, e[0][1]+widthOffset, minFloor-1]
+        widthOffset += winc
+        heightOffset += hinc
+        if botLevel < topLevel:
+            end = [l+1, e[1][1]+widthOffset, botLevel + heightOffset]
+        else:
+            end = [l+1, e[1][1]+widthOffset, botLevel - heightOffset]
+        size = subVec (end, pos)
+        newcuboid (pos, size, 'wall')
+
+
+#
 #  doOpen - create an open door.
 #
 
 def doOpen (r, e):
+    global minFloor, maxFloor
     if debugging:
         print "building floor and ceiling for doorway"
-    if isVertical (e):
+    if (e[-1] == 'left') or (e[-1] == 'right'):
+        #
+        #  vertical door (on the 2D map)
+        #
         a = min (e[0][1], e[1][1])
         b = max (e[0][1], e[1][1])
         for l in range (a, b+1):
-            h = rooms[r].floorLevel-1
-            pos = [e[0][0], l, h]
-            end = [e[1][0]+1, l+1, h+1]
-            size = subVec (end, pos)
-            if debugging:
-                print "vertical floor block at", pos, end, size
-            newcuboid (pos, size, 'wall')   # floor
+            generateStepsVerticalWall (r, e, l)
             h = minCeilingHeight
             pos = [e[0][0], l, h]
             end = [e[1][0]+1, l+1, h+1]
@@ -1812,17 +1928,20 @@ def doOpen (r, e):
             if debugging:
                 print "vertical ceiling block at", pos, end, size
             newcuboid (pos, size, 'wall')   # ceiling
-    elif isHorizontal (e):
+            if enableVisportals:
+                # visportal doorway
+                #
+                # (mcomp your code goes here)
+                #
+                pass
+    else:
+        #
+        #  horizontal door (on the 2D map)
+        #
         a = min (e[0][0], e[1][0])
         b = max (e[0][0], e[1][0])
         for l in range (a, b+1):
-            h = rooms[r].floorLevel-1
-            pos = [l, e[0][1], h]
-            end = [l+1, e[1][1]+1, h+1]
-            size = subVec (end, pos)
-            if debugging:
-                print "horizontal floor block at", pos, end, size
-            newcuboid (pos, size, 'wall')   # ceiling
+            generateStepsHorizontalWall (r, e, l)
             h = minCeilingHeight
             pos = [l, e[0][1], h]
             end = [l+1, e[1][1]+1, h+1]
@@ -1830,6 +1949,12 @@ def doOpen (r, e):
             if debugging:
                 print "horiz ceiling block at", pos, end, size
             newcuboid (pos, size, 'wall')   # ceiling
+            if enableVisportals:
+                # visportal doorway
+                #
+                # (mcomp your code goes here)
+                #
+                pass
 
 
 brickFunc = {'leftwall':doWall, 'topwall':doWall, 'rightwall':doWall, 'bottomwall':doWall,
@@ -2175,18 +2300,20 @@ def generateCeiling (r, e):
         for y in range (1, maxy):
             if getFloor (x, y) == int (r):
                 pos = [x, y, rooms[r].floorLevel+minCeilingHeight]
-                size = [1, 1, 1]
+                end = [x+1, y+1, minCeilingHeight+1]
+                size = subVec (end, pos)
                 newcuboid (pos, size, 'ceiling')
     if autoBeams:
         generateBeams (r, e)
 
 
 def generateFloor (r, e):
+    global minFloor, maxFloor
     for x in range (1, maxx):
         for y in range (1, maxy):
             if getFloor (x, y) == int (r):
-                pos = [x, y, rooms[r].floorLevel-1]
-                size = [1, 1, 1]
+                pos = [x, y, minFloor-1]
+                size = [1, 1, rooms[r].floorLevel-minFloor+1]
                 if debugging:
                     print "floor at", pos, size
                 newcuboid (pos, size, 'floor')
@@ -2427,7 +2554,7 @@ def generateFloorLight (r, l, walls):
             newlight (pos, size, li)
             return
     # print "light is not touching a wall", l
-    pos = [int (lp[0]), int (lp[1]), getFloorLevel (r)]
+    pos = [int (lp[0]), int (lp[1]), getFloorLevel (r) + lightFloorHeight]
     size = [lightBlock, lightBlock, lightFloorHeight]
     if debugging:
         print pos, size
@@ -2515,16 +2642,50 @@ def generateAmmo (o, e):
     for r in rooms.keys():
         if debugging:
             print rooms[r].ammo
-        for t, a, p in rooms[r].ammo:
+        for ammo_kind, a, xy in rooms[r].ammo:
             o.write ("// entity " + str (e) + '\n')
             o.write ("{\n")
             o.write ('    "inv_item" "4"\n')
-            o.write ('    "classname" "' + t + '"\n')
-            o.write ('    "name" "' + t + '_' + str (n) + '"\n')
+            o.write ('    "classname" "' + ammo_kind + '"\n')
+            o.write ('    "name" "' + ammo_kind + '_' + str (n) + '"\n')
             o.write ('    "origin" "')
-            pos = p + [getFloorLevel (r) + invSpawnHeight]
-            v = pen2MidPos (pos)
+            xyz = xy + [getFloorLevel (r) + invSpawnHeight]
+            v = pen2MidPos (xyz)
             o.write ('%f %f %f"\n' % (-v[0], -v[1], v[2]))
+            o.write ("}\n")
+            n += 1
+            e += 1
+    return o, e
+
+
+def generateSounds (o, e):
+    n = 1
+    for r in rooms.keys():
+        if debugging:
+            print rooms[r].sounds
+        for s, xy in rooms[r].sounds:
+            o.write ("// entity " + str (e) + '\n')
+            o.write ("{\n")
+            o.write ('    "classname" "speaker"\n')
+            o.write ('    "name" "speaker_%d"\n' % e)
+            o.write ('    "origin" "')
+            xyz = xy + [getFloorLevel (r) + invSpawnHeight]
+            v = pen2MidPos (xyz)
+            o.write ('%f %f %f"\n' % (-v[0], -v[1], v[2]))
+            o.write ('    "s_shader" "%s"\n' % s.filename)
+            o.write ('    "s_mindistance" "%s"\n' % s.mindist)
+            o.write ('    "s_maxdistance" "%s"\n' % s.maxdist)
+            o.write ('    "s_volume" "%s"\n' % s.volume)
+            o.write ('    "s_omni" "0"\n')
+            o.write ('    "s_occlusion" "0"\n')
+            o.write ('    "soundgroup" ""\n')
+            o.write ('    "s_leadthrough" "0.100000"\n')
+            o.write ('    "s_plain" "0"\n')
+            o.write ('    "wait" "%s"\n' % s.wait)
+            o.write ('    "random" "0.000000"\n')
+            o.write ('    "s_looping" "1"\n')
+            o.write ('    "s_unclamped" "0"\n')
+            o.write ('    "s_justVolume" "1"\n')
             o.write ("}\n")
             n += 1
             e += 1
@@ -2550,6 +2711,7 @@ def generateMap (o):
     o, e    = generateMonsters (o, e)
     o, e    = generateLights (o, e)
     o, e    = generateAmmo (o, e)
+    o, e    = generateSounds (o, e)
     if statistics:
         print "Total rooms =", len (rooms.keys ())
         print "Total cuboids =", len (cuboids.keys ())
@@ -2557,17 +2719,6 @@ def generateMap (o):
         print "Total entities used =", e, "entities unused =", maxEntities-e
         print "Total brushes used  =", b
     return o
-
-
-#
-#  decFloorLevel - return the floor level of room, s, and subtract 1 ft.
-#
-
-def decFloorLevel (s):
-    if s.floorLevel is None:
-        return 0
-    else:
-        return s.floorLevel - floorStep
 
 
 #
@@ -2603,18 +2754,19 @@ def getNeighbours (r):
 #                This is a breadth first algorithm.
 #
 
-def lowerFloors (s, unvisited):
-    if (unvisited != []) and (s in unvisited):
-        unvisited.remove (s)
-        src = rooms[s]
-        children = getNeighbours (src)
-        for c in children:
+def lowerFloors (s):
+    visited = [s]
+    queue = getNeighbours (rooms[s])
+    level = -(floorStep * noSteps)
+    while queue != []:
+        nextLevel = []
+        for c in queue:
             r = rooms[c]
             if r.floorLevel == None:
-                r.floorLevel = decFloorLevel (src)
-        for c in children:
-            unvisited = lowerFloors (c, unvisited)
-    return unvisited
+                r.floorLevel = level
+                nextLevel += getNeighbours (r)
+        queue = nextLevel
+        level -= (floorStep * noSteps)
 
 
 #
@@ -2622,9 +2774,10 @@ def lowerFloors (s, unvisited):
 #
 
 def calcFloorLevel ():
+    global minFloor, maxFloor
     s = getSpawnRoom ()
     rooms[s].floorLevel = 0
-    unvisited = lowerFloors (s, getListOfRooms ())
+    lowerFloors (s)
     for r in rooms.keys ():
         if verbose:
             print "room", r, "has floor level",
@@ -2635,6 +2788,8 @@ def calcFloorLevel ():
         else:
             if verbose:
                 print rooms[r].floorLevel
+        minFloor = min (minFloor, rooms[r].floorLevel)
+        maxFloor = max (minFloor, rooms[r].floorLevel)
 
 
 #

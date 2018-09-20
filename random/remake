@@ -1,9 +1,11 @@
 #!/bin/bash
 
+OPTIONS=-fsoft-check-all
+
 for i in *.mod ; do
-   gm2 -g -c $i
+   gm2 ${OPTIONS} -g -c $i
 done
 
 gcc -g -c getopt.c
 
-gm2 -g -o map Map.mod
+gm2 ${OPTIONS} -g -o map Map.mod

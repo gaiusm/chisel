@@ -6,19 +6,18 @@ define s worldspawn
 define o monster monster_demon_imp
 define h monster monster_demon_hellknight
 define S monster monster_demon_tick
-define i light
 
 
 ###############################
-# 1             i# 2 i        #
+# 1              # 2          #
 #                #            #
 # s         o    .            #
 #                .            #
 #          #######         h  #
-#i         #   i              #
+#          #                  #
 #          #                  #
 ##################..###########
-# 3                     i     #
+# 3                           #
 #    S                        #
-#             i               #
+#                             #
 ###############################

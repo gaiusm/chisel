@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright (C) 2017
+# Copyright (C) 2017, 2018
 #               Free Software Foundation, Inc.
 # This file is part of Chisel.
 #
@@ -92,6 +92,7 @@ class roomInfo:
         self.worldspawn = []
         self.inside = None
         self.defaultColour = {}
+        self.sounds = []
 
 
 #
@@ -438,7 +439,7 @@ def scanRoom (topleft, p, mapGrid, walls, doors):
                 # back to the start
                 return walls, doors
         else:
-            printf ("something went wrong here\n")
+            error ("scanning room at %s has gone wrong, maybe the room is too small\n", p)
 
 #
 #  checkLight - add a mid light if lightCount == lightFrequency
@@ -569,6 +570,13 @@ def printInside (inside, o):
     return o
 
 
+def printSounds (sounds, o):
+    if sounds != []:
+        for s in sounds:
+            o = s.write (o)
+    return o
+
+
 def printAmmo (m, o):
     if m != []:
         for name, amount, pos in m:
@@ -581,7 +589,7 @@ def printAmmo (m, o):
 def printWeapons (w, o):
     if w != []:
         for name, pos in w:
-            o.write ("   WEAPON " + name + " AT ")
+            o.write ("   WEAPON " + str(name) + " AT ")
             printCoord (pos, o)
             o.write ("\n")
     return o
@@ -639,6 +647,7 @@ def printRoom (r, o):
         o = printLights (rooms[r].lights, o)
     o = printSpawnPlayer (rooms[r].worldspawn, o)
     o = printInside (rooms[r].inside, o)
+    o = printSounds (rooms[r].sounds, o)
     o.write ("END\n\n")
     return o
 
@@ -807,9 +816,35 @@ class light:
     def gettype (self):
         return self.orientation
 
+class sound:
+    def __init__ (self, pos, filename):
+        self.pos = pos
+        self.filename = filename
+        self.volume = None
+        self.looping = False
+        self.wait = None
+    def setVolume (self, volume):
+        self.volume = volume
+    def setLooping (self):
+        self.looping = True
+    def setWait (self, wait):
+        self.wait = wait
+    def write (self, f):
+        f.write ("   SOUND AT ")
+        printCoord (self.pos, f)
+        f.write (" %s " % self.filename)
+        if self.volume != None:
+            f.write ("VOLUME %d " % self.volume)
+        if self.looping != None:
+            f.write ("LOOPING ")
+        if self.wait != None:
+            f.write ("WAIT %d " % self.wait)
+        f.write ("\n")
+        return f
+
 
 #
-#  ebnf := worldSpawn | ammoDef | lightDef | defaultDef | monsterDef | weaponDef =:
+#  ebnf := worldSpawn | ammoDef | lightDef | defaultDef | monsterDef | weaponDef | soundDef =:
 #
 #  worldSpawn := 'worldspawn' =:
 #  ammoDef := 'ammo' string int =:
@@ -818,10 +853,10 @@ class light:
 #  colourDef := 'colour int int int' =:
 #  monsterDef := 'monster' string =:
 #  weaponDef := 'weapon' int =:
+#  soundDef := 'sound' filename { "volume" int | "looping" | "wait" int } =:
 #
 
 def parseColour (l, room, x, y):
-    print "parsing colour", tokens
     expect ('colour', room, x, y)
     r = expectInt (room, x, y, "red colour component")
     g = expectInt (room, x, y, "green colour component")
@@ -864,7 +899,7 @@ def tokenise (k):
     k = k.rstrip()
     k = k.split("#")[0]
     k = " " + k + " <eoln>"
-    for w in ['worldspawn', 'ammo', 'light', 'type', 'floor', 'mid', 'ceil', 'default', 'colour', 'monster', 'weapon', 'room']:
+    for w in ['worldspawn', 'ammo', 'light', 'type', 'floor', 'mid', 'ceil', 'default', 'colour', 'monster', 'weapon', 'room', 'sound', 'volume', 'looping', 'wait']:
         k = k.replace(" " + w + " ", " <" + w + "> ")
     return k.lstrip ()
 
@@ -916,7 +951,7 @@ def expectInt (r, x, y, message):
         error ("expecting integer " + message + ", not the token " + w + " in room " +
                str (r) + " at " + str (x) + " " + str (y))
         return 0
-    elif tokens[0].isdigit ():
+    elif tokens[0].isdigit () or (tokens[0] == '-') or (tokens[0] == '+'):
         w = tokens.split ()[0]
         tokens = tokens[len (w):]
         return int (w)
@@ -979,6 +1014,24 @@ def parseDefault (room, x, y):
     rooms[room].defaultColour[l.gettype ()] = [l.r, l.g, l.b]
 
 
+def parseSound (room, x, y):
+    filename = expectString (room, x, y, 'a filename after the sound keyword')
+    s = sound ([x, y], filename)
+    while expecting (['volume', 'looping', 'wait']):
+        if expecting (['volume']):
+            expect ('volume', room, x, y)
+            n = expectInt (room, x, y, 'a number and quantity after the volume keyword')
+            s.setVolume (n)
+        elif expecting (['looping']):
+            expect ('looping', room, x, y)
+            s.setLooping ()
+        elif expecting (['wait']):
+            expect ('wait', room, x, y)
+            n = expectInt (room, x, y, 'a number and quantity after the wait keyword')
+            s.setWait (n)
+    rooms[room].sounds += [s]
+
+
 #
 #  parseEntity -
 #
@@ -1014,6 +1067,9 @@ def parseEntity (room, x, y):
             rooms[room].lights += [[x, y, l]]
     elif expecting (['default']):
         parseDefault (room, x, y)
+    elif expecting (['sound']):
+        expect ('sound', room, x, y)
+        parseSound (room, x, y)
     else:
         w = tokens.split ()[0]
         error ("unexpected token " + w + " in room " +

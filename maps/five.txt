@@ -8,7 +8,7 @@ define s worldspawn
 define o monster ogre
 define c monster cyberdaemon
 define h monster hellknight
-define a ammo 6 50
+define a ammo 6 
 define w weapon 6
 define l light
 

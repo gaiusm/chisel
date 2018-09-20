@@ -1,7 +1,9 @@
 #!/bin/bash
 
-FLOOR=-f
 FLOOR=
+FLOOR=-f
+PORTALS=
+PORTALS=-p
 
 rm *.pyc
 echo -n "txt2pen: "
@@ -12,7 +14,7 @@ else
     exit 1
 fi
 
-if PYTHONPATH=../../solutions python pen2map.py -r -O ${FLOOR} -b -s -e -o tiny.map tiny.pen ; then
+if PYTHONPATH=../../solutions python pen2map.py ${PORTALS} -O ${FLOOR} -V -b -s -e -o tiny.map tiny.pen ; then
     echo "pen2map: pass"
 else
     echo "pen2map: failed"

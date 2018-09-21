@@ -1,0 +1,102 @@
+
+define 1 room 1 [defroom]
+define 2 room 2 [defroom]
+define 3 room 3 [defroom]
+define 4 room 4 [defroom]
+define 5 room 5 [defroom]
+define 6 room 6 [defroom]
+define 7 room 7 [defroom]
+define 8 room 8 [defroom]
+define 9 room 9 [defroom]
+define a room 10 [defroom]
+define b room 11 [defroom]
+define c room 12 [defroom]
+define d room 13 [defroom]
+define e room 14 [defroom]
+define f room 15 [defroom]
+define g room 16 [defroom]
+define h room 17 [defroom]
+define i room 18 [defroom]
+define j room 19 [defroom]
+define k room 20 [defroom]
+define l room 21 [defroom]
+define m room 22 [defroom]
+define n room 23 [defroom]
+define o room 24 [defroom]
+define p room 25 [defroom]
+define q room 26 [defroom]
+define r room 27 [defroom]
+define s room 28 [defroom]
+define t room 29 [defroom]
+
+define S worldspawn
+define M monster python_doommarine_mp
+define N monster monster_demon_hellknight
+define O monster monster_demon_imp
+define X monster monster_demon_tick
+define Y monster monster_zombie_commando_cgun
+define Z monster monster_zombie_bernie
+define E ammo item_medkit 1
+define H ammo ammo_shells_large 16
+
+define yellow colour 190 180 170
+define darkyellow colour 190 185 66
+define flame colour 170 107 7
+define lightflame colour 150 107 7
+
+define red colour 180 0 0
+define blue colour 0 0 180
+define green colour 0 180 0
+define darkblue colour 100 100 180
+
+define defroom default mid [yellow] default ceil [flame] default floor [lightflame]
+
+
+define P sound elysium.ogg volume -6 looping wait 0
+define Q sound abandon.ogg volume -6 looping wait 0
+define R sound visitingchambers.ogg volume -6 looping wait 0
+define W sound outsidehades.ogg volume 1 looping wait 0
+define T sound ontopoftheworld.ogg volume 1 looping wait 0
+define U sound visitingtheunderworld.ogg volume -6 looping wait 0
+
+
+##########     ##################
+# 1      #     # 2              #
+#  S P   #     #                #
+#        #     #                #
+#        #     #  N             #
+#        #######                #
+#        # 4   #######..#####..#########
+###..#..##     . 5             #X 6    #
+# 3      .     .               #       #
+#        .     .               .       #
+#        .     .   O           .       #
+#        .     .               #       #
+#        .     #..########..#..#X      #
+###..#..##     # 7       # 8   #########
+# c      #Q    .     Y   .     #
+#        #     .         .     #
+#        # Z   .         .     #
+#        #     #    ######     #
+#        #     #    #    #     #
+#        #   Y #    # 9  #     #
+#      ###     #...##    #     #
+#      #X      X   #   Y #     #
+#      #  X        # Z   ##    #
+#      #           #      #    #
+#      # X X X     #      #U   #
+#      #           #      .    #
+#      ###.....#...##     .    #
+#        #d  R #  a #######    #
+#        .   O #   X#X         #
+#        . O   # O  .          #
+#        #   O #    .          #
+#        .     # X  .          #
+#        .   X #   X#X         #
+#..#######.....#..#####..#######
+#b          X              #
+#   N    N    X N  X X X X #
+#          X               #
+#      N     N X X N  X XT #
+#                          #
+############################

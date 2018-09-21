@@ -1,0 +1,54 @@
+define 1 room 1 [defroom]
+define 2 room 2 [defroom]
+define 3 room 3 [defroom]
+define 4 room 4 [defroom]
+define 5 room 5 [defroom]
+define 6 room 6 [defroom]
+define 7 room 7 [defroom]
+define 8 room 8 [defroom]
+define 9 room 9 [defroom]
+define s worldspawn
+define o monster monster_demon_imp
+define c monster monster_demon_hellknight
+define h monster monster_demon_hellknight
+define S monster monster_demon_tick
+define Y monster monster_zombie_commando_cgun
+define Z monster monster_zombie_bernie
+
+define i light
+
+define d default ceil colour 210 199 130
+
+define yellow colour 190 180 170
+define darkyellow colour 190 185 66
+define flame colour 170 107 7
+
+define red colour 180 0 0
+define blue colour 0 0 180
+define green colour 0 180 0
+
+define f light type floor
+define m light type mid
+define defroom default mid [yellow] default ceil [flame]
+
+define P sound elysium.ogg volume -6 looping wait 0
+define Q sound abandon.ogg volume -6 looping wait 0
+define R sound visitingchambers.ogg volume -6 looping wait 0
+define S sound outsidehades.ogg volume -6 looping wait 0
+define T sound ontopoftheworld.ogg volume -6 looping wait 0
+define U sound visitingtheunderworld.ogg volume -6 looping wait 0
+
+
+################################################################
+#                                                              #
+#   1        Q                          U                      #
+#                                                              #
+#                                    Z                         #
+#                                                              #
+#       s                              Y                       #
+#                                                              #
+#                                      Z                       #
+#                      R                                T      #
+#    S                                                         #
+#                                                              #
+################################################################

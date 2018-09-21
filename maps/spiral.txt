@@ -1,0 +1,29 @@
+
+define 1 room 1
+define 2 room 2
+define 3 room 3
+define 4 room 4
+define O monster monster_demon_imp
+define H monster monster_demon_hellknight
+define S worldspawn
+
+define P sound elysium.ogg volume -6 looping wait 0
+define Q sound abandon.ogg volume -6 looping wait 0
+define R sound visitingchambers.ogg volume -6 looping wait 0
+define W sound outsidehades.ogg volume -6 looping wait 0
+define T sound ontopoftheworld.ogg volume 1 looping wait 0
+define U sound visitingtheunderworld.ogg volume -6 looping wait 0
+
+##########################
+#1       #2              #
+#        .               #
+#        .               #
+#        .               #
+#        #               #
+#....##############...####
+#3             #4        #
+#          P   #  O O O  #
+#      S       #    T    #
+#              #  O O O  #
+#              #         #
+##########################

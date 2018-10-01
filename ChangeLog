@@ -1,3 +1,10 @@
+2018-10-01      Gaius Mulley <gaius@southwales.ac.uk>
+
+	* python/developer-txt2map:  improved descriptions.
+	* python/pen2map.py:  suppressed many prints
+	  (turned on via debugging -d flag).
+        * python/txt2pen.py:  added comment for errorLine.
+
 2018-09-21      Gaius Mulley <gaius@southwales.ac.uk>
 
 	* maps/onebot.txt:  New file.

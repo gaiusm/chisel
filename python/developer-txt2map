@@ -4,8 +4,8 @@ FLOOR=
 FLOOR=-f
 VISPORTALS=-p
 
-rm *.pyc
-echo -n "txt2pen: "
+rm -f *.pyc
+echo -n "txt2pen: converting txt representation into pen map:  "
 if PYTHONPATH=student python txt2pen.py -l -f 3 -o tiny.pen $1 ; then
     echo "pass"
 else
@@ -14,8 +14,8 @@ else
 fi
 
 if PYTHONPATH=student python pen2map.py ${VISPORTALS} ${FLOOR} -b -c tiny.ss -s -e -o tiny.map tiny.pen ; then
-    echo "pen2map: pass"
+    echo "pen2map: converting pen map into doom3 map: pass"
 else
-    echo "pen2map: failed"
+    echo "pen2map: converting pen map into doom3 map: failed"
     exit 1
 fi

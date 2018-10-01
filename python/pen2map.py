@@ -1304,9 +1304,10 @@ def findJoining (r, w, e, p):
             return i
         if isHorizontal (l) and (getRight (l) == e):
             return i
-    print "w =", w
-    print "e =", e
-    print "p =", p
+    if debugging:
+        print "w =", w
+        print "e =", e
+        print "p =", p
     internalError ('walls do not form a bounded room in room ' + str (r))
 
 
@@ -1855,7 +1856,8 @@ def brushFooter (o):
 #
 
 def generateStepsVerticalWall (r, e, l):
-    print "vertical steps in room", r, e
+    if debugging:
+        print "vertical steps in room", r, e
     leftLevel  = rooms[str (getFloor (e[0][0]-1, e[0][1]))].floorLevel
     rightLevel = rooms[str (getFloor (e[0][0]+1, e[0][1]))].floorLevel
     winc = 1.0/float (noSteps)
@@ -1867,7 +1869,8 @@ def generateStepsVerticalWall (r, e, l):
     heightOffset = 0
     for s in range (noSteps):
         pos = [e[0][0]+widthOffset, l, minFloor-1]
-        print leftLevel, rightLevel, widthOffset, heightOffset
+        if debugging:
+            print leftLevel, rightLevel, widthOffset, heightOffset
         widthOffset += winc
         heightOffset += hinc
         if leftLevel < rightLevel:
@@ -1883,7 +1886,8 @@ def generateStepsVerticalWall (r, e, l):
 #
 
 def generateStepsHorizontalWall (r, e, l):
-    print "horizontal steps in room", r, e
+    if debugging:
+        print "horizontal steps in room", r, e
     botLevel = rooms[str (getFloor (e[0][0], e[0][1]-1))].floorLevel
     topLevel = rooms[str (getFloor (e[0][0], e[0][1]+1))].floorLevel
     winc = 1.0/float (noSteps)

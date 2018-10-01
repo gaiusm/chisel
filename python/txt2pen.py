@@ -179,6 +179,10 @@ def handleOptions ():
     return (None, outputName)
 
 
+#
+#  errorLine - display an error in GNU format.
+#
+
 def errorLine (n, line, text):
     global inputFile
     full = "%s:%d:%s\n%s:%d:%s\n" % (inputFile, n, text, inputFile, n, line)

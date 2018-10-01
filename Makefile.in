@@ -335,7 +335,7 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 SUFFIXES = .c .mod .def .o .obj .lo .a .m .mxm
-python_PYTHON = python/pen2map.py python/txt2pen.py python/chvec.py python/chcuboid.py
+python_PYTHON = python/pen2map.py python/txt2pen.py python/chvec.py python/student/chcuboid.py
 SUBDIRS = random
 all: all-recursive
 

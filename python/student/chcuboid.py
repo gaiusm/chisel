@@ -69,6 +69,7 @@ class cuboid:
         self.cuboidno = cuboidno
         self.debugging = False
 
+    """ not needed - delete this..
     #
     #  intersection - return True if self overlaps with the proposed
     #                 cuboid defined by pos, size.
@@ -86,6 +87,7 @@ class cuboid:
     def _intersectingAxis (self, bpos, bend):
         # --complete me--
         return False
+    """
 
     #
     #  interpenetration - return True if self penetrates with the proposed
@@ -98,10 +100,18 @@ class cuboid:
     #
     #  _interpenetrationAxis - return True if the x, y, and z axis penetrates
     #                          between cuboid self and cuboid bpos/bend.
+    #                          bpos is the bottom left position of the cuboid.
+    #                          bend is the top right position of the cuboid.
     #
 
     def _interpenetrationAxis (self, bpos, bend):
         # --complete me--
+        # return True if there is an interpenetration on the x axis between
+        #             bpos/bend and self
+        #        AND  if there is an interpenetration on the y axis between
+        #             bpos/bend and self
+        #        AND  if there is an interpenetration on the z axis between
+        #             bpos/bend and self
         return False
 
     #
@@ -118,6 +128,7 @@ class cuboid:
     #
 
     def _xlimits (self, pos, size):
+        # hint look at _limits
         pass # --complete me--
 
     #
@@ -125,6 +136,7 @@ class cuboid:
     #
 
     def _ylimits (self, pos, size):
+        # hint look at _limits
         pass # --complete me--
 
     #
@@ -132,6 +144,7 @@ class cuboid:
     #
 
     def _zlimits (self, pos, size):
+        # hint look at _limits
         pass # --complete me--
 
     #
@@ -142,6 +155,15 @@ class cuboid:
     #
 
     def _canExtend (self, pos, size):
+        if chcuboid_enable_optimise:
+            #
+            #  if the self x and y limits are the same as (pos and size)
+            #  then
+            #     see if we can extend the z axis to combine the cuboid
+            #  do the same for the z, x and y axis
+            #  do the same for the z, y and x axis
+            #
+            pass
         return False  # --complete me--
 
 

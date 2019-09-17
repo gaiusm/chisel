@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright (C) 2017
+# Copyright (C) 2017, 2018, 2019
 #               Free Software Foundation, Inc.
 # This file is part of Chisel.
 #
@@ -19,12 +19,13 @@
 # Free Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301, USA.
 #
-# Author Gaius Mulley <gaius@gnu.org>
+# Author Gaius Mulley <gaius.mulley@southwales.ac.uk>
 #
 
 import getopt, sys, string
 from chvec import *
 from chcuboid import *
+import math
 
 
 """
@@ -33,7 +34,7 @@ EBNF of the pen file format
 FileUnit := RoomDesc { RoomDesc } [ RandomTreasure ] "END." =:
 
 RoomDesc := 'ROOM' Integer
-            { WallDesc | DoorDesc | TreasureDesc } 'END' =:
+            { WallDesc | DoorDesc | TreasureDesc | SoundDesc } 'END' =:
 
 WallDesc := 'WALL' WallCoords { WallCoords } =:
 
@@ -58,6 +59,9 @@ TreasureDesc := 'TREASURE' 'AT' Integer Integer
 RandomTreasure := 'RANDOMIZE' 'TREASURE' Integer
                    { Integer }
                =:
+soundDesc := 'SOUND' 'AT' Integer Integer filename
+             { 'VOLUME' Integer | "LOOPING" | "WAIT" int } =:
+
 """
 
 inputFile = None
@@ -96,7 +100,10 @@ curCol = []
 defaultOn = "MID"
 curOn = defaultOn
 defaultColour = [150, 150, 150]
-
+autoBeams = False
+enableVisportals = False
+minFloor, maxFloor = 0, 0
+enablePitched = False
 
 defaults = { "portal":"textures/editor/visportal",
              "open":"textures/editor/visportal",
@@ -106,6 +113,8 @@ defaults = { "portal":"textures/editor/visportal",
              "floor":"textures/hell/qfloor",
              "ceiling":"textures/hell/wood1",
              "open_transform"   :"( ( 0.0078125 0 0 ) ( 0 0.0078125 1.5 ) )",
+             # portal transform is a no-op but it allows code reuse.
+             "portal_transform" :"( ( 0.0078125 0 0 ) ( 0 0.0078125 1.5 ) )",
              "wall_transform"   :"( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) )",
              "floor_transform"  :"( ( 0.015625 0 0 ) ( 0 0.015625 0 ) )",
              "ceiling_transform":"( ( 0.0078125 0 0 ) ( 0 0.0078125 0 ) )" }
@@ -127,17 +136,21 @@ wallThickness      = halfUnit         # number of inches thick for a brick
 # the remaining contants are in inchesPerUnit
 #
 
-minDoorHeight      = 6         # 6x48 inches doors minimum
+lintelThickness    = 0.5       # 2 foot lintel over the door
 minCeilingHeight   = 6         # 6x48 inches minimum
+minDoorHeight      = minCeilingHeight-lintelThickness   #
+candleHeight       = minCeilingHeight-2   # 5x48 inches for a candle above the beam
 spawnHeight        = 0.5       # players spawn 2 feet off the floor
-invSpawnHeight     = 0.25       # 2 feet off the floor
+invSpawnHeight     = 0.25      # 1 foot off the floor
 lightBlock         = 0.25      # 1 foot block
 lightHeight        = 2.0       # 8 foot high
 lightBlockHeight   = 1.0       # 4 foot high
 lightFloorHeight   = 0.0625    # 3 inches
 lightFloorHeight   = 0.125     # 6 inches
+lightFloorHeight   = 0.125     # 6 inches
 lightCeilingHeight = minCeilingHeight - 1.5
 floorStep          = 0.25      # 1 foot
+noSteps            = 4         # how many steps
 
 
 def mycut (l, i):
@@ -226,10 +239,50 @@ def vecInches2 (vec):
 
 cuboidno = 1          #  total number of cuboids used.
 cuboids = {}
+roofno = 1
+roofBricks = {}
 
 
 #
-#  addcuboid - adds a cuboid brick to the dictiorary of bricks.
+#  verify_polygon_points - runs a conistency check to ensure all points are unique.
+#
+
+def verify_polygon_points (polygon_points, name):
+    print polygon_points
+    for i, p in enumerate (polygon_points):
+        for j, q in enumerate (polygon_points):
+            if (i != j) and equVec (p, q):
+                print "polygon_points are:", polygon_points
+                print "duplicate", p, "at indices", i, "and", j
+                error ("the polygon " + name + " must not have duplicate vertices")
+
+
+class roofbrick:
+    def __init__ (self, polygon_points, faces, material):
+        verify_polygon_points (polygon_points, "roof")
+        self.polygon_points = polygon_points
+        self.faces = faces
+        self.material = material
+
+#
+#  addroofbrick - adds a roof brick to the dictionary of bricks.
+#                 Each roof brick has a unique number.
+#                 botpos is the bottom left corner of the brick.
+#                 toppos is the top left corner of the brick.
+#                 foot is a list of the vectors from the top/bot pos
+#                 which reference the points in the same Z plane.
+#                 These are the same throughout all the Z changes of the brick.
+#
+
+def addroofbrick (polygon_points, faces, material):
+    global roofBricks, roofno
+
+    roofBricks[roofno] = roofbrick (polygon_points, faces, material)
+    roofno += 1
+
+
+#
+#  addcuboid - adds a cuboid brick to the dictionary of bricks.
 #              Each cuboid has a unique number.
 #
 
@@ -274,11 +327,9 @@ def combined (pos, size, material):
 #
 
 def newcuboid (pos, size, material):
-    minvec = [minx-1, miny-1, minz-1]
-    pos = subVec (pos, minvec)
+    # pos = translatePos (pos)
     if not combined (pos, size, material):
         addcuboid (pos, size, material)
-
 
 class roomInfo:
     def __init__ (self, r, w, d):
@@ -294,6 +345,7 @@ class roomInfo:
         self.floorLevel = None
         self.inside = None
         self.defaultColours = {}
+        self.sounds = []
 
     def addWall (self, line):
         global maxx, maxy
@@ -324,6 +376,8 @@ class roomInfo:
         for d in self.doors:
             n += d[1]
         return n
+    def addSound (self, s, pos):
+        self.sounds += [[s, pos]]
 
 def newRoom (n):
     global rooms
@@ -431,6 +485,7 @@ def readDefaults (name):
 
 def usage (code):
     print "Usage: pen2map [-c filename.ss] [-defhmtvV] [-o outputfile] inputfile"
+    print "  -b                introduce beams and ceiling candle lights"
     print "  -c filename.ss    use filename.ss as the defaults for the map file"
     print "  -d                debugging"
     print "  -e                provide comments in the map file"
@@ -438,6 +493,8 @@ def usage (code):
     print "  -g type           game type.  The type must be 'single' or 'deathmatch'"
     print "  -h                help"
     print "  -m                create a doom3 map file from the pen file"
+    print "  -p                generate visportals"
+    print "  -q                a pitched ceiling for four walled rooms"
     print "  -s                generate statistics about the map file"
     print "  -t                create a txt file from the pen file"
     print "  -V                generate verbose information"
@@ -451,13 +508,15 @@ def usage (code):
 #
 
 def handleOptions ():
-    global debugging, verbose, outputName, toTxt, toMap, ssName, comments, statistics, gameType, genSteps, optimise, regressionRequired
+    global debugging, verbose, outputName, toTxt, toMap, ssName, comments, statistics, gameType, genSteps, optimise, regressionRequired, autoBeams, enableVisportals, enablePitched
 
     outputName = None
     try:
-        optlist, l = getopt.getopt(sys.argv[1:], ':c:defg:hmo:rstvVO')
+        optlist, l = getopt.getopt(sys.argv[1:], ':bc:defg:hmo:pqrstvVO')
         for opt in optlist:
-            if opt[0] == '-c':
+            if opt[0] == '-b':
+                autoBeams = True
+            elif opt[0] == '-c':
                 ssName = opt[1]
             elif opt[0] == '-d':
                 debugging = True
@@ -474,6 +533,10 @@ def handleOptions ():
                     usage (1)
             elif opt[0] == '-h':
                 usage (0)
+            elif opt[0] == '-p':
+                enableVisportals = True
+            elif opt[0] == '-q':
+                enablePitched = True
             elif opt[0] == '-o':
                 outputName = opt[1]
             elif opt[0] == '-v':
@@ -740,7 +803,7 @@ def status ():
 def integer ():
     global curInteger
     i = peek ()
-    if i.isdigit ():
+    if i.isdigit () or (i[0] == '-'):
         curInteger = get ()
         # print "found integer", curInteger, "next token is", peek ()
         return True
@@ -998,6 +1061,52 @@ def defaultDesc ():
         errorLine ("expecting FLOOR, MID or CEILING after DEFAULT")
 
 
+class sound:
+    def __init__ (self, filename):
+        self.filename = filename
+        self.volume = 0.0
+        self.looping = 1
+        self.wait = 0.0
+        self.mindist = 3.0
+        self.maxdist = 25.0
+    def setVolume (self, volume):
+        self.volume = volume
+    def setLooping (self):
+        self.looping = True
+    def setWait (self, wait):
+        self.wait = wait
+
+
+#
+#
+#
+
+def soundDesc ():
+    expect ("SOUND")
+    expect ("AT")
+    if posDesc ():
+        soundPos = curPos
+        filename = get ()
+        s = sound (filename)
+        while expecting (['VOLUME', 'LOOPING', 'WAIT']):
+            if expecting (['VOLUME']):
+                expect ('VOLUME')
+                if integer ():
+                    s.setVolume (curInteger)
+                else:
+                    errorLine ('expecting an integer after the VOLUME keyword')
+            elif expecting (['LOOPING']):
+                expect ('LOOPING')
+                s.setLooping ()
+            elif expecting (['WAIT']):
+                expect ('WAIT')
+                if integer ():
+                    s.setWait (curInteger)
+                else:
+                    errorLine ('expecting an integer after the WAIT keyword')
+        curRoom.addSound (s, soundPos)
+
+
 #
 #  roomDesc := "ROOM" integer { doorDesc | wallDesc | treasureDesc | ammoDesc | lightDesc | insideDesc | weaponDesc | monsterDesc | spawnDesc } =:
 #
@@ -1011,7 +1120,7 @@ def roomDesc ():
             curRoom = newRoom (curRoomNo)
             if verbose:
                 print "roomDesc", curRoomNo
-            while expecting (['DOOR', 'WALL', 'TREASURE', 'AMMO', 'WEAPON', 'LIGHT', 'INSIDE', 'MONSTER', 'SPAWN', 'DEFAULT']):
+            while expecting (['DOOR', 'WALL', 'TREASURE', 'AMMO', 'WEAPON', 'LIGHT', 'INSIDE', 'MONSTER', 'SPAWN', 'DEFAULT', 'SOUND']):
                 if expecting (['DOOR']):
                     doorDesc ()
                 elif expecting (['WALL']):
@@ -1034,6 +1143,8 @@ def roomDesc ():
                     spawnDesc ()
                 elif expecting (['DEFAULT']):
                     defaultDesc ()
+                elif expecting (['SOUND']):
+                    soundDesc ()
             expect ('END')
             return True
         else:
@@ -1062,6 +1173,18 @@ def parsePen ():
 
 def getPos (p):
     return int (p[0]), int (p[1])
+
+
+#
+#  toIntList - pre-condition:  a list of integers or strings of integers.
+#              post-condition:  returns a list of integers.
+#
+
+def toIntList (l):
+    result = []
+    for c in l:
+        result += [int (c)]
+    return result
 
 
 #
@@ -1241,9 +1364,10 @@ def findJoining (r, w, e, p):
             return i
         if isHorizontal (l) and (getRight (l) == e):
             return i
-    print "w =", w
-    print "e =", e
-    print "p =", p
+    if debugging:
+        print "w =", w
+        print "e =", e
+        print "p =", p
     internalError ('walls do not form a bounded room in room ' + str (r))
 
 
@@ -1625,6 +1749,15 @@ def roomToEntities (r):
 
 
 #
+#  invertAxis - flip the sign of the value, a.
+#               This function is used to aid debugging.
+#
+
+def invertAxis (a):
+    return -a
+
+
+#
 #  toInches - f/i is effectively base 48 (inches).
 #             in: f, i   f is a whole number, i is the fractional component of the doom3 value in inches.
 #             out:  return f*inchesPerUnit + i
@@ -1636,6 +1769,7 @@ def toInches (f, i = 0):
     d3 = f*inchesPerUnit+i
     if d3 >= maxd3Units:
         error ("this map is too large, it must not exceed %d doom3 units square or %d pen units square\n", d3, maxd3Units / inchesPerUnit)
+    d3 = invertAxis (d3)
     return d3
 
 
@@ -1685,6 +1819,45 @@ def zPlane (o, d, z0, text, transform, comment):
     o.write (transform + ' "' + text + '" 0 0 0\n')
     return o
 
+#
+#  simplify_unit - convert a floating point number to an integer if they are the same value.
+#
+
+def simplify_unit (unit):
+    if abs (unit) == unit:
+        unit = abs (unit)
+    if int (unit) == unit:
+        unit = int (unit)
+    return unit
+
+#
+#  simplify_vec - convert a vector of floating point values into a vector of integers providing
+#                 the values are the same.
+#
+
+def simplify_vec (vec):
+    v = []
+    for e in vec:
+        v += [simplify_unit (e)]
+    return v
+
+
+#
+#  plane - emit a plane defined by vector, vec, having a, distance, away
+#          from the origin into the map.  The plane has material and a transform.
+#          The caller may give a comment which appears in the map file.
+#
+
+def plane (o, vec, distance, material, transform, comment):
+    vec = simplify_vec (vec)
+    distance = simplify_unit (distance)
+    o = writeComment (o, comment)
+    o.write ('             ')
+    o.write ('( ' + str (vec[0]) + ' ' + str (vec[1])
+             + ' ' + str (vec[2]) + ' ' + str (distance) + ' ) ')
+    o.write (transform + ' "' + material + '" 0 0 0\n')
+    return o
+
 
 def mag (v):
     d = 0
@@ -1692,34 +1865,197 @@ def mag (v):
         d += i*i
     return d
 
+
+#
+#  reorder the coordinates to make a lowest, left, back corner
+#  b highest, top, right corner
+#
+
+def reorderVertices (a, b):
+    assert (len (a) == len (b))
+    c = []
+    d = []
+    for i, j in zip (a, b):
+        c += [min (i, j)]
+        d += [max (i, j)]
+    return c, d
+
+
 #
 #  brick - generate a solid brick using two vertices (corners)
-#          the first v0 is closest to the origin, lowest and left.
-#          the second v1 is furthest away from the origin highest
-#          and right.
+#          v0 and v1 must be opposite corners of the cuboid.
 #          v0 = [x, y, z]
 #          v1 = [x, y, z]
 #
 
 def brick (o, v0, v1, material, transform):
-    assert (mag (v0) < mag (v1))
-    if debugging:
-        print v0, v1
-    o = zPlane (o, -1, -v0[2], material, transform, 'floor of brick')
-    o = zPlane (o,  1,  v1[2], material, transform, 'ceiling of brick')
-    o = xPlane (o, -1, -v1[1], material, transform, 'top most horizontal of brick')
-    o = yPlane (o,  1,  v0[0], material, transform, 'right most vertical of brick')
-    o = xPlane (o,  1,  v0[1], material, transform, 'bottom most horizontal of brick')
-    o = yPlane (o, -1, -v1[0], material, transform, 'left most vertical of brick')
+    v0 = translatePos (v0)
+    v1 = translatePos (v1)
+    v0, v1 = reorderVertices (v0, v1)
+    size = subVec (v1, v0)
+    points, faces = generate_cube_points (v0, v1)
+    o = roof (o, points, faces, material, transform)
+    return o
+
+
+def sqr (x):
+    return x * x
+
+
+#
+#  gcd - pre-condition:  given two numbers: a, b
+#        post-condition: return the greatest common denominator from: a, b.
+#
+
+def gcd (a, b):
+    if a < 0:
+        a = -a
+    if b < 0:
+        b = -b
+    while b != 0:
+        t = b
+        b = a % b
+        a = t
+    return a
+
+#
+#  gcd3 - pre-condition:  given three numbers: a, b, c
+#         post-condition: return the greatest common denominator from: a, b, c.
+#
+
+def gcd3 (a, b, c):
+   return gcd (a, gcd (b, c))
+
+
+#
+#  gcd4 - pre-condition:  given three numbers: a, b, c, d
+#         post-condition: return the greatest common denominator from: a, b, c, d.
+#
+
+def gcd4 (a, b, c, d):
+   return gcd (a, gcd (b, gcd (c, d)))
+
+
+#
+#  simplify - pre-condition:  given a vector of three numbers: a, b, c, d
+#             post-condition: return the smallest equivalent values using
+#                             the greatest common denominator as the divisor.
+#
+
+def simplify (a, b, c, d):
+    e = gcd4 (a, b, c, d)
+    a /= e
+    b /= e
+    c /= e
+    d /= e
+    return a, b, c, d
+
+#
+#  distance - return the closest distance any point on the plane lies
+#             from the origin.
+#
+
+def distance (p, a, b, c):
+    d = - (p[0] * a + b * p[1] + c * p[2])
+    return d
+
+
+#
+#  plane_formula - pre-condition:  v0 and v1 are vectors defining the plane.
+#                  post-condition: return [a, b, c, d] where
+#                                  ax + by + cz + d = 0
+#                                  which defines the plane.
+#
+
+def plane_formula (p, v0, v1):
+    # print "point on plane =", p, "v0 =", v0, "v1 =", v1
+    a, b, c = crossProduct (v0, v1)
+    a, b, c = normaliseVec ([a, b, c])
+    # print "cross product (", v0, " x ", v1, ") =", [a, b, c],
+    d = distance (p, a, b, c)
+    # print "distance =", d
+    return a, b, c, d
+
+
+#
+#  plane_distance - return the distance of the plane from the origin
+#
+
+def plane_distance (a, b, c, d):
+    abc2 = sqr (a) + sqr (b) + sqr (c)
+    #
+    #  find the closest point to the origin
+    #
+    x = a * d / abc2
+    y = b * d / abc2
+    z = c * d / abc2
+    #
+    #  and compute the distance of (x, y, z) from the origin.
+    #
+    return math.sqrt (sqr (x) + sqr (y) + sqr (z))
+
+#
+#  calc_face - return two objects, a plane and distance of a face.
+#
+
+def calc_face (p0, p1, p2):
+    # print "***********", p0, p1, p2
+    v0 = subVec (p1, p0)
+    v1 = subVec (p2, p0)
+    #
+    #  convert to doom3 units
+    #
+    p0 = decimalVec (vecInches (p0))
+    v0 = decimalVec (vecInches (v0))
+    v1 = decimalVec (vecInches (v1))
+    a, b, c, d = plane_formula (p0, v1, v0)
+    return [a, b, c], d
+
+
+def isNearZero (r):
+    return abs (r) < 0.0001
+
+
+def verify_point_on_plane (vec, distance, p):
+    p = decimalVec (vecInches (p))
+    A = vec[0] * p[0]
+    B = vec[1] * p[1]
+    C = vec[2] * p[2]
+    D = distance
+    assert (isNearZero (A + B + C + D))
+
+def verify_plane_points (vec, distance, f, polygon_points):
+    for i in f:
+        verify_point_on_plane (vec, distance, polygon_points[i])
+
+#
+#  roof - pos is the bottom left corner of the roof brick.
+#         polygon_points is a list of quad points.  Each
+#         quad point uses the format:
+#         [ basepoint, vec0, vec1, vec2 ]
+#         basepoint is a corner of the polygon
+#         basepoint + vec0 is another corner of the polygon
+#         basepoint + vec1 is another corner of the polygon
+#         basepoint + vec2 is another corner of the polygon
+#
+
+def roof (o, polygon_points, faces, material, transform):
+    verify_polygon_points (polygon_points, "calc_face")
+    polygon_points = translatePoints (polygon_points)
+    verify_polygon_points (polygon_points, "calc_face")
+    for i, f in enumerate (faces):
+        vec, distance = calc_face (polygon_points[f[0]], polygon_points[f[1]], polygon_points[f[2]])
+        verify_plane_points (vec, distance, f, polygon_points)
+        # o = plane (o, vec, distance, material, transform, "face (%d) of polygon" % (i))
+        o = plane (o, vec, distance, material, transform, "")
     return o
 
 
 #
-#  flushBricks - flushes all used cuboids to the output file, o
+#  flushCuboids - flush all the cuboid bricks.
 #
 
-def flushBricks (o, bcount):
-    global cuboids
+def flushCuboids (o, bcount):
     for k in cuboids.keys ():
         b = cuboids[k]  # Python v2 and v3 compatible
         if debugging:
@@ -1728,11 +2064,44 @@ def flushBricks (o, bcount):
         o.write ('    {\n')
         o.write ('         brushDef3\n')
         o.write ('         {\n')
-        o = brick (o, vecInches (b.pos), vecInches (b.end),
+        o = brick (o, b.pos, b.end,
                    defaults[b.material], defaults[b.material + '_transform'])
+        # o = brick (o, vecInches (b.pos), vecInches (b.end),
+        #           defaults[b.material], defaults[b.material + '_transform'])
         o.write ('         }\n')
         o.write ('    }\n')
         bcount += 1
+    return o, bcount
+
+
+#
+#  flushRoofBricks - flush the roof bricks.
+#
+
+def flushRoofBricks (o, bcount):
+    for k in roofBricks.keys ():
+        b = roofBricks[k]
+        print "roofbrick, polygon_points =", b.polygon_points, "material =", b.material
+        o.write ('    // roof brick ' + str (k) + "\n")
+        o.write ('    {\n')
+        o.write ('         brushDef3\n')
+        o.write ('         {\n')
+        o = roof (o, b.polygon_points, b.faces,
+                  defaults[b.material], defaults[b.material + '_transform'])
+        o.write ('         }\n')
+        o.write ('    }\n')
+        bcount += 1
+    return o, bcount
+
+
+#
+#  flushBricks - flushes all used cuboids to the output file, o
+#
+
+def flushBricks (o, bcount):
+    o, bcount = flushCuboids (o, bcount)
+    o, bcount = flushRoofBricks (o, bcount)
+    # o, bcount = flushCuboids (o, bcount)
     return o, bcount
 
 
@@ -1742,11 +2111,13 @@ def flushBricks (o, bcount):
 #
 
 def doWall (r, e):
+    global minFloor, maxFloor
     if isVertical (e):
         a = min (e[0][1], e[1][1])
         b = max (e[0][1], e[1][1])
         for l in range (a, b+1):
-            pos = [e[0][0], l, rooms[r].floorLevel]
+            # pos = [e[0][0], l, rooms[r].floorLevel]
+            pos = [e[0][0], l, minFloor-1]
             end = [e[1][0]+1, l+1, minCeilingHeight]
             size = subVec (end, pos)
             newcuboid (pos, size, e[-2])
@@ -1754,7 +2125,8 @@ def doWall (r, e):
         a = min (e[0][0], e[1][0])
         b = max (e[0][0], e[1][0])
         for l in range (a, b+1):
-            pos = [l, e[0][1], rooms[r].floorLevel]
+            # pos = [l, e[0][1], rooms[r].floorLevel]
+            pos = [l, e[0][1], minFloor-1]
             end = [l+1, e[1][1]+1, minCeilingHeight]
             size = subVec (end, pos)
             newcuboid (pos, size, e[-2])
@@ -1777,48 +2149,118 @@ def brushFooter (o):
     return o
 
 #
+#  generateStepsVerticalWall - generate a sequence of steps on a vertical wall.
+#
+
+def generateStepsVerticalWall (r, e, l):
+    if debugging:
+        print "vertical steps in room", r, e
+    leftLevel  = rooms[str (getFloor (e[0][0]-1, e[0][1]))].floorLevel
+    rightLevel = rooms[str (getFloor (e[0][0]+1, e[0][1]))].floorLevel
+    winc = 1.0/float (noSteps)
+    if leftLevel == rightLevel:
+        hinc = 0
+    else:
+        hinc = floorStep
+    widthOffset = 0
+    heightOffset = 0
+    for s in range (noSteps):
+        pos = [e[0][0]+widthOffset, l, minFloor-1]
+        if debugging:
+            print leftLevel, rightLevel, widthOffset, heightOffset
+        widthOffset += winc
+        heightOffset += hinc
+        if leftLevel < rightLevel:
+            end = [e[1][0]+widthOffset, l+1, leftLevel + heightOffset]
+        else:
+            end = [e[1][0]+widthOffset, l+1, leftLevel - heightOffset]
+        size = subVec (end, pos)
+        newcuboid (pos, size, 'wall')
+
+
+#
+#  generateStepsHorizontalWall - generate a sequence of steps on a horizontal wall.
+#
+
+def generateStepsHorizontalWall (r, e, l):
+    if debugging:
+        print "horizontal steps in room", r, e
+    botLevel = rooms[str (getFloor (e[0][0], e[0][1]-1))].floorLevel
+    topLevel = rooms[str (getFloor (e[0][0], e[0][1]+1))].floorLevel
+    winc = 1.0/float (noSteps)
+    if topLevel == botLevel:
+        hinc = 0
+    else:
+        hinc = floorStep
+    widthOffset = 0
+    heightOffset = 0
+    for s in range (noSteps):
+        pos = [l, e[0][1]+widthOffset, minFloor-1]
+        widthOffset += winc
+        heightOffset += hinc
+        if botLevel < topLevel:
+            end = [l+1, e[1][1]+widthOffset, botLevel + heightOffset]
+        else:
+            end = [l+1, e[1][1]+widthOffset, botLevel - heightOffset]
+        size = subVec (end, pos)
+        newcuboid (pos, size, 'wall')
+
+
+#
 #  doOpen - create an open door.
 #
 
 def doOpen (r, e):
+    global minFloor, maxFloor
     if debugging:
         print "building floor and ceiling for doorway"
-    if isVertical (e):
-        a = min (e[0][1], e[1][1])
-        b = max (e[0][1], e[1][1])
-        for l in range (a, b+1):
-            h = rooms[r].floorLevel-1
-            pos = [e[0][0], l, h]
-            end = [e[1][0]+1, l+1, h+1]
-            size = subVec (end, pos)
-            if debugging:
-                print "vertical floor block at", pos, end, size
-            newcuboid (pos, size, 'wall')   # floor
-            h = minCeilingHeight
-            pos = [e[0][0], l, h]
-            end = [e[1][0]+1, l+1, h+1]
-            size = subVec (end, pos)
+    if (e[-1] == 'left') or (e[-1] == 'right'):
+        #
+        #  vertical door (on the 2D map)
+        #
+        a = min (e[0][1], e[1][1])  # smallest y coord
+        b = max (e[0][1], e[1][1])  # largest y coord
+        for l in range (a, b+1):    # iterative over all y coords
+            generateStepsVerticalWall (r, e, l)  # build the steps
+            #
+            #  now build the ceiling over the doorway
+            #
+            h = minDoorHeight + getFloorLevel (r)
+            pos = [e[0][0], l, h]   # bottom left
+            end = [e[1][0]+1, l+1, minCeilingHeight + getFloorLevel (r)]  # top right
+            size = subVec (end, pos)  #  size of ceiling
             if debugging:
                 print "vertical ceiling block at", pos, end, size
             newcuboid (pos, size, 'wall')   # ceiling
-    elif isHorizontal (e):
+            if enableVisportals:
+                # visportal doorway
+                #
+                # (mcomp your code goes here)
+                #
+                # fill in the doorway with visportal block
+                pass
+    else:
+        #
+        #  horizontal door (on the 2D map)
+        #
         a = min (e[0][0], e[1][0])
         b = max (e[0][0], e[1][0])
         for l in range (a, b+1):
-            h = rooms[r].floorLevel-1
-            pos = [l, e[0][1], h]
-            end = [l+1, e[1][1]+1, h+1]
-            size = subVec (end, pos)
-            if debugging:
-                print "horizontal floor block at", pos, end, size
-            newcuboid (pos, size, 'wall')   # ceiling
+            generateStepsHorizontalWall (r, e, l)
             h = minCeilingHeight
+            h = minDoorHeight + getFloorLevel (r)
             pos = [l, e[0][1], h]
-            end = [l+1, e[1][1]+1, h+1]
+            end = [l+1, e[1][1]+1, minCeilingHeight + getFloorLevel (r)]
             size = subVec (end, pos)
             if debugging:
                 print "horiz ceiling block at", pos, end, size
             newcuboid (pos, size, 'wall')   # ceiling
+            if enableVisportals:
+                # visportal doorway
+                #
+                # (mcomp your code goes here)
+                #
+                pass
 
 
 brickFunc = {'leftwall':doWall, 'topwall':doWall, 'rightwall':doWall, 'bottomwall':doWall,
@@ -1899,43 +2341,6 @@ def generateBrushes (r, e, o, bcount):
     setBrushBuilt (e)
     return o, bcount
 
-"""
-def generateFloor (r, e, o, bcount):
-    if debugging:
-        print "floor in room", r, e
-    o.write ('    // primitive ' + str (bcount) + '\n')
-    o.write ('    // floor for room ' + r + '\n')
-    if comments:
-        o.write ("     // " + str (e) + '\n')
-    o.write ('    {\n')
-    o.write ('         brushDef3\n')
-    o.write ('         {\n')
-    o = brick (o,
-               [toInches (e[0][0]+1), toInches (e[0][1]+1), toInches (getFloorLevel (r), -wallThickness)],
-               [toInches (e[1][0]), toInches (e[1][1]), toInches (getFloorLevel (r))],
-               defaults['floor'],
-               defaults['floor_transform'])
-    o.write ('         }\n')
-    o.write ('    }\n')
-    return o, bcount + 1
-
-
-def generateCeiling (r, e, o, bcount):
-    o.write ('    // primitive ' + str (bcount) + '\n')
-    o.write ('    // ceiling for room ' + r + '\n')
-    o.write ('    {\n')
-    o.write ('         brushDef3\n')
-    o.write ('         {\n')
-    o = brick (o,
-               [toInches (e[0][0]+1), toInches (e[0][1]+1), toInches (minCeilingHeight)],
-               [toInches (e[1][0]), toInches (e[1][1]), toInches (minCeilingHeight, wallThickness)],
-               defaults['ceiling'],
-               defaults['ceiling_transform'])
-    o.write ('         }\n')
-    o.write ('    }\n')
-    return o, bcount + 1
-"""
-
 
 def getMinMax (minx, miny, maxx, maxy, e):
     if minx == None:
@@ -1969,6 +2374,12 @@ def findMinMax (r):
     return [[minx, miny], [maxx, maxy]]
 
 
+def sortMinMax (a, b):
+    if a > b:
+        return b, a
+    return a, b
+
+
 #
 #  findOffsetInRoom - scans room, r, for the minx, miny, minz values.
 #
@@ -1995,8 +2406,10 @@ def findOffsetInRoom (r):
 #
 
 def findOffsets ():
+    global minvec
     for r in rooms.keys ():
         findOffsetInRoom (r)
+    minvec = [minx, miny, minz]
 
 #
 #  initRoomFloor -
@@ -2018,7 +2431,7 @@ def initRoomFloor ():
 
 def candle (r, x, y, h):
     pos = [x, y, h]
-    size = [0.5, 0.5, 0.5]
+    size = [0.5, 0.5, 0.0]
     col = scopeColourRoom (r, "CEIL")
     newlight (pos, size, light (col, "CEIL"))
 
@@ -2029,15 +2442,90 @@ def beamSupport (x, y, h):
     newcuboid (pos, size, 'wall')
 
 
+def beamTransim (botpos, toppos, translate_top):
+    points, faces = generate_roof_points (botpos, toppos, translate_top)
+    addroofbrick (points, faces, "ceiling")  # facing up 2D when viewed from top
+
+
 def makeBeamX (x, y0, y1, h):
     if debugging:
         print "beamX", x, y0, y1, h
+    #
+    #  main flat, support beam
+    #
     for y in range (y0+1, y1):
         pos = [x, y, h]
         size = [0.5, 1.0, 0.5]
         if debugging:
             print "beamX block", x, y, h
         newcuboid (pos, size, 'ceiling')
+    #
+    #  A shape support (right)
+    #
+    roof_height = float (y1-y0+1)/2.0
+    botpos = [x,
+              y0 + 1.0,
+              minCeilingHeight]
+    toppos = [x + 0.5,
+              y0 + 1.5,
+              minCeilingHeight + roof_height]
+    translate_top = [0.0, roof_height-1.0, 0.0]
+    beamTransim (botpos, toppos, translate_top)
+    #
+    #  A shape support (left)
+    #
+    roof_height = float (y1-y0+1)/2.0
+    botpos = [x,
+              y1-0.5,
+              minCeilingHeight]
+    toppos = [x + 0.5,
+              y1,
+              minCeilingHeight + roof_height]
+    translate_top = [0.0, -(roof_height-1.0), 0.0]
+    beamTransim (botpos, toppos, translate_top)
+
+    #
+    #  mid pillar
+    #
+    roof_height = float (y1-y0+1)/2.0
+    botpos = [x + 0.125,
+              y0 + roof_height + 0.125,
+              minCeilingHeight]
+    toppos = [x + 0.5 - 0.125,
+              y0 + roof_height - 0.125,
+              minCeilingHeight + roof_height]
+    translate_top = [0, 0, 0]
+    beamTransim (botpos, toppos, translate_top)
+
+    #
+    #  brace (left)
+    #
+    roof_height = float (y1-y0+1)/2.0
+    botpos = [x + 0.125,
+              y0 + roof_height + 0.125,
+              minCeilingHeight]
+    toppos = [x + 0.5 - 0.125,
+              y0 + roof_height - 0.125,
+              minCeilingHeight + roof_height/2.0]
+    translate_top = [0, roof_height/2.0, 0]
+    beamTransim (botpos, toppos, translate_top)
+
+    #
+    #  brace (right)
+    #
+    roof_height = float (y1-y0+1)/2.0
+    botpos = [x + 0.125,
+              y0 + roof_height + 0.125,
+              minCeilingHeight]
+    toppos = [x + 0.5 - 0.125,
+              y0 + roof_height - 0.125,
+              minCeilingHeight + roof_height/2.0]
+    translate_top = [0, -roof_height/2.0, 0]
+    beamTransim (botpos, toppos, translate_top)
+
+    #
+    #  stone support for the beam
+    #
     beamSupport (x, y0+1.0, h-0.5)
     beamSupport (x, y1-0.5, h-0.5)
 
@@ -2045,19 +2533,90 @@ def makeBeamX (x, y0, y1, h):
 def makeBeamY (x0, x1, y, h):
     if debugging:
         print "beamY", x0, x1, y, h
+    #
+    #  main flat, support beam
+    #
     for x in range (x0+1, x1):
         pos = [x, y, h]
         size = [1.0, 0.5, 0.5]
         if debugging:
             print "beamY block", x, y, h
         newcuboid (pos, size, 'ceiling')
+    #
+    #  A shape support (right)
+    #
+    roof_height = float (x1-x0+1)/2.0
+    botpos = [x0 + 1.0,
+              y,
+              minCeilingHeight]
+    toppos = [x0 + 1.5,
+              y + 0.5,
+              minCeilingHeight + roof_height]
+    translate_top = [roof_height-1.0, 0.0, 0.0]
+    beamTransim (botpos, toppos, translate_top)
+
+    #
+    #  A shape support (left)
+    #
+    roof_height = float (x1-x0+1)/2.0
+    botpos = [x1 - 0.5,
+              y,
+              minCeilingHeight]
+    toppos = [x1,
+              y + 0.5,
+              minCeilingHeight + roof_height]
+    translate_top = [- (roof_height-1.0), 0.0, 0.0]
+    beamTransim (botpos, toppos, translate_top)
+
+    #
+    #  mid pillar
+    #
+    roof_height = float (x1-x0+1)/2.0
+    botpos = [x0 + roof_height + 0.125,
+              y + 0.125,
+              minCeilingHeight]
+    toppos = [x0 + roof_height - 0.125,
+              y + 0.5 - 0.125,
+              minCeilingHeight + roof_height]
+    translate_top = [0, 0, 0]
+    beamTransim (botpos, toppos, translate_top)
+    #
+    #  brace (left)
+    #
+    roof_height = float (x1-x0+1)/2.0
+    botpos = [x0 + roof_height + 0.125,
+              y + 0.125,
+              minCeilingHeight]
+    toppos = [x0 + roof_height - 0.125,
+              y + 0.5 - 0.125,
+              minCeilingHeight + roof_height/2.0]
+    translate_top = [roof_height/2.0, 0, 0]
+    beamTransim (botpos, toppos, translate_top)
+
+    #
+    #  brace (right)
+    #
+    roof_height = float (x1-x0+1)/2.0
+    botpos = [x0 + roof_height + 0.125,
+              y + 0.125,
+              minCeilingHeight]
+    toppos = [x0 + roof_height - 0.125,
+              y + 0.5 - 0.125,
+              minCeilingHeight + roof_height/2.0]
+    translate_top = [-roof_height/2.0, 0, 0]
+    beamTransim (botpos, toppos, translate_top)
+
+    #
+    #  stone support for the beam
+    #
+
     beamSupport (x0+1.0, y, h-0.5)
     beamSupport (x1-0.5, y, h-0.5)
 
 
 def makeCandleX (r, x, y0, y1, h):
-    candle (r, x, y0+1.0, h)
-    candle (r, x, y1-0.5, h)
+    candle (r, x, y0, h)
+    candle (r, x, y1-1.5, h)
 
 
 def makeCandleY (r, x0, x1, y, h):
@@ -2073,36 +2632,42 @@ def inBetween (c, a, b):
     b = max (a, b)
     return (c >= a) and (c <= b)
 
-    
+
 #
 #  onDoor - return True if point, x, y, is on a door in room, r.
 #
 
-def onDoor (r, x, y):
-    print "is", x, y, "on door in room", r,    
-    for d in rooms[r].doors:
-        coords = d[0]
-        if coords[0][0] == coords[1][0]:
-            # vertical
-            if (x == coords[0][0]) and inBetween (y, coords[0][1], coords[1][1]):
-                print "yes"
-                return True
-        else:
-            # horizontal
-            if (y == coords[0][1]) and inBetween (x, coords[0][0], coords[1][0]):
-                print "yes"                
-                return True
-    print "no"            
+def onDoor (x, y):
+    if debugging:
+        print "is", x, y, "on a door"
+    for r in rooms.keys ():
+        for d in rooms[r].doors:
+            coords = d[0]
+            if coords[0][0] == coords[1][0]:
+                # vertical
+                if (x == coords[0][0]) and inBetween (y, coords[0][1], coords[1][1]):
+                    if debugging:
+                        print "yes"
+                    return True
+            else:
+                # horizontal
+                if (y == coords[0][1]) and inBetween (x, coords[0][0], coords[1][0]):
+                    if debugging:
+                        print "yes"
+                    return True
+    if debugging:
+        print "no"
     return False
 
-def generateCeiling (r, e):
-    for x in range (1, maxx):
-        for y in range (1, maxy):
-            if getFloor (x, y) == int (r):
-                pos = [x, y, rooms[r].floorLevel+minCeilingHeight]
-                size = [1, 1, 1]
-                newcuboid (pos, size, 'ceiling')
+
+#
+#  generateBeams - generate beams and light for 4 sided rooms.
+#
+
+def generateBeams (r, e):
     if len (rooms[r].walls) == 4:
+        if debugging:
+            print "room", r, "beams being created"
         p = findMinMax (r)
         w0, w1 = None, None
         if debugging:
@@ -2124,13 +2689,14 @@ def generateCeiling (r, e):
                         w1 = sortWall (w)
             y0 = min (w0[0][1], w1[0][1])
             y1 = max (w0[0][1], w1[0][1])
-            print w0, w1
-            for x in range (w0[0][0]+1, w0[1][0], 2):
-                if (not onDoor (r, x, y0)) and (not onDoor (r, x, y1)):
-                    makeBeamX (x, y0, y1, rooms[r].floorLevel+minCeilingHeight-1)
-            for x in range (w0[0][0]+2, w0[1][0], 2):
-                if (not onDoor (r, x, y0)) and (not onDoor (r, x, y1)):                
-                    makeCandleX (r, x, y0, y1, rooms[r].floorLevel+minCeilingHeight-2)
+            if debugging:
+                print w0, w1
+            for x in range (w0[0][0]+1, w0[1][0], 4):
+                if (not onDoor (x, y0)) and (not onDoor (x, y1)):
+                    makeBeamX (x, y0, y1, rooms[r].floorLevel+minCeilingHeight-0.5)
+            for x in range (w0[0][0]+1, w0[1][0], 4):
+                if (not onDoor (x, y0)) and (not onDoor (x, y1)):
+                    makeCandleX (r, x, y0, y1, rooms[r].floorLevel+candleHeight)
         else:
             # vertical corridor, therefore create horizontal beams
             # find the vertical walls
@@ -2144,19 +2710,214 @@ def generateCeiling (r, e):
             x1 = max (w0[0][0], w1[0][0])
             if debugging:
                 print w0, w1
-            for y in range (w0[0][1]+1, w0[1][1], 2):
-                if (not onDoor (r, x0, y)) and (not onDoor (r, x1, y)):                
-                    makeBeamY (x0, x1, y, rooms[r].floorLevel+minCeilingHeight-1)
-            for y in range (w0[0][1]+2, w0[1][1], 2):
-                if (not onDoor (r, x0, y)) and (not onDoor (r, x1, y)):                                                    makeCandleY (r, x0, x1, y, rooms[r].floorLevel+minCeilingHeight-2)
+            for y in range (w0[0][1]+1, w0[1][1], 4):
+                if (not onDoor (x0, y)) and (not onDoor (x1, y)):
+                    makeBeamY (x0, x1, y, rooms[r].floorLevel+minCeilingHeight-0.5)
+            for y in range (w0[0][1]+2, w0[1][1], 4):
+                if (not onDoor (x0, y)) and (not onDoor (x1, y)):
+                    makeCandleY (r, x0, x1, y, rooms[r].floorLevel+candleHeight)
 
 
-def generateFloor (r, e):
+#
+#  generateFlatCeiling - generate a simple flat surface (slab) at
+#                        rooms[r].floorLevel+minCeilingHeight .. minCeilingHeight
+#                        on the Z axis.
+#
+
+def generateFlatCeiling (r, e):
     for x in range (1, maxx):
         for y in range (1, maxy):
             if getFloor (x, y) == int (r):
-                pos = [x, y, rooms[r].floorLevel-1]
-                size = [1, 1, 1]
+                pos = [x, y, rooms[r].floorLevel+minCeilingHeight]
+                end = [x+1, y+1, minCeilingHeight+1]
+                size = subVec (end, pos)
+                newcuboid (pos, size, 'ceiling')
+
+
+def apply_translate_top (points, translate_top, z_value):
+    print "z_value =", z_value
+    print "before", points
+    translated = []
+    for p in points:
+        if p[2] == z_value:
+            print "translating", translate_top
+            translated += [addVec (p, translate_top)]
+        else:
+            translated += [p]
+    print "after", translated
+    return translated
+
+#
+#  faces and vertices of the cube (ascii art)
+#
+#    6+-----+7
+#    /|    /|
+#  5+-----+4|
+#   | |   | |
+#   |0+---|-+1
+#   |/    |/
+#  3+-----+2
+#
+#   all labelled anti-clockwise when viewed from the front.
+#   (rotate the cube so that the face is closest to the viewer).
+#
+#   faces = [[2, 4, 3, 5],    #  front
+#            [1, 7, 2, 4],    #  right
+#            [3, 5, 0, 6],    #  left
+#            [6, 7, 0, 1],    #  back
+#            [5, 4, 6, 7],    #  top
+#            [3, 0, 2, 1]]    #  bottom
+#
+#
+#  generate_cube_points - return the points and faces of a cube.
+#                         The points returned will be in the order:
+#                         [botpos, botpos+x, botpos+y, botpos+z,
+#                          toppos, botpos-x, botpos-y, botpos-z]
+#
+#                         assuming botpos is the lowest left back corner
+#                                  toppos is the highest right front corner
+#
+
+def generate_cube_points (botpos, toppos):
+    points = []
+    size = subVec (toppos, botpos)
+    points = [botpos,
+              addVec (botpos, [0, size[1], 0]),
+              addVec (botpos, [size[0], size[1], 0]),
+              addVec (botpos, [size[0], 0, 0]),
+              toppos,
+              subVec (toppos, [0, size[1], 0]),
+              subVec (toppos, [size[0], size[1], 0]),
+              subVec (toppos, [size[0], 0, 0])]
+    #
+    #  faces is a list of face.  Each faces is a list of points.
+    #
+    faces = [[2, 4, 3, 5],    #  front
+             [1, 7, 2, 4],    #  right
+             [3, 5, 0, 6],    #  left
+             [6, 7, 0, 1],    #  back
+             [5, 4, 6, 7],    #  top
+             [3, 0, 2, 1]]    #  bottom
+    return points, faces
+
+
+#
+#  generate_roof_points - returns a list of points and faces containing
+#                         the roof brick.
+#
+
+def generate_roof_points (botpos, toppos, translate_top):
+    botpos = translatePos (botpos)
+    toppos = translatePos (toppos)
+    botpos, toppos = reorderVertices (botpos, toppos)
+    points, faces = generate_cube_points (botpos, toppos)
+    print "cuboid roof =", points
+    points = apply_translate_top (points, translate_top, botpos[2])
+    print "slanted roof =", points
+    return points, faces
+
+
+def generatePitchedCeiling (r, e):
+    print "generatePitchedCeiling"
+    if len (rooms[r].walls) == 4:
+        p = findMinMax (r)
+        x0, y0 = p[0]
+        x1, y1 = p[1]
+        print "simple room", r, "coords", x0, y0, x1, y1
+        if abs (x0-x1) > abs (y0-y1):
+            x0, x1 = sortMinMax (x0, x1)
+            y0, y1 = sortMinMax (y0, y1)
+            print "horizontal"
+            # horizontal corridor, therefore create vertical pitched ceiling
+            roof_width = (y1-y0) / 2
+            roof_height = (roof_width) + 1
+            botpos = [x0+1  , y0, minCeilingHeight]
+            toppos = [x1  , y0+1  , minCeilingHeight + roof_height]
+            translate_top = [0, roof_width, 0]
+            # translate_top = [0, 0, 1]
+            # translate_top = [0, 0, 0]
+            points, faces = generate_roof_points (botpos, toppos, translate_top)
+            addroofbrick (points, faces, "ceiling")  # facing up 2D when viewed from top
+
+            botpos = [x0+1 , y1, minCeilingHeight]
+            toppos = [x1, y1+1, minCeilingHeight + roof_height]
+            translate_top = [0, -roof_width, 0]
+            # translate_top = [0, 0, 1]
+            # translate_top = [0, 0, 0]
+            points, faces = generate_roof_points (botpos, toppos, translate_top)
+            addroofbrick (points, faces, "ceiling")  # facing up 2D when viewed from top
+
+            # create gable ends
+            pos = [x0, y0, minCeilingHeight]
+            end = [x0+1, y1+1, minCeilingHeight + roof_height]
+            size = subVec (end, pos)
+            newcuboid (pos, size, "wall")
+            pos = [x1, y0, minCeilingHeight]
+            newcuboid (pos, size, "wall")
+        else:
+            print "vertical"
+            # vertical corridor, therefore create horizontal pitched ceiling
+            x0, x1 = sortMinMax (x0, x1)
+            y0, y1 = sortMinMax (y0, y1)
+
+            roof_width = (x1-x0) / 2
+            roof_height = (roof_width) + 1
+            botpos = [x0  , y0+1, minCeilingHeight]
+            toppos = [x0+1, y1  , minCeilingHeight + roof_height]
+            translate_top = [roof_width, 0, 0]
+            points, faces = generate_roof_points (botpos, toppos, translate_top)
+            addroofbrick (points, faces, "ceiling")  # facing up 2D when viewed from top
+
+            botpos = [x1, y0 + 1, minCeilingHeight]
+            toppos = [x1 + 1, y1, minCeilingHeight + roof_height]
+            translate_top = [-roof_width, 0, 0]
+            points, faces = generate_roof_points (botpos, toppos, translate_top)
+            addroofbrick (points, faces, "ceiling")  # facing up 2D when viewed from top
+
+            # create gable ends
+            pos = [x0, y0, minCeilingHeight]
+            end = [x1+1, y0+1, minCeilingHeight + roof_height]
+            size = subVec (end, pos)
+            newcuboid (pos, size, "wall")
+            pos = [x0, y1, minCeilingHeight]
+            newcuboid (pos, size, "wall")
+
+
+def testFaces ():
+    global cuboidno, cuboids
+    cuboidno = 1          #  total number of cuboids used.
+    cuboids = {}
+    if False:
+        pos = [1, 1, 1]
+        end = [2, 2, 2]
+        size = subVec (end, pos)
+        newcuboid (pos, size, "wall")
+    else:
+        botpos = [2, 2, 2]
+        toppos = [20, 20, 20]
+        translate_top = [0, 0, 0]
+        points, faces = generate_roof_points (botpos, toppos, translate_top)
+        print "test points =", points
+        print "test faces  =", faces
+        addroofbrick (points, faces, "ceiling")  # facing up 2D when viewed from top
+
+
+def generateCeiling (r, e):
+    if (len (rooms[r].walls) == 4) and enablePitched:
+        generatePitchedCeiling (r, e)
+    else:
+        generateFlatCeiling (r, e)
+    if autoBeams:
+        generateBeams (r, e)
+
+
+def generateFloor (r, e):
+    global minFloor, maxFloor
+    for x in range (1, maxx):
+        for y in range (1, maxy):
+            if getFloor (x, y) == int (r):
+                pos = [x, y, minFloor-1]
+                size = [1, 1, rooms[r].floorLevel-minFloor+1]
                 if debugging:
                     print "floor at", pos, size
                 newcuboid (pos, size, 'floor')
@@ -2170,7 +2931,7 @@ def generateEntities (o):
     o.write ('    "classname" "worldspawn"\n')
     o.write ('    "spawnflags" "1"\n')
     o.write ('    "penmap" "' + inputFile + '"\n')
-    findOffsets ()
+    findOffsets ()  # sets minx, miny, minz
     initRoomFloor ()
     for r in rooms.keys ():
         el = roomToEntities (r)
@@ -2179,25 +2940,68 @@ def generateEntities (o):
             print el
         p = findMinMax (r)
         o.write ("    // room " + r + "\n")
-        for e in el:
-            generateBricks (r, e)
-        generateCeiling (r, p)
-        generateFloor (r, p)
-        generateLightBlocks (r, el)
+        if False:
+            testFaces ()
+        else:
+            for e in el:
+                generateBricks (r, e)
+            generateCeiling (r, e)
+            generateFloor (r, e)
+            generateLightBlocks (r, el)
     o, bcount = flushBricks (o, bcount)
     o.write ('}\n\n')
     return o, 1, bcount
 
 
+#
+#  pen2MidPos - pre-condition:  a list of pen coordinates.
+#               post-condition:  returns doom3 coordinates
+#                                in the middle of the pen coordinate.
+#
+
 def pen2MidPos (pos):
-    minvec = [minx-1, miny-1, minz-1]
-    pos = subVec (intVec (pos), minvec)
     v = []
-    for p in pos:
-        print p
+    for p in translatePos (pos):
+        if debugging:
+            print p
         v += vecInches2 ([[int (p), halfUnit]])
-    print v
     return v
+
+
+#
+#  pen2Pos - pre-condition:  pos a coord in pen coordinates.
+#            post-condition:  coord in doom3 units.
+#
+
+def pen2Pos (pos):
+    return vecInches (translatePos (pos))
+
+
+#
+#  translatePos - pre-condition:   pos is a list of numbers (3D pen coordinates).
+#                 post-condition:  returns pos - minvec.
+#
+
+def translatePos (pos):
+    # print "translatePos called for", pos, minvec, "=",
+    pos = subVec (pos, minvec)
+    pos = [pos[0], pos[1], -pos[2]]
+    # print pos
+    return pos
+
+
+#
+#  translatePoints - pre-condition:   points is a list of (3D pen coordinates).
+#                    post-condition:  returns the list after they have been
+#                                     translated.
+#
+
+def translatePoints (points):
+    global minvec
+    result = []
+    for p in points:
+        result += [subVec (p, minvec)]
+    return result
 
 
 #
@@ -2205,8 +3009,8 @@ def pen2MidPos (pos):
 #
 
 def writePos (o, p):
-    v = vecInches ([int (p[0]), int (p[1])])
-    o.write (str (-v[1]) + " " + str (-v[0]))
+    v = pen2Pos (p)
+    o.write ('-%f -%f ' % (v[0], v[1]))
     return o
 
 
@@ -2215,9 +3019,8 @@ def writePos (o, p):
 #
 
 def writeMidPos (o, p):
-    v = vecInches2 ([[int (p[0]), -halfUnit],
-                     [int (p[1]), -halfUnit]])
-    o.write (str (-v[1]) + " " + str (-v[0]))
+    v = pen2MidPos (p)
+    o.write ('-%f -%f ' % (v[0], v[1]))
     return o
 
 
@@ -2233,9 +3036,9 @@ def generatePlayer (o, e):
                 o.write ('    "classname" "info_player_deathmatch"\n')
                 o.write ('    "name" "info_player_deathmatch_1"\n')
             o.write ('    "origin" "')
-            pos = rooms[r].worldspawn[0] + [getFloorLevel (r) + spawnHeight]
+            pos = toIntList (rooms[r].worldspawn[0]) + [getFloorLevel (r) + spawnHeight]
             v = pen2MidPos (pos)
-            o.write ('-%f -%f %f"\n' % (v[1], v[0], v[2]))
+            o.write ('%f %f %f"\n' % (v[0], v[1], v[2]))
             o.write ('    "angle" "180"\n')
             o.write ("}\n")
     return o, e+1
@@ -2245,9 +3048,9 @@ def generatePlayer (o, e):
 #  writeLightSource -
 #
 
-def writeLightSource (o, l):
-    v = vecInches (l)
-    o.write ('-%f -%f %f"\n' % (v[1], v[0], v[2]))
+def writeLightSource (o, p):
+    v = pen2Pos (p)
+    o.write ('%f %f %f"\n' % (v[0], v[1], v[2]))
     return o
 
 
@@ -2327,7 +3130,7 @@ def writePosOffWall (o, l, el):
 #
 
 def calcLightOrigin (pos, size):
-    return addVec (pos, [float (size[0])/2.0, float (size[1])/2.0, float (size[2])])
+    return addVec (pos, [float (size[0])/2.0, float (size[1])/2.0, 0.0])
 
 
 #
@@ -2337,9 +3140,9 @@ def calcLightOrigin (pos, size):
 
 def newlight (pos, size, desc):
     global lightPoints
-    minvec = [minx-1, miny-1, minz-1]
-    pos = subVec (pos, minvec)
+
     lightPoints += [[calcLightOrigin (pos, size), desc]]
+    # print "new light at", lightPoints[-1], lightPoints[-1][-1].getOn ()
 
 
 pillarOffset = {'left':[0, 0], 'right':[1.0-lightBlock, 0], 'top':[0, 1.0-lightBlock], 'bottom':[0, 0]}
@@ -2393,7 +3196,7 @@ def generateFloorLight (r, l, walls):
             newlight (pos, size, li)
             return
     # print "light is not touching a wall", l
-    pos = [int (l[0]), int (l[1]), getFloorLevel (r)]
+    pos = [int (lp[0]), int (lp[1]), getFloorLevel (r) + lightFloorHeight]
     size = [lightBlock, lightBlock, lightFloorHeight]
     if debugging:
         print pos, size
@@ -2446,8 +3249,9 @@ def generatePythonMonsters (o, e):
             o.write ('    "name" "' + t + '_' + str (n) + '"\n')
             o.write ('    "anim" "idle"\n')
             o.write ('    "origin" "')
-            o = writeMidPos (o, p)
-            o.write (' ' + str (toInches (getFloorLevel (r) + spawnHeight - minz + 1.0)) + '"\n')
+            pos = toIntList (p) + [getFloorLevel (r) + spawnHeight]
+            v = pen2MidPos (pos)
+            o.write ('%f %f %f"\n' % (v[0], v[1], v[2]))
             o.write ('    "ambush" "1"\n')
             o.write ("}\n")
             n += 1
@@ -2465,8 +3269,9 @@ def generateMonsters (o, e):
             o.write ('    "name" "' + t + '_' + str (n) + '"\n')
             o.write ('    "anim" "idle"\n')
             o.write ('    "origin" "')
-            o = writeMidPos (o, p)
-            o.write (' ' + str (toInches (getFloorLevel (r) + spawnHeight - minz + 1.0)) + '"\n')
+            pos = toIntList (p) + [getFloorLevel (r) + spawnHeight]
+            v = pen2MidPos (pos)
+            o.write ('%f %f %f"\n' % (v[0], v[1], v[2]))
             o.write ('    "ambush" "1"\n')
             o.write ("}\n")
             n += 1
@@ -2479,15 +3284,50 @@ def generateAmmo (o, e):
     for r in rooms.keys():
         if debugging:
             print rooms[r].ammo
-        for t, a, p in rooms[r].ammo:
+        for ammo_kind, a, xy in rooms[r].ammo:
             o.write ("// entity " + str (e) + '\n')
             o.write ("{\n")
             o.write ('    "inv_item" "4"\n')
-            o.write ('    "classname" "' + t + '"\n')
-            o.write ('    "name" "' + t + '_' + str (n) + '"\n')
+            o.write ('    "classname" "' + ammo_kind + '"\n')
+            o.write ('    "name" "' + ammo_kind + '_' + str (n) + '"\n')
             o.write ('    "origin" "')
-            o = writeMidPos (o, p)
-            o.write (' ' + str (toInches (getFloorLevel (r) + invSpawnHeight - minz + 1.0)) + '"\n')
+            xyz = toIntList (xy) + [getFloorLevel (r) + invSpawnHeight]
+            v = pen2MidPos (xyz)
+            o.write ('%f %f %f"\n' % (v[0], v[1], v[2]))
+            o.write ("}\n")
+            n += 1
+            e += 1
+    return o, e
+
+
+def generateSounds (o, e):
+    n = 1
+    for r in rooms.keys():
+        if debugging:
+            print rooms[r].sounds
+        for s, xy in rooms[r].sounds:
+            o.write ("// entity " + str (e) + '\n')
+            o.write ("{\n")
+            o.write ('    "classname" "speaker"\n')
+            o.write ('    "name" "speaker_%d"\n' % e)
+            o.write ('    "origin" "')
+            xyz = toIntList (xy) + [getFloorLevel (r) + invSpawnHeight]
+            v = pen2MidPos (xyz)
+            o.write ('%f %f %f"\n' % (v[0], v[1], v[2]))
+            o.write ('    "s_shader" "%s"\n' % s.filename)
+            o.write ('    "s_mindistance" "%s"\n' % s.mindist)
+            o.write ('    "s_maxdistance" "%s"\n' % s.maxdist)
+            o.write ('    "s_volume" "%s"\n' % s.volume)
+            o.write ('    "s_omni" "0"\n')
+            o.write ('    "s_occlusion" "0"\n')
+            o.write ('    "soundgroup" ""\n')
+            o.write ('    "s_leadthrough" "0.100000"\n')
+            o.write ('    "s_plain" "0"\n')
+            o.write ('    "wait" "%s"\n' % s.wait)
+            o.write ('    "random" "0.000000"\n')
+            o.write ('    "s_looping" "1"\n')
+            o.write ('    "s_unclamped" "0"\n')
+            o.write ('    "s_justVolume" "1"\n')
             o.write ("}\n")
             n += 1
             e += 1
@@ -2513,6 +3353,7 @@ def generateMap (o):
     o, e    = generateMonsters (o, e)
     o, e    = generateLights (o, e)
     o, e    = generateAmmo (o, e)
+    o, e    = generateSounds (o, e)
     if statistics:
         print "Total rooms =", len (rooms.keys ())
         print "Total cuboids =", len (cuboids.keys ())
@@ -2520,17 +3361,6 @@ def generateMap (o):
         print "Total entities used =", e, "entities unused =", maxEntities-e
         print "Total brushes used  =", b
     return o
-
-
-#
-#  decFloorLevel - return the floor level of room, s, and subtract 1 ft.
-#
-
-def decFloorLevel (s):
-    if s.floorLevel is None:
-        return 0
-    else:
-        return s.floorLevel - floorStep
 
 
 #
@@ -2566,18 +3396,19 @@ def getNeighbours (r):
 #                This is a breadth first algorithm.
 #
 
-def lowerFloors (s, unvisited):
-    if (unvisited != []) and (s in unvisited):
-        unvisited.remove (s)
-        src = rooms[s]
-        children = getNeighbours (src)
-        for c in children:
+def lowerFloors (s):
+    visited = [s]
+    queue = getNeighbours (rooms[s])
+    level = -(floorStep * noSteps)
+    while queue != []:
+        nextLevel = []
+        for c in queue:
             r = rooms[c]
             if r.floorLevel == None:
-                r.floorLevel = decFloorLevel (src)
-        for c in children:
-            unvisited = lowerFloors (c, unvisited)
-    return unvisited
+                r.floorLevel = level
+                nextLevel += getNeighbours (r)
+        queue = nextLevel
+        level -= (floorStep * noSteps)
 
 
 #
@@ -2585,16 +3416,22 @@ def lowerFloors (s, unvisited):
 #
 
 def calcFloorLevel ():
+    global minFloor, maxFloor
     s = getSpawnRoom ()
     rooms[s].floorLevel = 0
-    unvisited = lowerFloors (s, getListOfRooms ())
+    lowerFloors (s)
     for r in rooms.keys ():
-        print "room", r, "has floor level",
+        if verbose:
+            print "room", r, "has floor level",
         if rooms[r].floorLevel is None:
             rooms[r].floorLevel = 0
-            print "(0)"
+            if verbose:
+                print "(0)"
         else:
-            print rooms[r].floorLevel
+            if verbose:
+                print rooms[r].floorLevel
+        minFloor = min (minFloor, rooms[r].floorLevel)
+        maxFloor = max (minFloor, rooms[r].floorLevel)
 
 
 #

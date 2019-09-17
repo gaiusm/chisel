@@ -1,6 +1,6 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
-# Copyright (C) 2017
+# Copyright (C) 2017-2019
 #               Free Software Foundation, Inc.
 # This file is part of Chisel.
 #
@@ -26,7 +26,7 @@ from chvec import *
 
 
 expandedCuboids = 0  # how many cuboids have we optimised?
-chcuboid_enable_optimise = False
+chcuboid_enable_optimise = True
 
 
 #
@@ -69,25 +69,6 @@ class cuboid:
         self.cuboidno = cuboidno
         self.debugging = False
 
-    """ not needed - delete this..
-    #
-    #  intersection - return True if self overlaps with the proposed
-    #                 cuboid defined by pos, size.
-    #
-
-    def intersection (self, pos, size):
-        return self._intersectingAxis (pos, addVec (pos, size))
-
-    #
-    #  _intersectingAxis - return True if the x, y, and z axis intersects
-    #                      between cuboid self and cuboid bpos/bend.
-    #                      Returns True if these two cuboids overlap.
-    #
-
-    def _intersectingAxis (self, bpos, bend):
-        # --complete me--
-        return False
-    """
 
     #
     #  interpenetration - return True if self penetrates with the proposed

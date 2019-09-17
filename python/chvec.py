@@ -1,6 +1,6 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
-# Copyright (C) 2017
+# Copyright (C) 2017-2019
 #               Free Software Foundation, Inc.
 # This file is part of Chisel.
 #
@@ -19,8 +19,10 @@
 # Free Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301, USA.
 #
-# Author Gaius Mulley <gaius@gnu.org>
+# Author Gaius Mulley <gaius.mulley@southwales.ac.uk>
 
+from decimal import *
+from math import *
 
 #
 #  addVec - returns a new list containing the sum of the
@@ -92,4 +94,44 @@ def intVec (v):
     r = []
     for i in v:
         r += [int (i)]
+    return r
+
+#
+#  crossProduct - return the cross product of a and b.
+#                 a x b
+#
+
+def crossProduct (a, b):
+    assert (len (a) == 3)
+    assert (len (b) == 3)
+    return [a[1] * b[2] - (b[1] * a[2]),
+            a[2] * b[0] - (a[0] * b[2]),
+            a[0] * b[1] - (a[1] * b[0])]
+
+#
+#  decimalVec - return the vec using Decimal values.
+#
+
+def decimalVec (v):
+    r = []
+    for i in v:
+        r += [Decimal ("%g" % i)]
+    return r
+
+
+def sqr (m):
+    return m*m
+
+#
+#
+#
+
+def normaliseVec (v):
+    m = 0
+    r = []
+    for i in v:
+        m += sqr (Decimal (i))
+    m = sqrt (m)
+    for i in v:
+        r += [Decimal (i)/ Decimal (m)]
     return r

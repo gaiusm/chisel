@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # Copyright (C) 2018
 #               Free Software Foundation, Inc.
@@ -71,7 +71,7 @@ versionNumber = "0.1"
 currentLineNo = 1
 words = []
 curStatus = None
-status_open, status_closed, status_secret, status_visportal = range (4)
+status_open, status_closed, status_secret, status_visportal = list(range(4))
 doorString = ['OPEN', 'CLOSED', 'SECRET', 'VISPORTAL']
 curRoom = None
 curRoomNo = None
@@ -270,7 +270,7 @@ class roomInfo:
 
 def newRoom (n):
     global rooms, lastRoom
-    if rooms.has_key (n):
+    if n in rooms:
         error ("room " + n + " has already been defined")
     rooms[n] = roomInfo (n, [], [])
     if lastRoom < int (n):
@@ -292,7 +292,7 @@ def addRoom ():
 #
 
 def printf (format, *args):
-    print str(format) % args,
+    print(str(format) % args, end=' ')
 
 
 #
@@ -300,7 +300,7 @@ def printf (format, *args):
 #
 
 def error (format, *args):
-    print str (format) % args,
+    print(str (format) % args, end=' ')
     sys.exit (1)
 
 
@@ -321,7 +321,7 @@ def warning (format, *args):
 def debugf (format, *args):
     global debugging
     if debugging:
-        print str (format) % args,
+        print(str (format) % args, end=' ')
 
 
 def processDefault (d):
@@ -353,19 +353,19 @@ def readDefaults (name):
             l = open (name, 'r').readlines ()
             readDefault (l)
         except:
-            print "cannot open file", name, "to read the default textures as requested"
+            print("cannot open file", name, "to read the default textures as requested")
             sys.exit (1)
 
 
 def usage (code):
-    print "Usage: pen2map [-cdhtvV] [-o outputfile] inputfile"
-    print "  -c                transform concave rooms into multiple convex rooms"
-    print "  -d                debugging"
-    print "  -h                help"
-    print "  -t                create a txt file from the pen file"
-    print "  -V                generate verbose information"
-    print "  -v                print the version"
-    print "  -o outputfile     place output into outputfile"
+    print("Usage: pen2map [-cdhtvV] [-o outputfile] inputfile")
+    print("  -c                transform concave rooms into multiple convex rooms")
+    print("  -d                debugging")
+    print("  -h                help")
+    print("  -t                create a txt file from the pen file")
+    print("  -V                generate verbose information")
+    print("  -v                print the version")
+    print("  -o outputfile     place output into outputfile")
     sys.exit (code)
 
 
@@ -397,7 +397,7 @@ def handleOptions ():
                 verbose = True
         if l != []:
             return (l[0], outputName)
-        print "you need to supply an input file or use - for stdin"
+        print("you need to supply an input file or use - for stdin")
         usage (1)
 
     except getopt.GetoptError:
@@ -408,7 +408,7 @@ def handleOptions ():
 def errorLine (text):
     global inputFile, currentLineNo
     full = "%s:%d:%s\n" % (inputFile, currentLineNo, text)
-    print full
+    print(full)
     sys.stderr (full)
 
 
@@ -461,9 +461,9 @@ def floodRoom (r, p):
     # print "floodRoom", r, p,
     if debugging:
         if getFloor (p[0], p[1]) == emptyValue:
-            print "will start"
+            print("will start")
         else:
-            print "will not start", getFloor (p[0], p[1])
+            print("will not start", getFloor (p[0], p[1]))
     floodFloor (int (r), p)
 
 
@@ -772,7 +772,7 @@ def onDesc ():
 
 def scopeColour (col):
     if col == []:
-        if curRoom.defaultColours.has_key (curOn):
+        if curOn in curRoom.defaultColours:
             return curRoom.defaultColours[curOn]
         return defaultColour
     return col
@@ -784,7 +784,7 @@ def scopeColour (col):
 #
 
 def scopeColourRoom (r, on):
-    if rooms[r].defaultColours.has_key (on):
+    if on in rooms[r].defaultColours:
         return rooms[r].defaultColours[on]
     return defaultColour
 
@@ -910,7 +910,7 @@ def roomDesc ():
             curRoomNo = curInteger
             curRoom = newRoom (curRoomNo)
             if verbose:
-                print "roomDesc", curRoomNo
+                print("roomDesc", curRoomNo)
             while expecting (['DOOR', 'WALL', 'TREASURE', 'AMMO', 'WEAPON', 'LIGHT', 'INSIDE', 'MONSTER', 'SPAWN', 'DEFAULT']):
                 if expecting (['DOOR']):
                     doorDesc ()
@@ -1138,9 +1138,9 @@ def findJoining (r, w, e, p):
             return i
         if isHorizontal (l) and (getRight (l) == e):
             return i
-    print "w =", w
-    print "e =", e
-    print "p =", p
+    print("w =", w)
+    print("e =", e)
+    print("p =", p)
     internalError ('walls do not form a bounded room in room ' + str (r))
 
 
@@ -1162,34 +1162,34 @@ def orderWalls (r, w):
         return w
     w = w[:]  # make a new copy of w
     if debugging:
-        print "orderWalls, entered"
+        print("orderWalls, entered")
         for i in w:
-            print i
+            print(i)
     n = []
     i = findLowestLeftVertical (w)
     if debugging:
-        print "findLowestLeftVertical =", i
+        print("findLowestLeftVertical =", i)
     n += [sortWall (w[i])]
     e = getHighest (w[i])
     if debugging:
-        print "w[i] =", w[i], "e =", e
+        print("w[i] =", w[i], "e =", e)
     p = [getLowest (w[i])]
     if debugging:
-        print "i =", i
-        print "w =", w
-        print "n =", n
-        print "i =", i
-        print "p =", p
-        print "loop"
+        print("i =", i)
+        print("w =", w)
+        print("n =", n)
+        print("i =", i)
+        print("p =", p)
+        print("loop")
     del w[i]
     while w != []:
         i = findJoining (r, w, e, p)
         n += [sortWall (w[i])]
         if debugging:
-            print "i =", i
-            print "n =", n
-            print "2nd p =", p
-            print "w =", w
+            print("i =", i)
+            print("n =", n)
+            print("2nd p =", p)
+            print("w =", w)
         p = include (p, w[i][0])
         p = include (p, w[i][1])
         if e == w[i][0]:
@@ -1197,10 +1197,10 @@ def orderWalls (r, w):
         else:
             e = w[i][0]
         if debugging:
-            print "3rd p =", p, "e =", e
+            print("3rd p =", p, "e =", e)
         del w[i]
     if debugging:
-        print "orderWalls, exiting with", n
+        print("orderWalls, exiting with", n)
     if not isVertical (n[0]):
         internalError ('expecting first wall to be vertical')
     return n
@@ -1224,7 +1224,7 @@ def onWall (wall, door):
 
 def sortWall (w):
     if debugging:
-        print "sortwall", w
+        print("sortwall", w)
     if isVertical (w):
         if w[0][1] > w[1][1]:
             return [w[1], w[0]]
@@ -1233,7 +1233,7 @@ def sortWall (w):
         if w[0][0] > w[1][0]:
             return [w[1], w[0]]
         return w
-    print "wall problem", w
+    print("wall problem", w)
     internalError ('wall must be horizontal or vertical')
 
 
@@ -1277,10 +1277,10 @@ def getDoors (w, d):
 
 def entityWall (start, end, d):
     if debugging:
-        print "entityWall", start, end, d
+        print("entityWall", start, end, d)
     if isHorizontal ([start, end]) or isVertical ([start, end]):
         return [[start, end, "wall", direction[d]]]
-    print start, end, "direction d=", d
+    print(start, end, "direction d=", d)
     internalError ('wall must be either vertical or horizontal')
 
 
@@ -1349,11 +1349,11 @@ def nextWallPos (p, i):
 def wallToEntity (w, i, d):
     if (i == 0) or (i == 2):
         if not isVertical (w):
-            print w, i
+            print(w, i)
             internalError ('wallToEntity: expecting wall to be vertical')
     elif (i == 1) or (i == 3):
         if not isHorizontal (w):
-            print w, i
+            print(w, i)
             internalError ('wallToEntity: expecting wall to be horizontal')
 
     e = []
@@ -1437,56 +1437,56 @@ def movesDown (w, p):
 
 def checkOnWall (r, p, w):
     if not (equVec (p, w[0]) or equVec (p, w[1])):
-        print "room", r, "has a problem with a wall, ", w, "p is not on either end", p
+        print("room", r, "has a problem with a wall, ", w, "p is not on either end", p)
         sys.exit (1)
 
 
 def createWallDoorList (r, walls, doors):
     if debugging:
-        print "createWallDoorList"
-        print "=================="
-        print "room", r, "has walls"
+        print("createWallDoorList")
+        print("==================")
+        print("room", r, "has walls")
         for i in walls:
-            print i
-        print "room", r, "has doors"
+            print(i)
+        print("room", r, "has doors")
         for i in doors:
-            print i
+            print(i)
     e = []
     d = 0   # direction is left
     p = walls[0][0]
     if debugging:
-        print "lowest left, p =", p
+        print("lowest left, p =", p)
     for i, w in enumerate (walls):
         if debugging:
-            print "direction", d, "position", p, "looking at", w
+            print("direction", d, "position", p, "looking at", w)
         checkOnWall (r, p, w)
         if (d == 0) or (d == 2):
             # on left or right vertical wall
             if movesRight (w, p):
                 d = 1  # from left to top wall
                 if debugging:
-                    print "moves to top because of wall", w
+                    print("moves to top because of wall", w)
             elif movesLeft (w, p):
                 d = 3  # from left to bottom wall
                 if debugging:
-                    print "moves to bottom because of wall", w
+                    print("moves to bottom because of wall", w)
         else:
             # must be on either top or bottom wall
             if movesUp (w, p):
                 d = 0  # from top/bottom to left vertical wall
                 if debugging:
-                    print "moves to left because of wall", w
+                    print("moves to left because of wall", w)
             elif movesDown (w, p):
                 d = 2  # from top/bottom to right vertical wall
                 if debugging:
-                    print "moves to right because of wall", w
+                    print("moves to right because of wall", w)
         if (d == 0) or (d == 2):
             if not isVertical (w):
-                print w, d
+                print(w, d)
                 internalError ('createWallDoorList: expecting wall to be vertical')
         elif (d == 1) or (d == 3):
             if not isHorizontal (w):
-                print w, d
+                print(w, d)
                 internalError ('createWallDoorList: expecting wall to be horizontal')
 
         e += wallToEntity (w, d, doors)
@@ -1495,16 +1495,16 @@ def createWallDoorList (r, walls, doors):
         else:
             p = w[0]
         if debugging:
-            print "entity list", e
+            print("entity list", e)
     if debugging:
-        print "entity list is", e
+        print("entity list is", e)
     return e
 
 
 def roomToEntities (r):
     w = orderWalls (r, rooms[r].walls)
     if debugging:
-        print "ordered walls =", w
+        print("ordered walls =", w)
     return createWallDoorList (r, w, rooms[r].doors)
 
 
@@ -1562,7 +1562,7 @@ def findOffsetInRoom (r):
 #
 
 def findOffsets ():
-    for r in rooms.keys ():
+    for r in list(rooms.keys ()):
         findOffsetInRoom (r)
 
 
@@ -1571,7 +1571,7 @@ def findOffsets ():
 #
 
 def getSpawnRoom ():
-    for r in rooms.keys ():
+    for r in list(rooms.keys ()):
         if rooms[r].worldspawn != []:
             return r
     return None
@@ -1581,7 +1581,7 @@ def getSpawnRoom ():
 #
 
 def getListOfRooms ():
-    return rooms.keys ()
+    return list(rooms.keys ())
 
 #
 #  getNeighbours - return the neighbouring rooms for room, r.
@@ -1615,7 +1615,7 @@ def generatePenRoom (o, r):
 #
 
 def generatePen (o):
-    for r in rooms.keys ():
+    for r in list(rooms.keys ()):
         o = generatePenRoom (o, r)
     o.write ("END.\n")
     return o
@@ -1691,7 +1691,7 @@ def addWall (walls, start, current):
 
 def lookingLeft (pos, left, s):
     if debugging:
-        print pos, left, s
+        print(pos, left, s)
     #
     #  direct ahead requests a space and found a wall
     #
@@ -1707,7 +1707,7 @@ def lookingLeft (pos, left, s):
     #
     if s[1] == '.' and (not isDoor (pos)):
         if debugging:
-            print "no door at", pos
+            print("no door at", pos)
         return False
     #
     #  direct ahead requests an visportal and not found a door
@@ -1758,19 +1758,19 @@ def scanRoom (r, p):
     leftVec = [[-1, 0], [0, -1], [1, 0], [0, 1]]
     forwardVec = [[0, 1], [1, 0], [0, -1], [-1, 0]]
     if debugging:
-        print "wall corner", p
+        print("wall corner", p)
 
     doorStartPoint = None
     doorEndPoint = None
     while True:
         if debugging:
-            print "point currently at", p, "direction", d
+            print("point currently at", p, "direction", d)
         #
         #  no door yet and just seen the door on the left where a wall resides.
         #
         if (doorStartPoint == None) and lookingLeft (p, leftVec[d], '. '):
             if debugging:
-                print "seen first point", p
+                print("seen first point", p)
             # first point on the wall is a door
             doorStartPoint = addVec (p, leftVec[d])
             doorEndPoint = doorStartPoint  # end of the door at the first square so far.
@@ -1779,7 +1779,7 @@ def scanRoom (r, p):
         #
         if lookingLeft (addVec (p, forwardVec[d]), leftVec[d], '. '):
             if debugging:
-                print "seen a door point", p,
+                print("seen a door point", p, end=' ')
             if doorStartPoint == None:
                 doorStartPoint = addVec (addVec (p, forwardVec[d]), leftVec[d])
             doorEndPoint = addVec (addVec (p, forwardVec[d]), leftVec[d])
@@ -1802,7 +1802,7 @@ def scanRoom (r, p):
         #
         elif lookingLeft (addVec (p, forwardVec[d]), leftVec[d], 'x.'):
             if debugging:
-                print "wall corner (x.)", p
+                print("wall corner (x.)", p)
             walls, a = addWall (walls, a, addVec (addVec (p, forwardVec[d]), leftVec[d]))
             # end of door?
             if doorEndPoint != None:
@@ -1819,7 +1819,7 @@ def scanRoom (r, p):
         #
         elif lookingLeft (addVec (p, forwardVec[d]), leftVec[d], 'xx'):
             if debugging:
-                print "wall corner (xx)", p, "direction", d
+                print("wall corner (xx)", p, "direction", d)
             walls, a = addWall (walls, a, addVec (addVec (p, forwardVec[d]), leftVec[d]))
             # end of door?
             if doorEndPoint != None:
@@ -1836,10 +1836,10 @@ def scanRoom (r, p):
         #
         elif lookingLeft (addVec (p, forwardVec[d]), leftVec[d], '  '):
             if debugging:
-                print "wall corner (  )", p,
+                print("wall corner (  )", p, end=' ')
             walls, a = addWall (walls, a, addVec (p, leftVec[d]))
             if debugging:
-                print "at point", a
+                print("at point", a)
             #
             #  we would need to turn left at this point, however a
             #  left turn means the room is concave, so we will add a visportal
@@ -1859,9 +1859,9 @@ def walkRoom (r):
     global rooms
 
     rooms[r].resetRoom ()
-    print rooms[r].walls
+    print(rooms[r].walls)
     bl = moveToBotLeft (r)
-    print "room", r, "bottom left", bl
+    print("room", r, "bottom left", bl)
     walls, doors, convex = scanRoom (r, bl)
     if convex:
         printf ("walls and doors need to be saved in room: %d\n", r)
@@ -1875,22 +1875,22 @@ def walkRoom (r):
 #
 
 def addVisportal (r, p0, v0, p1, v1):
-    print "visportal", r, p0, v0
+    print("visportal", r, p0, v0)
     d0 = 0
     p = addVec (p0, [0, 0])
-    print "*************", p
+    print("*************", p)
     while not isPlane (p):
         d0 += 1
         p = addVec (p, v0)
-        print "*************", p
+        print("*************", p)
     d1 = 0
-    print r, p0, v0, p1, v1
+    print(r, p0, v0, p1, v1)
     p = addVec (p1, [0, 0])
-    print "*************", p
+    print("*************", p)
     while not isPlane (p):
         d1 += 1
         p = addVec (p, v1)
-    print "d0 =", d0, "d1 =", d1
+    print("d0 =", d0, "d1 =", d1)
     if d0 < d1:
         p = addVec (p0, [0, 0])
         while not isPlane (p):
@@ -1937,19 +1937,19 @@ def checkConvexRoom (r, p):
     forwardVec = [[0, -1], [1, 0], [0, 1], [-1, 0]]
     s = addVec (p, [0, 0])
     if debugging:
-        print "wall corner", p
+        print("wall corner", p)
 
     while True:
         setFloor (p[0], p[1], '?')
         if debugging:
-            print "point currently at", p, "direction", d
+            print("point currently at", p, "direction", d)
         #
         # have we seen a door on the left?
         #
         if lookingLeft (addVec (p, forwardVec[d]), leftVec[d], '. '):
             setFloor (p[0], p[1], 'd')
             if debugging:
-                print "seen a door point", p,
+                print("seen a door point", p, end=' ')
             # yes, carry on
             p = addVec (p, forwardVec[d])
         #
@@ -1958,7 +1958,7 @@ def checkConvexRoom (r, p):
         elif lookingLeft (addVec (p, forwardVec[d]), leftVec[d], 'x '):
             setFloor (p[0], p[1], 'w')
             if debugging:
-                print "seen a wall point", p,
+                print("seen a wall point", p, end=' ')
             # yes, carry on
             p = addVec (p, forwardVec[d])
         #
@@ -1968,7 +1968,7 @@ def checkConvexRoom (r, p):
         elif lookingLeft (addVec (p, forwardVec[d]), leftVec[d], 'x.'):
             setFloor (p[0], p[1], 'R')
             if debugging:
-                print "wall corner (x.)", p
+                print("wall corner (x.)", p)
             # turn right
             d = (d + 1) % 4
             if s == p:
@@ -1980,7 +1980,7 @@ def checkConvexRoom (r, p):
         elif lookingLeft (addVec (p, forwardVec[d]), leftVec[d], 'xx'):
             setFloor (p[0], p[1], 'r')
             if debugging:
-                print "wall corner (xx)", p, "turning right"
+                print("wall corner (xx)", p, "turning right")
             # turn right
             d = (d + 1) % 4
             if s == p:
@@ -1992,8 +1992,8 @@ def checkConvexRoom (r, p):
         elif lookingLeft (addVec (p, forwardVec[d]), leftVec[d], '  '):
             setFloor (p[0], p[1], 'l')
             if debugging:
-                print "wall corner (  )", p,
-                print "about to add visportal", p
+                print("wall corner (  )", p, end=' ')
+                print("about to add visportal", p)
             #
             #  we would need to turn left at this point, however a
             #  left turn means the room is concave, so we will add a visportal
@@ -2024,7 +2024,7 @@ def convexRoom (r):
 
     rooms[r].resetRoom ()
     bl = moveToBotLeft (r)
-    print "room", r, "bottom left", bl
+    print("room", r, "bottom left", bl)
     return checkConvexRoom (r, bl)
 
 
@@ -2033,7 +2033,7 @@ def convexRoom (r):
 #
 
 def allConvex ():
-    for r in rooms.keys ():
+    for r in list(rooms.keys ()):
         if not rooms[r].isconvex:
             if len (rooms[r].walls) == 4:
                 rooms[r].isconvex = True
@@ -2059,7 +2059,7 @@ def convert2Convex (o):
 def placeRoomsOnFloor ():
     global floor
     initFloor (maxx, maxy, ' ')
-    for r in rooms.keys ():
+    for r in list(rooms.keys ()):
         generateTxtRoom (r)
     floor.reverse ()
 

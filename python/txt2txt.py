@@ -1,6 +1,6 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
-# Copyright (C) 2017
+# Copyright (C) 2017-2019
 #               Free Software Foundation, Inc.
 # This file is part of Chisel.
 #
@@ -19,7 +19,7 @@
 # Free Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301, USA.
 #
-# Author Gaius Mulley <gaius@gnu.org>
+# Author Gaius Mulley <gaius.mulley@southwales.ac.uk>
 #
 
 import getopt, sys, string
@@ -93,7 +93,7 @@ class roomInfo:
 #
 
 def printf (format, *args):
-    print str(format) % args,
+    print(str(format) % args, end=' ')
 
 
 #
@@ -101,7 +101,7 @@ def printf (format, *args):
 #
 
 def error (format, *args):
-    print str (format) % args,
+    print(str (format) % args, end=' ')
     sys.exit (1)
 
 
@@ -112,16 +112,16 @@ def error (format, *args):
 def debugf (format, *args):
     global debugging
     if debugging:
-        print str (format) % args,
+        print(str (format) % args, end=' ')
 
 
 def usage (code):
-    print "Usage: txt2pen [-dhvV] [-o outputfile] inputfile"
-    print "  -d debugging"
-    print "  -h help"
-    print "  -V verbose"
-    print "  -v version"
-    print "  -o outputfile name"
+    print("Usage: txt2pen [-dhvV] [-o outputfile] inputfile")
+    print("  -d debugging")
+    print("  -h help")
+    print("  -V verbose")
+    print("  -v version")
+    print("  -o outputfile name")
     sys.exit (code)
 
 
@@ -222,7 +222,7 @@ def getListOfRooms (mapGrid, start, i):
     pos = []
     for y, r in enumerate (mapGrid, start=1):
         for x, c in enumerate (r, start=1):
-            if defines.has_key (c):
+            if c in defines:
                 k = defines[c]
                 if isSubstr (k, 'room'):
                     pos += [[x, y]]
@@ -268,14 +268,14 @@ def addWall (walls, start, end):
 
 def lookingLeft (pos, left, grid, s):
     if debugging:
-        print pos, left, s
+        print(pos, left, s)
     if s[1] == ' ' and isPlane (pos, grid):
         return False
     if s[1] == 'x' and (not isPlane (pos, grid)):
         return False
     if s[1] == '.' and (not isDoor (pos, grid)):
         if debugging:
-            print "no door at", pos
+            print("no door at", pos)
         return False
     if s[0] == ' ' and isPlane (addVec (pos, left), grid):
         return False
@@ -296,22 +296,22 @@ def scanRoom (topleft, p, mapGrid, walls, doors):
     leftVec = [[-1, 0], [0, -1], [1, 0], [0, 1]]
     forwardVec = [[0, -1], [1, 0], [0, 1], [-1, 0]]
     if debugging:
-        print "wall corner", p
+        print("wall corner", p)
 
     doorStartPoint = None
     doorEndPoint = None
     while True:
         if debugging:
-            print "point currently at", p, d
+            print("point currently at", p, d)
         if (doorStartPoint == None) and lookingLeft (p, leftVec[d], mapGrid, '. '):
             if debugging:
-                print "seen first point", p
+                print("seen first point", p)
             # first point on the wall is a door
             doorStartPoint = addVec (p, leftVec[d])
             doorEndPoint = doorStartPoint
         if lookingLeft (addVec (p, forwardVec[d]), leftVec[d], mapGrid, '. '):
             if debugging:
-                print "seen a door point", p,
+                print("seen a door point", p, end=' ')
             if doorStartPoint == None:
                 doorStartPoint = addVec (addVec (p, forwardVec[d]), leftVec[d])
             doorEndPoint = addVec (addVec (p, forwardVec[d]), leftVec[d])
@@ -326,7 +326,7 @@ def scanRoom (topleft, p, mapGrid, walls, doors):
             p = addVec (p, forwardVec[d])
         elif lookingLeft (addVec (p, forwardVec[d]), leftVec[d], mapGrid, 'x.'):
             if debugging:
-                print "wall corner (x.)", p
+                print("wall corner (x.)", p)
             walls, a = addWall (walls, a, addVec (addVec (p, forwardVec[d]), leftVec[d]))
             # end of door?
             if doorEndPoint != None:
@@ -340,7 +340,7 @@ def scanRoom (topleft, p, mapGrid, walls, doors):
                 return walls, doors
         elif lookingLeft (addVec (p, forwardVec[d]), leftVec[d], mapGrid, 'xx'):
             if debugging:
-                print "wall corner (xx)", p
+                print("wall corner (xx)", p)
             walls, a = addWall (walls, a, addVec (addVec (p, forwardVec[d]), leftVec[d]))
             # end of door?
             if doorEndPoint != None:
@@ -354,11 +354,11 @@ def scanRoom (topleft, p, mapGrid, walls, doors):
                 return walls, doors
         elif lookingLeft (addVec (p, forwardVec[d]), leftVec[d], mapGrid, '  '):
             if debugging:
-                print "wall corner (  )", p,
+                print("wall corner (  )", p, end=' ')
             # walls, a = addWall (walls, a, addVec (addVec (p, forwardVec[d]), leftVec[d]))
             walls, a = addWall (walls, a, addVec (p, leftVec[d]))
             if debugging:
-                print "at point", a
+                print("at point", a)
             # turn left
             p = addVec (p, forwardVec[d])
             d = (d + 3) % 4
@@ -448,14 +448,14 @@ def generateRoom (r, p, mapGrid, start, i):
     global verbose, rooms, debugging
 
     if verbose:
-        print "room", r,
+        print("room", r, end=' ')
     p = moveBy (p, [-1, -1], mapGrid)
     if verbose:
-        print "top left is", p
+        print("top left is", p)
     s = p
     walls, doors = scanRoom (s, p, mapGrid, [], [])
     if debugging:
-        print walls
+        print(walls)
     rooms[r] = roomInfo (walls, doors)
 
 
@@ -490,19 +490,19 @@ def findMax (r):
 
 
 def dumpFloor ():
-    print "the map"
+    print("the map")
     for r in floor:
         for c in r:
             if c == emptyValue:
-                print " ",
+                print(" ", end=' ')
             elif c == doorValue:
-                print ".",
+                print(".", end=' ')
             elif c == wallValue:
-                print "#",
+                print("#", end=' ')
             else:
-                print str (c),
-        print " "
-    print " "
+                print(str (c), end=' ')
+        print(" ")
+    print(" ")
 
 
 def floodFloor (r, p):
@@ -585,16 +585,16 @@ def findDoors (r, p):
 def findEntities (g, room, p):
     if debugging:
         for l in g:
-            print l,
+            print(l, end=' ')
         for l in floor:
-            print l
+            print(l)
     for y, r in enumerate (g):
         for x in range (maxx+1):
             if getFloor (x, y) == int (room):
                 c = r[x]
-                if defines.has_key (c):
+                if c in defines:
                     if debugging:
-                        print "seen", c, "at", x, y
+                        print("seen", c, "at", x, y)
                     k = defines[c]
                     if isSubstr (k, 'worldspawn'):
                         rooms[room].worldspawn += [[x, y]]

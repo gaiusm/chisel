@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
 # Copyright (C) 2017-2019
 #               Free Software Foundation, Inc.
@@ -23,8 +23,9 @@
 #
 
 from chvec import *
+from sys import exit
 
-
+debugging = False
 expandedCuboids = 0  # how many cuboids have we optimised?
 chcuboid_enable_optimise = True
 
@@ -42,11 +43,8 @@ def getexpanded ():
 #
 
 def setOptimise (on):
+    global chcuboid_enable_optimise
     chcuboid_enable_optimise = on
-
-
-def regressiontest ():
-    pass
 
 
 #
@@ -54,21 +52,30 @@ def regressiontest ():
 #                      It is easier to test whether they do not intersect
 #                      and invert the result.  They do not intersect if a0 lies after b1.
 #                      or if the end of a1 is before the start of b0.
+#                      It returns True if they touch.
 #
 
 def intersectingRange (a0, a1, b0, b1):
     return not ((a0 > b1) or (a1 < b0))
 
+#
+#  interpenetrationRange - return True if a0..a1 and b0..b1 overlap.
+#                          Crucially this returns False if they touch.
+#
+
+def interpenetrationRange (a0, a1, b0, b1):
+    return not ((a0 >= b1) or (a1 <= b0))
+
 
 class cuboid:
-    def __init__ (self, pos, size, material, cuboidno):
+    def __init__ (self, pos, size, material, transform, cuboidno):
         self.pos = pos
         self.size = size
         self.end = addVec (pos, size)
         self.material = material
+        self.transform = transform
         self.cuboidno = cuboidno
-        self.debugging = False
-
+        self.debugging = debugging
 
     #
     #  interpenetration - return True if self penetrates with the proposed
@@ -163,7 +170,7 @@ class cuboid:
         self.end = maxVec (self.end, end)
         self.size = subVec (self.end, self.pos)
         if self.debugging:
-            print "_enlarging", self.pos, self.end, self.size
+            print("_enlarging", self.pos, self.end, self.size)
 
     #
     #  _extend - return True if self was extended to include cuboid pos, size in the
@@ -172,12 +179,10 @@ class cuboid:
     #
 
     def _extend (self, pos, size, dim):
-        global expandedCuboids
         end = addVec (pos, size)
         if (intersectingRange (pos[dim], end[dim], self.pos[dim], self.end[dim]) or
             (pos[dim] == self.end[dim]) or (end[dim] == self.pos[dim])):
             self._enlarge (pos, end)
-            expandedCuboids += 1
             return True
         return False
 
@@ -227,7 +232,7 @@ class cuboid:
     #
 
     def _superset (self, pos, size):
-        b = cuboid (pos, size, None, None)
+        b = cuboid (pos, size, None, None, None)
         return b._subset (self.pos, self.size)
 
     #
@@ -246,15 +251,78 @@ class cuboid:
     #             it returns True.
     #
 
-    def combined (self, pos, size, material):
-        if material == self.material:
+    def combined (self, pos, size, material, transform):
+        global expandedCuboids
+        if (material == self.material) and (transform == self.transform):
             if self._subset (pos, size):
+                expandedCuboids += 1
                 return True
             if self._superset (pos, size):
                 self.pos = pos
                 self.size = size
                 self.end = addVec (pos, size)
+                expandedCuboids += 1
                 return True
             if self._canExtend (pos, size):
+                expandedCuboids += 1
                 return True
+        if self.debugging:
+            print(pos, size, "does not fit onto", self.pos, self.size)
         return False
+
+
+def regressionTest ():
+    global expandedCuboids
+
+    errors = 0
+    print("regression tests for chcuboid")
+    pos = [1, 1, 1]
+    size = [1, 1, 1]
+    b = cuboid (pos, size, "wall", 0)
+    for i in range (1, 10):
+        pos = [i, 1, 1]
+        if b.combined (pos, size, "wall"):
+            print("pass x growth", end=' ')
+            print("pos =", pos, "size =", size, end=' ')
+            print("will be combined into existing brick")
+        else:
+            print("error x growth", end=' ')
+            print("pos =", pos, "size =", size, "is not combined into existing brick")
+            errors = 1
+    pos = [1, 1, 1]
+    size = [1, 1, 1]
+    b = cuboid (pos, size, "wall", 0)
+    for j in range (1, 10):
+        pos = [1, j, 1]
+        if b.combined (pos, size, "wall"):
+            print("pass y growth", end=' ')
+            print("pos =", pos, "size =", size, end=' ')
+            print("will be combined into existing brick")
+        else:
+            print("error y growth", end=' ')
+            print("pos =", pos, "size =", size, "is not combined into existing brick")
+            errors = 2
+    pos = [1, 1, 1]
+    size = [1, 1, 1]
+    b = cuboid (pos, size, "wall", 0)
+    for k in range (1, 10):
+        pos = [1, 1, k]
+        if b.combined (pos, size, "wall"):
+            print("pass z growth", end=' ')
+            print("pos =", pos, "size =", size, end=' ')
+            print("will be combined into existing brick")
+        else:
+            print("error z growth", end=' ')
+            print("pos =", pos, "size =", size, "is not combined into existing brick")
+            errors = 3
+    if errors != 0:
+        print("regression test errors, exiting")
+        exit (errors)
+    expandedCuboids = 0
+
+
+if __name__ == "__main__":
+    setOptimise (True)
+    if chcuboid_enable_optimise:
+        print("optimisation set, running the regression tests")
+        regressionTest ()

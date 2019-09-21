@@ -1,3 +1,9 @@
+chisel (2.0.1-1.2) UNRELEASED; urgency=medium
+
+  * version 2 released
+
+ -- Gaius Mulley <gaius@gnu.org>  Sat, 21 Sep 2019 14:17:47 +0100
+
 chisel (1.0.1-1.1) UNRELEASED; urgency=medium
 
   * Non-maintainer upload.

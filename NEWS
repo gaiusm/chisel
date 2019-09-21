@@ -1,2 +1,5 @@
 
 * September 9th 2017  chisel 0.1 released.
+* September 21th 2019  chisel 2.0 released.
+     Python 3 implementation
+     maps can contain texture and sound assets.

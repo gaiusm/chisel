@@ -8,7 +8,7 @@ ROOF=
 ROOF=-q
 OPT=-O
 BEAM=-b
-SEARCH=solved
+SEARCH=student
 VERBOSE=-V
 
 rm -f *.pyc

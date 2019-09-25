@@ -490,71 +490,7 @@ def introduceLights (topleft, p, mapGrid, walls, doors):
     doorStartPoint = None
     doorEndPoint = None
     needToAvoidDoor = False
-    while True:
-        if debugging:
-            print("point currently at", p, d)
-        if (doorStartPoint == None) and lookingLeft (p, leftVec[d], mapGrid, '. '):
-            if debugging:
-                print("seen first point", p)
-            # first point on the wall is a door
-            doorStartPoint = addVec (p, leftVec[d])
-            doorEndPoint = doorStartPoint
-            needToAvoidDoor = True
-        if lookingLeft (addVec (p, forwardVec[d]), leftVec[d], mapGrid, '. '):
-            if debugging:
-                print("seen a door point", p, end=' ')
-            if doorStartPoint == None:
-                doorStartPoint = addVec (addVec (p, forwardVec[d]), leftVec[d])
-            doorEndPoint = addVec (addVec (p, forwardVec[d]), leftVec[d])
-            needToAvoidDoor = True
-        else:
-            # end of door?
-            if doorEndPoint != None:
-                doorStartPoint = None
-                doorEndPoint = None
-                needToAvoidDoor = True
-        if lookingLeft (addVec (p, forwardVec[d]), leftVec[d], mapGrid, 'x '):
-            # carry on
-            if needToAvoidDoor:
-                li = light ()
-                li.settype ('FLOOR')
-                lights += [p + [li]]
-            else:
-                lights, lightCount = checkLight (p, lights, lightCount)
-            needToAvoidDoor = False
-            p = addVec (p, forwardVec[d])
-        elif lookingLeft (addVec (p, forwardVec[d]), leftVec[d], mapGrid, 'x.'):
-            if debugging:
-                print("wall corner (x.)", p)
-            doorStartPoint = None
-            doorEndPoint = None
-            # turn right
-            d = (d + 1) % 4
-            if s == p:
-                # back to the start
-                return lights
-        elif lookingLeft (addVec (p, forwardVec[d]), leftVec[d], mapGrid, 'xx'):
-            if debugging:
-                print("wall corner (xx)", p)
-            doorStartPoint = None
-            doorEndPoint = None
-            # turn right
-            d = (d + 1) % 4
-            if s == p:
-                # back to the start
-                return lights
-        elif lookingLeft (addVec (p, forwardVec[d]), leftVec[d], mapGrid, '  '):
-            if debugging:
-                print("wall corner (  )", p, end=' ')
-            # turn left
-            p = addVec (p, forwardVec[d])
-            d = (d + 3) % 4
-            if s == p:
-                # back to the start
-                return lights
-        else:
-            printf ("something went wrong here\n")
-
+    # your code goes here, complete this function.
 
 def printCoord (c, o):
     global maxy

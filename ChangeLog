@@ -5,7 +5,8 @@
 	* python/developer-txt2map:  use student search
           path.
 	* student/chcuboid.py:  changed to Python 3 and
-	  added texture field.
+          added texture field.
+	* maps/lighting13.txt:  new file.
 
 2019-02-22      Gaius Mulley <gaius@southwales.ac.uk>
 

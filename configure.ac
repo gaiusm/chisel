@@ -1,5 +1,5 @@
 
-AC_INIT([chisel], [0.1], [bug-automake@gnu.org])
+AC_INIT([chisel], [2.0], [bug-automake@gnu.org])
 AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 
 AC_PROG_AWK

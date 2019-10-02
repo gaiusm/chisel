@@ -27,7 +27,7 @@ define green colour 0 180 0
 
 define f light type floor
 define m light type mid
-define defroom default mid [yellow] default ceil [flame]
+define defroom default light mid [yellow] default light ceiling [flame] default light floor [flame]
 
 ##################################
 # 1              # 2             #

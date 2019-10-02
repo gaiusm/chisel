@@ -10,6 +10,8 @@ exec_prefix=@exec_prefix@
 bindir= @bindir@
 INSTALL_PROGRAM = install
 
+PYTHON_VERSION=3.5
+
 python_PYTHON = python/pen2map.py python/txt2pen.py python/chvec.py python/student/chcuboid.py
 
 help:  force
@@ -21,7 +23,7 @@ help:  force
 SUBDIRS = random
 
 install-data-hook: force
-	rm -f $(DESTDIR)/usr/lib/python2.7/dist-packages/chcuboid.py
+	rm -f $(DESTDIR)/usr/lib/python$(PYTHON_VERSION)/dist-packages/chcuboid.py
 
 install-data-local: force
 	$(INSTALL_PROGRAM) -m 755 shell/txt2pen $(DESTDIR)/usr/bin

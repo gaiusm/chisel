@@ -1,3 +1,9 @@
+2019-10-05      Gaius Mulley <gaius@southwales.ac.uk>
+
+	* python/pen2map.py:  fixed bug relating to the
+          position of assets, monsters, players, python
+	  monster and sounds.
+
 2019-09-21      Gaius Mulley <gaius@southwales.ac.uk>
 
 	* NEWS:  updated.

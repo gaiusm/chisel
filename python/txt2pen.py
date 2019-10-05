@@ -101,7 +101,7 @@ class roomInfo:
 #
 
 def printf (format, *args):
-    sys.stdout.write (str(format) % args)
+    sys.stdout.write (str (format) % args)
     sys.stdout.flush ()
     # print (str(format) % args, end=' ')
 

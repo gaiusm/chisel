@@ -502,7 +502,8 @@ class light:
         p = subVec (p, [minx, miny, getFloorLevel (self.room)])
         # print "after local transform, p =", p
         p = subVec (p, [minx, miny, 0])
-        v = vecInches (p)
+        # v = vecInches (p)
+        v = midReposition (p)
         # print "minz =", minz, "maxz =", maxz, "minx =", minx, "miny =", miny, "p =", p
         # print v
         o.write ('%f %f %f"\n' % (v[0], v[1], v[2]))
@@ -3196,7 +3197,9 @@ def translatePoints (points):
 def midReposition (pos):
     v = []
     for p in pos[:-1]:
-        v += vecInches2 ([[int (p), halfUnit]])
+        # v += vecInches2 ([[int (p), halfUnit]])
+        p = vecInches2 ([[int (p), -float (halfUnit)]])
+        v += p
     if debugging:
         print(pos[-1])
     v += [toInches (pos[-1])]
@@ -3412,15 +3415,16 @@ def generateLightBlocks (r, walls):
 def generatePythonMonsters (o, e):
     n = 1
     for r in list(rooms.keys()):
-        for t, p in rooms[r].pythonMonsters:
+        for monster, xy in rooms[r].pythonMonsters:
             o.write ("// entity " + str (e) + '\n')
             o.write ("{\n")
-            o.write ('    "classname" "' + t + '"\n')
-            o.write ('    "name" "' + t + '_' + str (n) + '"\n')
+            o.write ('    "classname" "' + monster + '"\n')
+            o.write ('    "name" "' + monster + '_' + str (n) + '"\n')
             o.write ('    "anim" "idle"\n')
             o.write ('    "origin" "')
-            pos = toIntList (p) + [getFloorLevel (r) - spawnHeight]
-            v = midReposition (pos)
+            xyz = toIntList (xy) + [-invSpawnHeight]
+            xyz = subVec (xyz, [minx, miny, getFloorLevel (r)])
+            v = midReposition (xyz)
             o.write ('%f %f %f"\n' % (v[0], v[1], v[2]))
             o.write ('    "ambush" "1"\n')
             o.write ("}\n")
@@ -3432,15 +3436,16 @@ def generatePythonMonsters (o, e):
 def generateMonsters (o, e):
     n = 1
     for r in list(rooms.keys()):
-        for t, p in rooms[r].monsters:
+        for monster, xy in rooms[r].monsters:
             o.write ("// entity " + str (e) + '\n')
             o.write ("{\n")
-            o.write ('    "classname" "' + t + '"\n')
-            o.write ('    "name" "' + t + '_' + str (n) + '"\n')
+            o.write ('    "classname" "' + monster + '"\n')
+            o.write ('    "name" "' + monster + '_' + str (n) + '"\n')
             o.write ('    "anim" "idle"\n')
             o.write ('    "origin" "')
-            pos = toIntList (p) + [getFloorLevel (r) - spawnHeight]
-            v = midReposition (pos)
+            xyz = toIntList (xy) + [-invSpawnHeight]
+            xyz = subVec (xyz, [minx, miny, getFloorLevel (r)])
+            v = midReposition (xyz)
             o.write ('%f %f %f"\n' % (v[0], v[1], v[2]))
             o.write ('    "ambush" "1"\n')
             o.write ("}\n")
@@ -3461,7 +3466,8 @@ def generateAmmo (o, e):
             o.write ('    "classname" "' + ammo_kind + '"\n')
             o.write ('    "name" "' + ammo_kind + '_' + str (n) + '"\n')
             o.write ('    "origin" "')
-            xyz = toIntList (xy) + [getFloorLevel (r) - invSpawnHeight]
+            xyz = toIntList (xy) + [-invSpawnHeight]
+            xyz = subVec (xyz, [minx, miny, getFloorLevel (r)])
             v = midReposition (xyz)
             o.write ('%f %f %f"\n' % (v[0], v[1], v[2]))
             o.write ("}\n")
@@ -3481,7 +3487,8 @@ def generateSounds (o, e):
             o.write ('    "classname" "speaker"\n')
             o.write ('    "name" "speaker_%d"\n' % e)
             o.write ('    "origin" "')
-            xyz = toIntList (xy) + [getFloorLevel (r) - invSpawnHeight]
+            xyz = toIntList (xy) + [-invSpawnHeight]
+            xyz = subVec (xyz, [minx, miny, getFloorLevel (r)])
             v = midReposition (xyz)
             o.write ('%f %f %f"\n' % (v[0], v[1], v[2]))
             o.write ('    "s_shader" "%s"\n' % s.filename)

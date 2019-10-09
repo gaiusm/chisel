@@ -502,8 +502,8 @@ class light:
         p = subVec (p, [minx, miny, getFloorLevel (self.room)])
         # print "after local transform, p =", p
         p = subVec (p, [minx, miny, 0])
-        # v = vecInches (p)
-        v = midReposition (p)
+        v = vecInches (p)
+        # v = midReposition (p)
         # print "minz =", minz, "maxz =", maxz, "minx =", minx, "miny =", miny, "p =", p
         # print v
         o.write ('%f %f %f"\n' % (v[0], v[1], v[2]))

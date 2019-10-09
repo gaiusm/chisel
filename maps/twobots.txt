@@ -1,12 +1,12 @@
 
-define 1 room 1 [defroom]
-define 2 room 2 [defroom]
-define 3 room 3 [defroom]
-define 4 room 4 [defroom]
-define 5 room 5 [defroom]
-define 6 room 6 [defroom]
-define 7 room 7 [defroom]
-define 8 room 8 [defroom]
+define 1 room 1
+define 2 room 2
+define 3 room 3
+define 4 room 4
+define 5 room 5
+define 6 room 6
+define 7 room 7
+define 8 room 8
 define S worldspawn
 
 define R ammo ammo_rockets_large 16

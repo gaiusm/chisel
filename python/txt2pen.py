@@ -473,8 +473,20 @@ def checkLight (p, l, lightCount):
         lightCount += 1
     return l, lightCount
 
+#
+#  introduceLights - returns a list of lights which are dropped
+#                    near the perimeter of the wall.  The algorithm
+#                    walks around the wall touching the left hand edge
+#                    (it moves clockwise).
+#                    Pre-condition:  p is the start point and it will
+#                                    be touching a left hand wall.
+#                                    mapGrid is the 2D map a list of lists.
+#                                    walls is a list of walls.
+#                                    doors is a list of doors.
+#                    Post-condition: a list of lights is returned.
+#
 
-def introduceLights (topleft, p, mapGrid, walls, doors):
+def introduceLights (p, mapGrid, walls, doors):
     global debuging
 
     s = p
@@ -618,7 +630,7 @@ def generateRoom (r, p, mapGrid, start, i):
     if debugging:
         print(walls)
     rooms[r] = roomInfo (walls, doors)
-    rooms[r].autoLights += introduceLights (s, p, mapGrid, [], [])
+    rooms[r].autoLights += introduceLights (p, mapGrid, [], [])
     rooms[r].inside = inside
 
 

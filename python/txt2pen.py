@@ -505,6 +505,7 @@ def introduceLights (p, mapGrid, walls, doors):
     # your code goes here, complete this function.
     return []
 
+
 def printCoord (c, o):
     global maxy
     o.write (str (c[0]+1) + " " + str ((maxy-c[1])+1))

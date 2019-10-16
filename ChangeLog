@@ -1,3 +1,8 @@
+2019-10-16      Gaius Mulley <gaius@southwales.ac.uk>
+
+	* python/pen2map.py:  fixed spawn position bug
+          for human player.
+
 2019-10-05      Gaius Mulley <gaius@southwales.ac.uk>
 
 	* python/pen2map.py:  fixed bug relating to the

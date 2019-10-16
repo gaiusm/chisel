@@ -3218,8 +3218,10 @@ def generatePlayer (o, e):
                 o.write ('    "classname" "info_player_deathmatch"\n')
                 o.write ('    "name" "info_player_deathmatch_1"\n')
             o.write ('    "origin" "')
-            pos = toIntList (rooms[r].worldspawn[0]) + [getFloorLevel (r) - spawnHeight]
-            v = midReposition (pos)
+            xy = rooms[r].worldspawn[0]
+            xyz = toIntList (xy) + [-invSpawnHeight]
+            xyz = subVec (xyz, [minx, miny, getFloorLevel (r)])
+            v = midReposition (xyz)
             o.write ('%f %f %f"\n' % (v[0], v[1], v[2]))
             o.write ('    "angle" "180"\n')
             o.write ("}\n")

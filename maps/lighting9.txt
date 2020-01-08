@@ -1,0 +1,58 @@
+
+define 1 room 1 [defroom] [bluefloor]
+define 2 room 2 [defroom] [redfloor]
+define 3 room 3 [defroom] [greenfloor]
+define 4 room 4 [defroom] [purplefloor]
+define 5 room 5 [defroom] [blackfloor]
+define 6 room 6 [defroom] [slatefloor]
+define 7 room 7 [defroom] [bluefloor]
+define s worldspawn
+
+define R ammo ammo_rockets_large 16
+define G ammo ammo_grenade_small 16
+define L ammo moveable_item_rocketlauncher 1
+define A ammo item_medkit 1
+define l light
+define d default ceiling colour 210 199 130
+
+define yellow colour 190 180 170
+define darkyellow colour 190 185 66
+define flame colour 170 107 7
+
+define red colour 180 0 0
+define blue colour 0 0 180
+define green colour 0 180 0
+
+define f light type floor
+define m light type mid
+define defroom default light mid [yellow] default light ceiling [flame] default light floor [flame]
+
+define redfloor default texture floor textures/quake1/red_tile_floor
+define bluefloor default texture floor textures/quake1/blue_tile_floor
+define greenfloor default texture floor textures/quake1/green_tile_floor
+define purplefloor default texture floor textures/quake1/purple_tile_floor
+define blackfloor default texture floor textures/quake1/black_tile_floor
+define slatefloor default texture floor textures/quake1/slate_tile_floor
+define ceiling default texture ceiling textures/quake1/pine_wood
+
+##################################
+# 1    m   m   m # 2  m    m     #
+#                #              m#
+#       s        #               #
+#               f.f              #
+#               f.f             m#
+#                #               #
+#  ff  m   m   m #  m    m    m  #
+###..######################..##############
+# 3ff m#  4 m # 5 m #  6  #  7            #
+#     f.f    f.f   f.f    #               #
+#     f.f    f.f   f.f    #               #
+# m  m # m  m #m m  # m m #               #
+###########################               #
+                          #               #
+                          #               #
+                          #               #
+                          #               #
+                          #               #
+                          #               #
+                          #################

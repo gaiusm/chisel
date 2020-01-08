@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# Copyright (C) 2017-2019
+# Copyright (C) 2017-2020
 #               Free Software Foundation, Inc.
 # This file is part of Chisel.
 #

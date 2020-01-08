@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# Copyright (C) 2017-2019
+# Copyright (C) 2017-2020
 #               Free Software Foundation, Inc.
 # This file is part of Chisel.
 #
@@ -35,7 +35,7 @@ FileUnit := RoomDesc { RoomDesc } "END." =:
 
 roomDesc := "ROOM" integer { doorDesc | wallDesc | treasureDesc | ammoDesc |
                             lightDesc | insideDesc | weaponDesc | monsterDesc |
-                            spawnDesc | defaultDesc | soundDesc } =:
+                            spawnDesc | defaultDesc | soundDesc | labelDesc } =:
 
 soundDesc := "SOUND" "AT" { volumeDesc | loopingDesc | waitDesc } =:
 
@@ -62,6 +62,8 @@ weaponDesc := 'LIGHT' 'AT' posDesc =:
 
 insideDesc := 'INSIDE' 'AT' posDesc =:
 
+labelDesc := 'INSIDE' 'AT' posDesc string =:
+
 lightDesc := 'LIGHT' 'AT' posDesc [ 'COLOUR' int int int ] [ 'ON' string ] =:
 
 ammoDesc := "AMMO" integer "AMOUNT" integer "AT" posDesc =:
@@ -84,6 +86,7 @@ inputFile = None
 defines = {}
 verbose = False
 debugging = False
+debugFloorLevel = False
 comments = False
 statistics = False
 toTxt, toMap = False, False
@@ -127,20 +130,20 @@ enableCandleLights = True
 defaults = { "portal":"textures/editor/visportal",
              "open":"textures/editor/visportal",
              "closed":"textures/hell/wood1",
-             "secret":"textures/hell/bricks1a_d",
+             "secret":"secret",
              "wall":"textures/hell/cbrick2b",
              "floor":"textures/hell/qfloor",
              "ceiling":"textures/hell/wood1",
+             "brick" : "textures/caves/sbricks2",
              "open_transform"   :"( ( 0.0078125 0 0 ) ( 0 0.0078125 1.5 ) )",
              # portal transform is a no-op but it allows code reuse.
              "portal_transform" :"( ( 0.0078125 0 0 ) ( 0 0.0078125 1.5 ) )",
              "wall_transform"   :"( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) )",
-             # "floor_transform"  :"( ( 0.015625 0 0 ) ( 0 0.015625 0 ) )",  # default
              "floor_transform"  :"( ( 0.03 0 0 ) ( 0 0.03 0 ) )",
-             # "floor_transform"  :"( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) )",
-             "ceiling_transform":"( ( 0.0078125 0 0 ) ( 0 0.0078125 0 ) )" }
-
-#              "wall_transform"   :"( ( 0 0.0078125 0.5 ) ( -0.0078125 0 -1 ) )",
+             "ceiling_transform":"( ( 0.0078125 0 0 ) ( 0 0.0078125 0 ) )",
+             "secret_transform" :"( ( 0.0156250019 0 1.0000002384 ) ( 0 0.015625 6.25 ) )",
+             "brick_transform"  :"( ( 0.015625 0 0 ) ( 0 0.0078125 0 ) )" }
+secretDoorLintal = "wall"
 
 scopeStack = [defaults]
 
@@ -159,6 +162,7 @@ wallThickness      = halfUnit         # number of inches thick for a brick
 # the remaining contants are in inchesPerUnit
 #
 
+beamSupportSize    = 0.5       # 2 foot beam support
 lintelThickness    = 0.5       # 2 foot lintel over the door
 minCeilingHeight   = 6         # 6x48 inches minimum
 minDoorHeight      = minCeilingHeight-lintelThickness   #
@@ -173,8 +177,18 @@ lightFloorHeight   = 0.125     # 6 inches
 lightFloorHeight   = 0.125     # 6 inches
 lightCeilingHeight = minCeilingHeight - 1.5
 floorStep          = 0.25      # 1 foot
-noSteps            = 4         # how many steps
-
+noSteps            = 4         # how many steps per unit
+#
+#  the bricks are used to construct secret doors (not ordinary walls)
+#
+# brickLength        = 0.25      # 1 foot brick
+# brickWidth         = 0.08      # 4 inches wide
+# brickHeight        = 0.0625    # 3 inches height
+# brickMidOffset     = 0.5 - brickWidth/2.0
+brickLength        = 0.5      # 1 foot brick
+brickWidth         = 0.25      # 4 inches wide
+brickHeight        = 0.5    # 3 inches height
+brickMidOffset     = 0.25 #  - brickWidth/2.0
 
 def mycut (l, i):
     if i == 0:
@@ -274,8 +288,8 @@ def verify_polygon_points (polygon_points, name):
     for i, p in enumerate (polygon_points):
         for j, q in enumerate (polygon_points):
             if (i != j) and equVec (p, q):
-                print("polygon_points are:", polygon_points)
-                print("duplicate", p, "at indices", i, "and", j)
+                print ("polygon_points are:", polygon_points)
+                print ("duplicate", p, "at indices", i, "and", j)
                 error ("the polygon " + name + " must not have duplicate vertices")
 
 
@@ -312,10 +326,10 @@ def addroofbrick (polygon_points, faces, material, r):
 #              Each cuboid has a unique number.
 #
 
-def addcuboid (pos, size, material, transform):
+def addcuboid (pos, size, material, transform, fixed):
     global cuboids, cuboidno
 
-    cuboids[cuboidno] = cuboid (pos, size, material, transform, cuboidno)
+    cuboids[cuboidno] = cuboid (pos, size, material, transform, cuboidno, fixed)
     cuboidno += 1
 
 
@@ -324,26 +338,62 @@ def addcuboid (pos, size, material, transform):
 #             can be combined with an existing cuboid.
 #
 
-def combined (pos, size, material, transform):
+def combined (pos, size, material, transform, fixed):
     if debugging:
-        print("examine cuboid", pos, size, end=' ')
+        print ("examine cuboid", pos, size, end=' ')
     for k in list(cuboids.keys ()):
         b = cuboids[k]
         if (b.material != material) or (b.transform != transform):
             if b.interpenetration (pos, size):
-                print("brick at", pos, size, "intersects with", b.pos, b.size, b.cuboidno)
+                print ("brick at", pos, size, "intersects with", b.pos, b.size, b.cuboidno)
                 error ("brick is being overwritten   (consider giving the room number for more detail)  the two cubiods have material " + b.material + " and " + material)
             # differing material cannot be merged.
             if debugging:
-                print("differing material")
+                print ("differing material")
             return False
-        if b.combined (pos, size, material, transform):
+        if b.combined (pos, size, material, transform, fixed):
             if debugging:
-                print("combined!")
+                print ("combined!")
             return True
     if debugging:
-        print("no join")
+        print ("no join")
     return False
+
+
+#
+#  alreadyExists - returns True if the cuboid already exists.
+#
+
+def alreadyExists (pos, size, material, transform):
+    if debugging:
+        print ("checking", material)
+    for k in list (cuboids.keys ()):
+        b = cuboids[k]
+        if (b.material == material) and (b.transform == transform):
+            if b.subset (pos, size):
+                if debugging:
+                    print ("yes found duplicate", material)
+                return True
+    return False
+
+
+#
+#
+#
+brickCount = 0
+brickTextures = [
+    "textures/hell/cbrick2b",
+    "textures/object/cabinettop_blk01_d",
+    "textures/object/cabinettop_blue02_d",
+    "textures/object/cabinettop_brnblk01_d",
+    "textures/object/cabinettop_org01_d",
+    "textures/object/cabinettop_white02_d"]
+
+def chooseBrick ():
+    global brickCount
+    brickCount = (brickCount + 1) % len (brickTextures)
+    brickCount = 0
+    return brickTextures[brickCount]
 
 
 #
@@ -352,11 +402,25 @@ def combined (pos, size, material, transform):
 #              existing cuboid before creating another cuboid.
 #
 
-def newcuboid (pos, size, material, r):
-    transform = lookupTransform (r, material)
-    doommat = lookupMaterial (r, material)
-    if not combined (pos, size, doommat, transform):
-        addcuboid (pos, size, doommat, transform)
+def newcuboid (pos, size, material, roomNo, allowExtend = True, fixed = True):
+    transform = lookupTransform (roomNo, material)
+    if material == "secret":
+        doommat = chooseBrick ()
+    else:
+        doommat = lookupMaterial (roomNo, material)
+    #
+    #  does the cuboid already exist?  If so ignore this new cuboid request.
+    #
+    if not alreadyExists (pos, size, doommat, transform):
+        #  are we allowed to try and extend a previous cuboid to encompass this new cuboid?
+        if allowExtend:
+            #  can we extend a previous cuboid to encompass this new cuboid?
+            if not combined (pos, size, doommat, transform, fixed):
+                # ok we must add a newcuboid
+                addcuboid (pos, size, doommat, transform, fixed)
+        else:
+            # ok we are forced into adding a newcuboid
+            addcuboid (pos, size, doommat, transform, fixed)
 
 
 #
@@ -392,11 +456,12 @@ def lookupEntry (name):
 #                   It checks all stacked scopes.
 #
 
-def lookupMaterial (r, material):
-    pushScope (r)
+def lookupMaterial (roomNo, material):
+    pushScope (roomNo)
     result = lookupEntry (material)
     if result == None:
-        error ("material " + material + " is not known about in room " + str (r) + "\n")
+        error ("material " + material + " is not known about in room "
+               + str (roomNo) + "\n")
     popScope ()
     return result
 
@@ -406,11 +471,12 @@ def lookupMaterial (r, material):
 #                    It checks all stacked scopes.
 #
 
-def lookupTransform (r, material):
-    pushScope (r)
+def lookupTransform (roomNo, material):
+    pushScope (roomNo)
     result = lookupEntry (material + "_transform")
     if result == None:
-        error ("transform for " + material + " is not known about in room " + str (r) + "\n")
+        error ("transform for " + material + " is not known about in room "
+               + str (roomNo) + "\n")
     popScope ()
     return result
 
@@ -431,7 +497,7 @@ class roomInfo:
         self.defaultColours = {}
         self.defaultTextures = {}
         self.sounds = []
-
+        self.labels = []
     def addWall (self, line):
         global maxx, maxy
         line = toLine (line)
@@ -463,6 +529,8 @@ class roomInfo:
         return n
     def addSound (self, s, pos):
         self.sounds += [[s, pos]]
+    def addLabel (self, label, pos):
+        self.labels += [[label, pos]]
 
 def newRoom (n):
     global rooms
@@ -666,12 +734,12 @@ def handleOptions ():
             elif opt[0] == '-O':
                 optimise = True
         if toTxt and toMap:
-            print("you need to choose either a text file or map file but not both")
+            print ("you need to choose either a text file or map file but not both")
             usage (1)
         readDefaults (ssName)
         if l != []:
             return (l[0], outputName)
-        print("you need to supply an input file or use - for stdin")
+        print ("you need to supply an input file or use - for stdin")
         usage (1)
 
     except getopt.GetoptError:
@@ -682,7 +750,7 @@ def handleOptions ():
 def errorLine (text):
     global inputFile, currentLineNo
     full = "%s:%d:%s\n" % (inputFile, currentLineNo, text)
-    print(full)
+    print (full)
     sys.stderr (full)
 
 
@@ -906,7 +974,6 @@ def status ():
             expect ('CLOSED')
         elif expecting (['SECRET']):
             curStatus = status_secret
-            curStatus = status_open    # --fixme-- secret doors would be nice!
             expect ('SECRET')
         return True
     return False
@@ -1108,7 +1175,7 @@ def insideDesc ():
 
 
 #
-#  weaponDesc := 'LIGHT' 'AT' posDesc =:
+#  weaponDesc := 'WEAPON' 'AT' posDesc =:
 #
 
 def weaponDesc ():
@@ -1123,6 +1190,22 @@ def weaponDesc ():
             errorLine ('expecting a position for a weapon')
     else:
         errorLine ('expecting a weapon number')
+    return False
+
+
+#
+#  labelDesc := 'LABEL' 'AT' posDesc string =:
+#
+
+def labelDesc ():
+    expect ('LABEL')
+    expect ('AT')
+    if posDesc ():
+        label = get ()
+        curRoom.addLabel (label, curPos)
+        return True
+    else:
+        errorLine ('expecting a position for a label')
     return False
 
 
@@ -1268,6 +1351,7 @@ def soundDesc ():
         curRoom.addSound (s, soundPos)
 
 
+
 #
 #  roomDesc := "ROOM" integer { doorDesc | wallDesc | treasureDesc | ammoDesc | lightDesc | insideDesc | weaponDesc | monsterDesc | spawnDesc | defaultDesc | soundDesc } =:
 #
@@ -1281,7 +1365,7 @@ def roomDesc ():
             curRoom = newRoom (curRoomNo)
             if debugging:
                 print("roomDesc", curRoomNo)
-            while expecting (['DOOR', 'WALL', 'TREASURE', 'AMMO', 'WEAPON', 'LIGHT', 'INSIDE', 'MONSTER', 'SPAWN', 'DEFAULT', 'SOUND']):
+            while expecting (['DOOR', 'WALL', 'TREASURE', 'AMMO', 'WEAPON', 'LIGHT', 'INSIDE', 'MONSTER', 'SPAWN', 'DEFAULT', 'SOUND', 'LABEL']):
                 if expecting (['DOOR']):
                     doorDesc ()
                 elif expecting (['WALL']):
@@ -1292,12 +1376,12 @@ def roomDesc ():
                     ammoDesc ()
                 elif expecting (['WEAPON']):
                     weaponDesc ()
+                elif expecting (['LABEL']):
+                    labelDesc ()
                 elif expecting (['LIGHT']):
                     lightDesc ()
                 elif expecting (['INSIDE']):
                     insideDesc ()
-                elif expecting (['WEAPON']):
-                    weaponDesc ()
                 elif expecting (['MONSTER']):
                     monsterDesc ()
                 elif expecting (['SPAWN']):
@@ -1379,7 +1463,7 @@ def generateTxtRoom (r):
             else:
                 plotLine (d[0], '-')
         elif d[2] == status_secret:
-            plotLine (d[0], '%')
+            plotLine (d[0], '=')
 
 
 #
@@ -2212,22 +2296,24 @@ def roof (o, polygon_points, faces, material, transform):
 
 
 #
-#  flushCuboids - flush all the cuboid bricks.
+#  flushCuboids - flush all the cuboid bricks which have the same fixed
+#                 value.
 #
 
-def flushCuboids (o, bcount):
-    for k in list(cuboids.keys ()):
+def flushCuboids (o, bcount, fixed):
+    for k in list (cuboids.keys ()):
         b = cuboids[k]  # Python v2 and v3 compatible
-        if debugging:
-            print("cuboid", b.pos, "size", b.size)
-        o.write ('    // cuboid ' + str (k) + '\n')
-        o.write ('    {\n')
-        o.write ('         brushDef3\n')
-        o.write ('         {\n')
-        o = brick (o, b.pos, b.end, b.material, b.transform)
-        o.write ('         }\n')
-        o.write ('    }\n')
-        bcount += 1
+        if b.fixed == fixed:
+            if debugging:
+                print("cuboid", b.pos, "size", b.size)
+            o.write ('    // cuboid ' + str (k) + '\n')
+            o.write ('    {\n')
+            o.write ('         brushDef3\n')
+            o.write ('         {\n')
+            o = brick (o, b.pos, b.end, b.material, b.transform)
+            o.write ('         }\n')
+            o.write ('    }\n')
+            bcount += 1
     return o, bcount
 
 
@@ -2251,13 +2337,12 @@ def flushRoofBricks (o, bcount):
 
 
 #
-#  flushBricks - flushes all used cuboids to the output file, o
+#  flushBricks - flushes all used fixed cuboids to the output file, o
 #
 
 def flushBricks (o, bcount):
-    o, bcount = flushCuboids (o, bcount)
+    o, bcount = flushCuboids (o, bcount, True)
     o, bcount = flushRoofBricks (o, bcount)
-    # o, bcount = flushCuboids (o, bcount)
     return o, bcount
 
 
@@ -2394,13 +2479,9 @@ def doOpen (r, e):
                 #
                 # (mcomp your code goes here)
                 #
-                # fill in the doorway with visportal block   ###  snip
-                # vertical visportal code                    ###  snip
-                pos = [e[0][0], l, rooms[r].floorLevel]      ###  snip
-                end = [e[1][0]+1, l+1, minCeilingHeight]     ###  snip
-                size = subVec (end, pos)                     ###  snip
-                newcuboid (pos, size, e[-2], r)              ###  snip
-
+                # fill in the doorway with visportal block
+                # vertical visportal code
+                pass
     else:
         #
         #  horizontal door (on the 2D map)
@@ -2422,16 +2503,183 @@ def doOpen (r, e):
                 #
                 # (mcomp your code goes here)
                 #
-                # horizontal visportal doorway             ###  snip
-                pos = [l, e[0][1], rooms[r].floorLevel]    ###  snip
-                end = [l+1, e[1][1]+1, minCeilingHeight]   ###  snip
-                size = subVec (end, pos)                   ###  snip
-                newcuboid (pos, size, e[-2], r)            ###  snip
+                # horizontal visportal doorway
+                pass
 
 
+def buildVerticalBrickWall (xaxis, miny, maxy, minz, maxz, roomNo):
+    xpos = float (xaxis) + brickMidOffset
+    length = maxy - miny
+    height = maxz - minz
+    totalRows = int (height / brickHeight)
+    totalRows = 4
+    x = xpos
+    z = minz
+    # print ("totalRows =", totalRows)
+    # print ("no brick =", int (length / brickLength))
+    for row in range (totalRows):
+        y = maxy
+        # print ("length =", length, length/brickLength)
+        pos = [xaxis, y+beamSupportSize, z]
+        size = [1.0, beamSupportSize, brickHeight]
+        newcuboid (pos, size, "wall", roomNo)
+        y -= beamSupportSize
+        for brick in range (int (length / brickLength)):
+            pos = [x, y, z]
+            size = [brickWidth, brickLength, brickHeight]
+            newcuboid (pos, size, "secret", roomNo, False, False)
+            y -= brickLength
+        pos = [xaxis, y+beamSupportSize, z]
+        size = [1.0, beamSupportSize, brickHeight]
+        newcuboid (pos, size, "wall", roomNo)
+        y -= beamSupportSize
+        z += brickHeight
+    for y in range (miny, maxy + 1):
+        pos = [xaxis, y, z]
+        size = [1, 1, 0.5]
+        newcuboid (pos, size, secretDoorLintal, roomNo)  # beam lintel
+    z += 0.5
+    for y in range (miny, maxy + 1):
+        pos = [xaxis, y, z]
+        size = [1, 1, 0.5]
+        newcuboid (pos, size, "wall", roomNo)
+    z += 0.5
+    for z in range (int (z), int (getFloorLevel (roomNo) + minCeilingHeight) + 1):
+        for y in range (miny, maxy + 1):
+            pos = [xaxis, y, z]
+            size = [1, 1, 1]
+            newcuboid (pos, size, "wall", roomNo)
 
-brickFunc = {'leftwall':doWall, 'topwall':doWall, 'rightwall':doWall, 'bottomwall':doWall,
-              'leftopen': doOpen, 'rightopen': doOpen, 'topopen':doOpen, 'bottomopen':doOpen}
+
+def buildHorizBrickWall (yaxis, minx, maxx, minz, maxz, roomNo):
+    ypos = float (yaxis) + brickMidOffset
+    length = maxx - minx
+    height = maxz - minz
+    totalRows = int (height / brickHeight)
+    totalRows = 4
+    y = ypos
+    z = minz
+    # print ("totalRows =", totalRows)
+    # print ("no brick =", int (length / brickLength))
+    for row in range (totalRows):
+        x = maxx
+        # print ("length =", length, length/brickLength)
+        pos = [x+beamSupportSize, yaxis, z]
+        size = [beamSupportSize, 1.0, brickHeight]
+        newcuboid (pos, size, "wall", roomNo)
+        x -= beamSupportSize
+        for brick in range (int (length / brickLength)):
+            pos = [x, y, z]
+            size = [brickLength, brickWidth, brickHeight]
+            newcuboid (pos, size, "secret", roomNo, False, False)
+            x -= brickLength
+        pos = [x+beamSupportSize, yaxis, z]
+        size = [beamSupportSize, 1.0, brickHeight]
+        newcuboid (pos, size, "wall", roomNo)
+        x -= beamSupportSize
+        z += brickHeight
+    for x in range (minx, maxx + 1):
+        pos = [x, yaxis, z]
+        size = [1, 1, 0.5]
+        newcuboid (pos, size, secretDoorLintal, roomNo)
+    z += 0.5
+    for x in range (minx, maxx + 1):
+        pos = [x, yaxis, z]
+        size = [1, 1, 0.5]
+        newcuboid (pos, size, "wall", roomNo)
+    z += 0.5
+    for z in range (int (z), int (getFloorLevel (roomNo) + minCeilingHeight) + 1):
+        for x in range (minx, maxx + 1):
+            pos = [x, yaxis, z]
+            size = [1, 1, 1]
+            newcuboid (pos, size, "wall", roomNo)
+
+
+#
+#  calcBrickOrigin - return the mid point in a brick.
+#
+
+def calcBrickOrigin (brick):
+    # print ("minx =", minx, "miny =", miny)
+    start = subVec (brick.pos, [minx, miny, 0])
+    start = addVec (brick.pos, [0, 0, -brickHeight])
+    # print ("start =", start)
+    # print ("brick.size =", brick.size)
+    end = addVec (start, brick.size)
+    # print ("end =", end)
+    mid = [((start[0] + end[0])/2),
+           ((start[1] + end[1])/2),
+           ((start[2] + end[2])/2)]
+    # print ("mid =", mid)
+    mid = vecInches (end)
+    # print ("  mid =", mid)
+    mid = toIntList (mid)
+    # print ("  final mid =", mid)
+    return mid[0], mid[1], -mid[2]
+
+
+#
+#  doSecret - create a secret door.
+#
+
+def doSecret (roomNo, e):
+    global minFloor, maxFloor
+    if debugging:
+        print ("secret door, building floor and ceiling for doorway")
+    if (e[-1] == 'left') or (e[-1] == 'right'):
+        #
+        #  vertical door (on the 2D map)
+        #
+        miny = min (e[0][1], e[1][1])  # smallest y coord
+        maxy = max (e[0][1], e[1][1])  # largest y coord
+        for y in range (miny, maxy+1): # iterative over all y coords
+            generateStepsVerticalWall (roomNo, e, y)  # build the steps
+            #
+            #  now build the ceiling over the doorway
+            #
+            h = minDoorHeight + getFloorLevel (roomNo)
+            pos = [e[0][0], y, h]   # bottom left
+            end = [e[1][0]+1, y+1, maxz + getFloorLevel (roomNo)]  # top right
+            size = subVec (end, pos)  #  size of ceiling
+            if debugging:
+                print("vertical ceiling block at", pos, end, size)
+            newcuboid (pos, size, 'wall', roomNo)   # ceiling
+
+        # fill in the doorway with moveable bricks
+        # pos = [e[0][0], y, rooms[roomNo].floorLevel]
+        # end = [e[1][0]+1, y+1, minCeilingHeight]
+        # size = subVec (end, pos)
+        buildVerticalBrickWall (e[0][0], miny, maxy, getFloorLevel (roomNo), h, roomNo)
+    else:
+        #
+        #  horizontal door (on the 2D map)
+        #
+        minx = min (e[0][0], e[1][0])  # smallest x coord
+        maxx = max (e[0][0], e[1][0])  # largest x coord
+        for x in range (minx, maxx+1): # iterate over all x coords of the door
+            generateStepsHorizontalWall (roomNo, e, x)
+            h = minDoorHeight + getFloorLevel (roomNo)
+            pos = [x, e[0][1], h]
+            end = [x+1, e[1][1]+1, maxz + getFloorLevel (roomNo)]
+            size = subVec (end, pos)
+            if debugging:
+                print("horiz ceiling block at", pos, end, size)
+            newcuboid (pos, size, 'wall', roomNo)   # ceiling
+        buildHorizBrickWall (e[0][1], minx, maxx, getFloorLevel (roomNo), h, roomNo)
+
+
+brickFunc = {'leftwall':doWall,
+             'topwall':doWall,
+             'rightwall':doWall,
+             'bottomwall':doWall,
+             'leftopen': doOpen,
+             'rightopen': doOpen,
+             'topopen':doOpen,
+             'bottomopen':doOpen,
+             'leftsecret': doSecret,
+             'rightsecret': doSecret,
+             'topsecret':doSecret,
+             'bottomsecret':doSecret}
 
 
 #
@@ -2552,7 +2800,7 @@ def sortMinMax (a, b):
 #
 
 def findOffsetInRoom (r):
-    global minx, miny, minz, maxz
+    global minx, miny, minz, maxx, maxy, maxz
     for e in rooms[r].walls:
         if minx == None:
             minx = int (e[0][0])
@@ -2566,6 +2814,14 @@ def findOffsetInRoom (r):
             minz = rooms[r].floorLevel-2
         else:
             minz = min (rooms[r].floorLevel-2, minz)
+        if maxx == None:
+            maxx = int (e[1][0])
+        else:
+            maxx = max (int (e[1][0]), maxx)
+        if maxy == None:
+            maxy = int (e[1][1])
+        else:
+            maxy = max (maxy, int (e[1][1]))
         if maxz == None:
             maxz = rooms[r].floorLevel + minCeilingHeight + 1
         else:
@@ -2610,7 +2866,7 @@ def candle (r, x, y):
 
 def beamSupport (r, x, y, h):
     pos = [x, y, h]
-    size = [0.5, 0.5, 0.5]
+    size = [beamSupportSize, beamSupportSize, beamSupportSize]
     newcuboid (pos, size, 'wall', r)
 
 
@@ -3085,8 +3341,8 @@ def testFaces (r):
         toppos = [20, 20, 20]
         translate_top = [0, 0, 0]
         points, faces = generate_roof_points (botpos, toppos, translate_top)
-        print("test points =", points)
-        print("test faces  =", faces)
+        # print("test points =", points)
+        # print("test faces  =", faces)
         addroofbrick (points, faces, "ceiling", r)  # facing up 2D when viewed from top
 
 
@@ -3110,6 +3366,29 @@ def generateFloor (r, e):
                     print("floor at", pos, size)
                 newcuboid (pos, size, 'floor', r)
 
+#
+#  generateLimits - output the pen and doom map limits.
+#
+
+def generateLimits (o):
+    o.write ('    "penminx" "' + str (minx) + '"\n')
+    o.write ('    "penminy" "' + str (miny) + '"\n')
+    o.write ('    "penmaxx" "' + str (maxx) + '"\n')
+    o.write ('    "penmaxy" "' + str (maxy) + '"\n')
+
+    pen_xyz = toIntList ([minx, miny, 0])
+    pen_xyz = subVec (pen_xyz, [minx, miny, 0])
+    v = midReposition (pen_xyz)
+    o.write ('    "doomminx" "' + str (v[0]) + '"\n')
+    o.write ('    "doomminy" "' + str (v[1]) + '"\n')
+
+    pen_xyz = toIntList ([maxx, maxy, 0])
+    pen_xyz = subVec (pen_xyz, [minx, miny, 0])
+    v = midReposition (pen_xyz)
+    o.write ('    "doommaxx" "' + str (v[0]) + '"\n')
+    o.write ('    "doommaxy" "' + str (v[1]) + '"\n')
+    return o
+
 
 def generateEntities (o):
     bcount = 0
@@ -3119,8 +3398,9 @@ def generateEntities (o):
     o.write ('    "classname" "worldspawn"\n')
     o.write ('    "spawnflags" "1"\n')
     o.write ('    "penmap" "' + inputFile + '"\n')
-    findOffsets ()  # sets minx, miny, minz
+    findOffsets ()  # sets minx, miny, minz, maxx, maxy, maxz
     initRoomFloor ()
+    o = generateLimits (o)
     vprintf ("room: ")
     for r in list(rooms.keys ()):
         el = roomToEntities (r)
@@ -3141,6 +3421,57 @@ def generateEntities (o):
     vprintf ("done\n")
     o.write ('}\n\n')
     return o, 1, bcount
+
+
+def writeMovableBrick (o, size, material, transform):
+    # [length, width, height]
+    moveable = cuboid ([0, 0, 0], size, material, transform, None, None)
+    o = brick (o, moveable.pos, moveable.size, material, transform)
+    return o
+    #
+    #########################################################################
+    #
+    if equVec (size, [0.25, 0.5, 0.5]):
+        o.write ("\n             ( -1 0 0 84 ) " + transform + " " + material + " 0 0 0")
+        o.write ("\n             ( 0 -1 0 72 ) " + transform + " " + material + " 0 0 0")
+        o.write ("\n             ( 0 1 0 -96 ) " + transform + " " + material + " 0 0 0")
+        o.write ("\n             ( 1 0 0 -96 ) " + transform + " " + material + " 0 0 0")
+        o.write ("\n             ( 0 0 -1 0 ) " + transform + " " + material + " 0 0 0")
+        o.write ("\n             ( 0 0 1 -24 ) " + transform + " " + material + " 0 0 0")
+        o.write ("\n")
+    else:
+        print ("cannot find brick", size)
+    return o
+
+
+def generateMovable (block, o, e, bcount):
+    o.write ("// entity " + str (e) + "\n")
+    o.write ("{\n")
+    o.write ('  "classname" "moveable_base_brick"\n')
+    o.write ('  "name" "moveable_base_brick_' + str (bcount) + '"\n')
+    o.write ('  "model" "moveable_base_brick_' + str (bcount) + '"\n')
+    x, y, z = calcBrickOrigin (block)
+    o.write ('  "origin" "' + str (x) + " " + str (y) + " " + str (z) + '"\n')
+    o.write ('  "clipshrink" "1"\n')
+    o.write ('    {\n')
+    o.write ('         brushDef3\n')
+    o.write ('         {\n')
+    o = writeMovableBrick (o, block.size, block.material, block.transform)
+    o.write ('         }\n')
+    o.write ('    }\n')
+    o.write ("}\n")
+    e += 1
+    bcount += 1
+    return o, e, bcount
+
+
+def generateSecretDoors (o, e, bcount):
+    bcount = 0
+    for k in list (cuboids.keys ()):
+        brick = cuboids[k]
+        if not brick.fixed:
+            o, e, bcount = generateMovable (brick, o, e, bcount)
+    return o, e, bcount
 
 
 #
@@ -3512,6 +3843,47 @@ def generateSounds (o, e):
             e += 1
     return o, e
 
+def generateWeapons (o, e):
+    n = 1
+    for r in list(rooms.keys ()):
+        if debugging:
+            print(rooms[r].weapons)
+        for weapon_kind, xy in rooms[r].weapons:
+            o.write ("// entity " + str (e) + '\n')
+            o.write ("{\n")
+            o.write ('    "inv_item" "4"\n')
+            o.write ('    "classname" "' + weapon_kind + '"\n')
+            o.write ('    "name" "' + weapon_kind + '"\n')
+            o.write ('    "origin" "')
+            xyz = toIntList (xy) + [-invSpawnHeight]
+            xyz = subVec (xyz, [minx, miny, getFloorLevel (r)])
+            v = midReposition (xyz)
+            o.write ('%f %f %f"\n' % (v[0], v[1], v[2]))
+            o.write ("}\n")
+            n += 1
+            e += 1
+    return o, e
+
+def generateLabels (o, e):
+    n = 1
+    for r in list(rooms.keys ()):
+        if debugging:
+            print (rooms[r].labels)
+        for label_desc, xy in rooms[r].labels:
+            o.write ("// entity " + str (e) + '\n')
+            o.write ("{\n")
+            o.write ('    "classname" "item_default"\n')
+            o.write ('    "name" "label_' + str (n) + '"\n')
+            o.write ('    "label" "' + label_desc + '"\n')
+            o.write ('    "origin" "')
+            xyz = toIntList (xy) + [-invSpawnHeight]
+            xyz = subVec (xyz, [minx, miny, getFloorLevel (r)])
+            v = midReposition (xyz)
+            o.write ('%f %f %f"\n' % (v[0], v[1], v[2]))
+            o.write ("}\n")
+            n += 1
+            e += 1
+    return o, e
 
 def assignFloorLevel (f):
     global rooms
@@ -3533,6 +3905,9 @@ def generateMap (o):
     o, e    = generateLights (o, e)
     o, e    = generateAmmo (o, e)
     o, e    = generateSounds (o, e)
+    o, e    = generateWeapons (o, e)
+    o, e    = generateLabels (o, e)
+    o, e, b = generateSecretDoors (o, e, b)
     if statistics:
         print("Total rooms =", len (list(rooms.keys ())))
         print("Total cuboids =", len (list(cuboids.keys ())))
@@ -3552,12 +3927,14 @@ def getSpawnRoom ():
             return r
     return None
 
+
 #
 #  getListOfRooms - return the complete list of rooms.
 #
 
 def getListOfRooms ():
     return list(rooms.keys ())
+
 
 #
 #  getNeighbours - return the neighbouring rooms for room, r.
@@ -3571,21 +3948,69 @@ def getNeighbours (r):
 
 
 #
+#  getVirtualNeighbours - return the neighbouring rooms for room, r.
+#                         A virtual neighbour will never have an adjoining secret door.
+#
+
+def getVirtualNeighbours (r):
+    # print ("getVirtualNeighbours =", r)
+    virtList = getVirtualRoom (r)
+    # print ("virtual room", virtList)
+    n = []
+    for i in virtList:
+        r = rooms[i]
+        for d in r.doors:
+            if d[2] != status_secret:
+                if (not (d[1] in virtList)) and (not (d[1] in n)):
+                    n += [d[1]]
+    # print ("virtual neighbours", n)
+    return n
+
+
+#
+#  getVirtualRoom - return a list of rooms which are rooms connected by secret doors.
+#
+
+def getVirtualRoom (r):
+    todo = [r]
+    # print ("todo =", todo)
+    visited = []
+    virtualRoomList = [r]
+    while todo != []:
+        nextTodo = []
+        for r in todo:
+            if not (r in visited):
+                visited += [r]
+                # print ("r =", r)
+                for c in todo:
+                    for d in rooms[r].doors:
+                        if d[2] == status_secret:
+                            if not (d[1] in virtualRoomList):
+                                virtualRoomList += [d[1]]
+                            if not (d[1] in visited):
+                                nextTodo += [d[1]]
+        todo = nextTodo
+    return virtualRoomList
+
+
+#
 #  lowerFloors - starting at room, s, lower all neighbouring floors
 #                This is a breadth first algorithm.
 #
 
 def lowerFloors (s):
     visited = [s]
-    queue = getNeighbours (rooms[s])
+    queue = getVirtualNeighbours (s)
     level = -(floorStep * noSteps)
     while queue != []:
         nextLevel = []
         for c in queue:
-            r = rooms[c]
-            if r.floorLevel == None:
-                r.floorLevel = level
-                nextLevel += getNeighbours (r)
+            roomList = getVirtualRoom (c)
+            for i in roomList:
+                r = rooms[i]
+                if r.floorLevel == None:
+                    r.floorLevel = level
+                    nextLevel += getVirtualNeighbours (i)
         queue = nextLevel
         level -= (floorStep * noSteps)
 
@@ -3596,19 +4021,19 @@ def lowerFloors (s):
 
 def calcFloorLevel ():
     global minFloor, maxFloor
-    s = getSpawnRoom ()
-    rooms[s].floorLevel = 0
-    lowerFloors (s)
-    for r in list(rooms.keys ()):
-        if debugging:
-            print("room", r, "has floor level", end=' ')
+    for s in getVirtualRoom (getSpawnRoom ()):
+        rooms[s].floorLevel = 0
+    lowerFloors (getSpawnRoom ())
+    for r in list (rooms.keys ()):
+        if debugFloorLevel:
+            print ("room", r, "has floor level", end=' ')
         if rooms[r].floorLevel is None:
             rooms[r].floorLevel = 0
-            if debugging:
-                print("(0)")
+            if debugFloorLevel:
+                print ("(0)")
         else:
-            if debugging:
-                print(rooms[r].floorLevel)
+            if debugFloorLevel:
+                print (rooms[r].floorLevel)
         minFloor = min (minFloor, rooms[r].floorLevel)
         maxFloor = max (minFloor, rooms[r].floorLevel)
 

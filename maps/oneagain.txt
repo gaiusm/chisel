@@ -4,8 +4,9 @@ define a default floor colour 150 150 150
 define b default mid colour 150 150 150
 define c default ceil colour 120 120 120
 define s worldspawn
-define f light type floor
-define m light type mid
+define flame colour 170 107 7
+define f light type floor [flame]
+define m light type mid [flame]
 
 ##############################################
 # 1    f   m   f    m    f    m              #

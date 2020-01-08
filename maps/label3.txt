@@ -6,11 +6,12 @@ define n monster monster_demon_hellknight
 define i light
 define a ammo ammo_shells_large 16
 define l label the_ammo_loc [a]
+define P monster python_doommarine_mp
 
 ####################################
-# 1    i                           #
-#                                  #
-# s                    l           #
+# 1                                #
+#          P                       #
+#  s                   l           #
 #                                  #
 #                                  #
 ####################################

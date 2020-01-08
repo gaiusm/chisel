@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# Copyright (C) 2017-2019
+# Copyright (C) 2017-2020
 #               Free Software Foundation, Inc.
 # This file is part of Chisel.
 #
@@ -36,6 +36,7 @@ doorValue, wallValue, emptyValue = 0, -1, -2
 versionNumber = 0.2
 lightFrequency = 5
 defaultColour = None
+openDoor, closedDoor, secretDoor = range (3)
 
 
 def mycut (l, i):
@@ -94,6 +95,7 @@ class roomInfo:
         self.defaultColour = {}
         self.defaultTexture = {}
         self.sounds = []
+        self.labels = []
 
 
 #
@@ -311,8 +313,18 @@ def isWall (pos, grid):
 
 
 def isDoor (pos, grid):
-    return (grid[pos[1]][pos[0]] == '-') or (grid[pos[1]][pos[0]] == '|') or (grid[pos[1]][pos[0]] == '.')
+    return isOpen (pos, grid) or isClosed (pos, grid) or isSecret (pos, grid)
 
+def isSecret (pos, grid):
+    return grid[pos[1]][pos[0]] == '='
+
+
+def isClosed (pos, grid):
+    return ((grid[pos[1]][pos[0]] == '-') or
+            (grid[pos[1]][pos[0]] == '|'))
+
+def isOpen (pos, grid):
+    return grid[pos[1]][pos[0]] == '.'
 
 def isPlane (pos, grid):
     return isWall (pos, grid) or isDoor (pos, grid)
@@ -376,6 +388,16 @@ def lookingLeft (pos, left, grid, s):
 def mystop ():
     pass
 
+
+def getDoorType (p, mapGrid):
+    if isOpen (p, mapGrid):
+        return openDoor
+    if isClosed (p, mapGrid):
+        return closedDoor
+    if isSecret (p, mapGrid):
+        return secretDoor
+
+
 def scanRoom (topleft, p, mapGrid, walls, doors):
     global debuging
     if debugging:
@@ -390,6 +412,7 @@ def scanRoom (topleft, p, mapGrid, walls, doors):
 
     doorStartPoint = None
     doorEndPoint = None
+    doorType = None
     while True:
         if debugging:
             print("point currently at", p, d)
@@ -399,16 +422,18 @@ def scanRoom (topleft, p, mapGrid, walls, doors):
             # first point on the wall is a door
             doorStartPoint = addVec (p, leftVec[d])
             doorEndPoint = doorStartPoint
+            doorType = getDoorType (doorStartPoint, mapGrid)
         if lookingLeft (addVec (p, forwardVec[d]), leftVec[d], mapGrid, '. '):
             if debugging:
                 print("seen a door point", p, end=' ')
             if doorStartPoint == None:
                 doorStartPoint = addVec (addVec (p, forwardVec[d]), leftVec[d])
+                doorType = getDoorType (doorStartPoint, mapGrid)
             doorEndPoint = addVec (addVec (p, forwardVec[d]), leftVec[d])
         else:
             # end of door?
             if doorEndPoint != None:
-                doors += [[doorStartPoint, doorEndPoint]]
+                doors += [[doorStartPoint, doorEndPoint, doorType]]
                 doorStartPoint = None
                 doorEndPoint = None
         if lookingLeft (addVec (p, forwardVec[d]), leftVec[d], mapGrid, 'x '):
@@ -420,7 +445,7 @@ def scanRoom (topleft, p, mapGrid, walls, doors):
             walls, a = addWall (walls, a, addVec (addVec (p, forwardVec[d]), leftVec[d]))
             # end of door?
             if doorEndPoint != None:
-                doors += [[doorStartPoint, doorEndPoint]]
+                doors += [[doorStartPoint, doorEndPoint, doorType]]
             doorStartPoint = None
             doorEndPoint = None
             # turn right
@@ -473,6 +498,7 @@ def checkLight (p, l, lightCount):
         lightCount += 1
     return l, lightCount
 
+"""
 #
 #  introduceLights - returns a list of lights which are dropped
 #                    near the perimeter of the wall.  The algorithm
@@ -504,6 +530,101 @@ def introduceLights (p, mapGrid, walls, doors):
     needToAvoidDoor = False
     # your code goes here, complete this function.
     return []
+"""
+
+#
+#  introduceLights - returns a list of lights which are dropped
+#                    near the perimeter of the wall.  The algorithm
+#                    walks around the wall touching the left hand edge
+#                    (it moves clockwise).
+#                    Pre-condition:  p is the start point and it will
+#                                    be touching a left hand wall.
+#                                    mapGrid is the 2D map a list of lists.
+#                                    walls is a list of walls.
+#                                    doors is a list of doors.
+#                    Post-condition: a list of lights is returned.
+#
+
+def introduceLights (p, mapGrid, walls, doors):
+    global debuging
+
+    s = p
+    a = addVec (p, [-1, -1])
+    d = 1  # 0 up, 1 right, 2 down, 3 left
+    leftVec = [[-1, 0], [0, -1], [1, 0], [0, 1]]
+    forwardVec = [[0, -1], [1, 0], [0, 1], [-1, 0]]
+    if debugging:
+        print ("wall corner", p)
+
+    lightCount = 0
+    lights = []
+    doorStartPoint = None
+    doorEndPoint = None
+    needToAvoidDoor = False
+    while True:
+        if debugging:
+            print ("point currently at", p, d)
+        if (doorStartPoint == None) and lookingLeft (p, leftVec[d], mapGrid, '. '):
+            if debugging:
+                print ("seen first point", p)
+            # first point on the wall is a door
+            doorStartPoint = addVec (p, leftVec[d])
+            doorEndPoint = doorStartPoint
+            needToAvoidDoor = True
+        if lookingLeft (addVec (p, forwardVec[d]), leftVec[d], mapGrid, '. '):
+            if debugging:
+                print ("seen a door point", p)
+            if doorStartPoint == None:
+                doorStartPoint = addVec (addVec (p, forwardVec[d]), leftVec[d])
+            doorEndPoint = addVec (addVec (p, forwardVec[d]), leftVec[d])
+            needToAvoidDoor = True
+        else:
+            # end of door?
+            if doorEndPoint != None:
+                doorStartPoint = None
+                doorEndPoint = None
+                needToAvoidDoor = True
+        if lookingLeft (addVec (p, forwardVec[d]), leftVec[d], mapGrid, 'x '):
+            # carry on
+            if needToAvoidDoor:
+                li = light ()
+                li.settype ('FLOOR')
+                lights += [p + [li]]
+            else:
+                lights, lightCount = checkLight (p, lights, lightCount)
+            needToAvoidDoor = False
+            p = addVec (p, forwardVec[d])
+        elif lookingLeft (addVec (p, forwardVec[d]), leftVec[d], mapGrid, 'x.'):
+            if debugging:
+                print ("wall corner (x.)", p)
+            doorStartPoint = None
+            doorEndPoint = None
+            # turn right
+            d = (d + 1) % 4
+            if s == p:
+                # back to the start
+                return lights
+        elif lookingLeft (addVec (p, forwardVec[d]), leftVec[d], mapGrid, 'xx'):
+            if debugging:
+                print ("wall corner (xx)", p)
+            doorStartPoint = None
+            doorEndPoint = None
+            # turn right
+            d = (d + 1) % 4
+            if s == p:
+                # back to the start
+                return lights
+        elif lookingLeft (addVec (p, forwardVec[d]), leftVec[d], mapGrid, '  '):
+            if debugging:
+                print ("wall corner (  )", p)
+            # turn left
+            p = addVec (p, forwardVec[d])
+            d = (d + 3) % 4
+            if s == p:
+                # back to the start
+                return lights
+        else:
+            printf ("something went wrong here\n")
 
 
 def printCoord (c, o):
@@ -542,6 +663,13 @@ def printSounds (sounds, o):
     if sounds != []:
         for s in sounds:
             o = s.write (o)
+    return o
+
+
+def printLabels (labels, o):
+    if labels != []:
+        for l in labels:
+            o = l.write (o)
     return o
 
 
@@ -601,10 +729,17 @@ def printRoom (r, o):
         o.write ("\n")
     for i, d in enumerate (rooms[r].doors):
         o.write ("   DOOR ")
-        for c in d:
+        for c in d[:-1]:
             printCoord (c, o)
             o.write (" ")
-        o.write ("STATUS OPEN LEADS TO " + str (rooms[r].doorLeadsTo[i]) + "\n")
+        o.write ("STATUS ")
+        if d[-1] == openDoor:
+            o.write ("OPEN")
+        elif d[-1] == closedDoor:
+            o.write ("CLOSED")
+        elif d[-1] == secretDoor:
+            o.write ("SECRET")
+        o.write (" LEADS TO " + str (rooms[r].doorLeadsTo[i]) + "\n")
     o = printMonsters (rooms[r].monsters, o)
     o = printAmmo (rooms[r].ammo, o)
     o = printWeapons (rooms[r].weapons, o)
@@ -615,6 +750,7 @@ def printRoom (r, o):
     o = printSpawnPlayer (rooms[r].worldspawn, o)
     o = printInside (rooms[r].inside, o)
     o = printSounds (rooms[r].sounds, o)
+    o = printLabels (rooms[r].labels, o)
     o.write ("END\n\n")
     return o
 
@@ -810,9 +946,19 @@ class sound:
         f.write ("\n")
         return f
 
+class label:
+    def __init__ (self, pos, label_desc):
+        self.pos = pos
+        self.label_desc = label_desc
+    def write (self, f):
+        f.write ("   LABEL AT ")
+        printCoord (self.pos, f)
+        f.write (" %s\n" % self.label_desc)
+        return f
+
 
 #
-#  ebnf := roomNo | worldSpawn | ammoSpawn | lightSpawn | configDefaults | monsterSpawn | weaponSpawn | soundSpawn =:
+#  ebnf := roomNo | worldSpawn | ammoSpawn | lightSpawn | configDefaults | monsterSpawn | weaponSpawn | soundSpawn | label =:
 #
 #  roomNo := 'room' int =:
 #  worldSpawn := 'worldspawn' =:
@@ -827,11 +973,12 @@ class sound:
 #  monsterSpawn := 'monster' string =:
 #  weaponSpawn := 'weapon' int =:
 #  soundSpawn := 'sound' filename { "volume" int | "looping" | "wait" int } =:
+#  label := 'label' 'at' int int string =:
 #
 
 
 reservedKeywords = ['ammo', 'ceiling', 'colour', 'default',
-                    'floor', 'light', 'looping',
+                    'floor', 'label', 'light', 'looping',
                     'mid', 'monster',
                     'worldspawn',
                     'room', 'sound',
@@ -989,7 +1136,7 @@ def parseLightDefault (room, x, y):
 
 
 #
-#  soundSpawn := 'sound' filename { "volume" int | "looping" | "wait" int } =:
+#  parseSpawn := 'sound' filename { "volume" int | "looping" | "wait" int } =:
 #
 
 def parseSound (room, x, y):
@@ -1008,6 +1155,16 @@ def parseSound (room, x, y):
             n = expectInt (room, x, y, 'a number and quantity after the wait keyword')
             s.setWait (n)
     rooms[room].sounds += [s]
+
+
+#
+#  parseLabel := 'label' filename =:
+#
+
+def parseLabel (room, x, y):
+    desc = expectString (room, x, y, 'a string after the label keyword')
+    l = label ([x, y], desc)
+    rooms[room].labels += [l]
 
 
 #
@@ -1031,6 +1188,8 @@ def ebnf (room, x, y):
         elif parseWeaponSpawn (room, x, y):
             pass
         elif parseSoundSpawn (room, x, y):
+            pass
+        elif parseLabelSpawn (room, x, y):
             pass
         else:
             w = tokens.split ()[0]
@@ -1192,6 +1351,18 @@ def parseTextureDefault (room, x, y):
         rooms[room].defaultTexture['WALL'] = expectString (room, x, y, 'a texture after the wall keyword')
     else:
         error ("expecting floor, ceiling or wall after the texture keyword\n")
+
+
+#
+#  labelSpawn := 'label' string =:
+#
+
+def parseLabelSpawn (room, x, y):
+    if expecting (['label']):
+        expect ('label', room, x, y)
+        parseLabel (room, x, y)
+        return True
+    return False
 
 
 #

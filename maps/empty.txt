@@ -1,0 +1,40 @@
+
+define 1 room 1 [defroom]
+define s worldspawn
+
+define R ammo ammo_rockets_large 16
+define G ammo ammo_grenade_small 16
+define L ammo moveable_item_rocketlauncher 1
+define A ammo item_medkit 1
+define l light
+define d default ceil colour 210 199 130
+
+define yellow colour 190 180 170
+define darkyellow colour 190 185 66
+define flame colour 170 107 7
+define lightflame colour 150 107 7
+
+define defroom default mid [yellow] default ceil [flame] default floor [lightflame]
+
+define f light type floor [lightflame]
+define l light type mid [yellow]
+define c light type ceil [flame]
+define F [f]
+
+
+##################
+# 1  l    l      #
+#               l#
+#                #
+#    F  F  F     #
+#l              l#
+#       s        #
+#                #
+#    F  F  F     #
+#l              l#
+#                #
+#    F  F  F     #
+#l              l#
+#                #
+#l   l   l   l   #
+##################

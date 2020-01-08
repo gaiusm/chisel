@@ -1,0 +1,12 @@
+
+define 1 room 1
+define S worldspawn
+define H monster monster_demon_hellknight
+
+##########################
+# 1                      #
+#                        #
+#  S                     #
+#                        #
+#                        #
+##########################

@@ -9,7 +9,10 @@ ROOF=-q
 OPT=-O
 BEAM=-b
 SEARCH=student
+SEARCH=../../solutions
+VERBOSE=
 VERBOSE=-V
+LIGHTS=-l
 
 rm -f *.pyc
 echo -n "txt2pen: converting txt representation into pen map:  "

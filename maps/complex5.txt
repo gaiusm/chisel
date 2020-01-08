@@ -1,0 +1,104 @@
+
+define 1 room 1 [defroom] [bluefloor]
+define 2 room 2 [defroom] [redfloor]
+define 3 room 3 [defroom]  [greenfloor]
+define 4 room 4 [defroom] [purplefloor]
+define 5 room 5 [defroom] [blackfloor]
+define 6 room 6 [defroom] [slatefloor]
+define 7 room 7 [defroom]  [bluefloor]
+define 8 room 8 [defroom]   [redfloor]
+define 9 room 9 [defroom] [greenfloor]
+define a room 10 [defroom] [purplefloor]
+define b room 11 [defroom] [blackfloor]
+define c room 12 [defroom] [slatefloor]
+define d room 13 [defroom] [greenfloor]
+define e room 14 [defroom]  [bluefloor]
+define f room 15 [defroom] [redfloor]
+define g room 16 [defroom] [greenfloor]
+define h room 17 [defroom] [purplefloor]
+define i room 18 [defroom] [blackfloor]
+define j room 19 [defroom] [slatefloor]
+define k room 20 [defroom] [greenfloor]
+define l room 21 [defroom]  [bluefloor]
+define m room 22 [defroom] [redfloor]
+define n room 23 [defroom] [greenfloor]
+define o room 24 [defroom] [purplefloor]
+define p room 25 [defroom] [blackfloor]
+define q room 26 [defroom] [slatefloor]
+define r room 27 [defroom] [greenfloor]
+define s room 28 [defroom]  [bluefloor]
+define t room 29 [defroom] [redfloor]
+
+define S worldspawn
+
+define yellow colour 190 180 170
+define darkyellow colour 190 185 66
+define flame colour 170 107 7
+define lightflame colour 150 107 7
+
+define red colour 180 0 0
+define blue colour 0 0 180
+define green colour 0 180 0
+define darkblue colour 100 100 180
+
+define redfloor default texture floor textures/quake1/red_tile_floor
+define bluefloor default texture floor textures/quake1/blue_tile_floor
+define greenfloor default texture floor textures/quake1/green_tile_floor
+define purplefloor default texture floor textures/quake1/purple_tile_floor
+define blackfloor default texture floor textures/quake1/black_tile_floor
+define slatefloor default texture floor textures/quake1/slate_tile_floor
+define ceiling default texture ceiling textures/quake1/pine_wood
+
+define defroom default light mid [yellow] default light ceiling [flame] default light floor [flame]
+
+
+##########################################
+#       #   .               .            #
+#  1    # 2 .   3           .  4         #
+#  S    .   .               .            #
+#       .   #####    ########            #
+#       .   #   ###..#      #            #
+#   #####   #               #            #
+#   #   #   #               ###          ###
+#   #   #   ##                #            #
+#   #   #    #####            #            #######
+#   #   #        #            #            #     #
+#   # 5 #        #  6         #            .     #
+#   #   #        #            #            . 7   #
+#   ###.####..####            #            #     #
+#               #            #######..###..#######
+#               #            #        #    #
+#               #            . 8      . 9  #
+#               #####        .        .    #
+#...#...#########   #        #        #   ##
+#                   #    #######..#   #   #
+#                   ######   #    #   #   #
+#  a                .    .   #    #   #   #
+#                   . b  . c #  d #   #..#####
+#                   .    .   #    #   #      #
+#                   #    #   #    #   .      #
+#      #...##...##########...##   #   .      #####
+#      #   .                  ######.##          #
+#      # j .                  #   #g  #          #
+#      #   .                  . f #   #  h       #
+#      #####       i          .   #   #          #
+#      #   #            ##...##########...#      #
+#      #   ####...#     #                 .      #
+#...####     #    #######                 .      #
+#   #    l   #    #     #                 #      #
+# k #        #    #     #                 .      #
+#   #   ###.##    #     #                 .      #
+#   #####    .    #     #                 ########
+#   .        . m  # n   ###  o       ##..##
+#   .        .    #       #          #p  #
+#   #        #    #       #          #   #
+#   .   ##.###    #       #          #   #
+#   .   #    ##   #       #          #####
+#   . q # r   #   #    ####...########
+#   #   #     #   #    #            #
+#   #   #     #   ##..## s          #
+#   #   #######        .            #
+#   #   .     .        .            #
+#   #   . t   .        .            #
+#   #   .     .        #            #
+#####################################

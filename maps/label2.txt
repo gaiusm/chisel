@@ -5,12 +5,12 @@ define o monster monster_demon_imp
 define n monster monster_demon_hellknight
 define i light
 define a ammo ammo_shells_large 16
-define l label the_ammo_loc [a]
+define l label near_the_ammo_loc
 
 ####################################
-# 1    i                           #
+# 1                                #
 #                                  #
-# s                    l           #
+# s                    l    a      #
 #                                  #
 #                                  #
 ####################################

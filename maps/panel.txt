@@ -1,0 +1,35 @@
+
+define 1 room 1 [defroom] [redfloor] [ceiling] [woodpanel]
+define 2 room 2 [defroom] [bluefloor] [ceiling] [woodpanel]
+define s worldspawn
+
+define l light
+define d default ceiling colour 210 199 130
+
+define yellow colour 190 180 170
+define darkyellow colour 190 185 66
+define flame colour 170 107 7
+
+define red colour 180 0 0
+define blue colour 0 0 180
+define green colour 0 180 0
+
+define f light type floor
+define m light type mid
+define defroom default light mid [yellow] default light ceiling [flame] default light floor [flame]
+
+define redfloor default texture floor textures/quake1/red_tile_floor
+define bluefloor default texture floor textures/quake1/blue_tile_floor
+define greenfloor default texture floor textures/quake1/green_tile_floor
+define ceiling default texture ceiling textures/quake1/pine_wood
+define woodpanel default texture wall textures/quake1/pine_wood
+
+##################################
+# 1    m   m   m # 2  m    m     #
+#                #              m#
+#       s       f.f              #
+#               f.f              #
+#               f.f             m#
+#                #               #
+#  ff  m   m   m #  m    m    m  #
+##################################

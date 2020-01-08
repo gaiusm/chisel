@@ -1,3 +1,10 @@
+2020-01-08      Gaius Mulley <gaius@southwales.ac.uk>
+
+	* added secret doors and labels to chisel.
+	* updated copyright dates for 2020.
+	* added many new test maps and corrected older
+	  maps to use new lighting and texturing syntax.
+
 2019-11-06      Gaius Mulley <gaius@southwales.ac.uk>
 
 	* map/label.txt:  New file.

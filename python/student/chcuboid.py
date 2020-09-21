@@ -68,13 +68,14 @@ def interpenetrationRange (a0, a1, b0, b1):
 
 
 class cuboid:
-    def __init__ (self, pos, size, material, transform, cuboidno):
+    def __init__ (self, pos, size, material, transform, cuboidno, fixed):
         self.pos = pos
         self.size = size
         self.end = addVec (pos, size)
         self.material = material
         self.transform = transform
         self.cuboidno = cuboidno
+        self.fixed = fixed
         self.debugging = debugging
 
     #
@@ -170,7 +171,7 @@ class cuboid:
         self.end = maxVec (self.end, end)
         self.size = subVec (self.end, self.pos)
         if self.debugging:
-            print("_enlarging", self.pos, self.end, self.size)
+            print ("_enlarging", self.pos, self.end, self.size)
 
     #
     #  _extend - return True if self was extended to include cuboid pos, size in the
@@ -220,11 +221,11 @@ class cuboid:
                 (pos[2] >= self.pos[2]) and (pos[2] <= self.end[2]))
 
     #
-    #  _subset - returns True if cuboid of pos, size
-    #            will fit inside self.
+    #  subset - returns True if cuboid of pos, size
+    #           will fit inside self.
     #
 
-    def _subset (self, pos, size):
+    def subset (self, pos, size):
         return self._inside (pos) and self._inside (addVec (pos, size))
 
     #
@@ -232,8 +233,8 @@ class cuboid:
     #
 
     def _superset (self, pos, size):
-        b = cuboid (pos, size, None, None, None)
-        return b._subset (self.pos, self.size)
+        b = cuboid (pos, size, None, None, None, None)
+        return b.subset (self.pos, self.size)
 
     #
     #  combined - return if we have managed to combine self
@@ -251,10 +252,10 @@ class cuboid:
     #             it returns True.
     #
 
-    def combined (self, pos, size, material, transform):
+    def combined (self, pos, size, material, transform, fixed):
         global expandedCuboids
-        if (material == self.material) and (transform == self.transform):
-            if self._subset (pos, size):
+        if self.samekind (material, transform, fixed):
+            if self.subset (pos, size):
                 expandedCuboids += 1
                 return True
             if self._superset (pos, size):
@@ -270,6 +271,11 @@ class cuboid:
             print(pos, size, "does not fit onto", self.pos, self.size)
         return False
 
+    def samekind (self, material, transform, fixed):
+        return ((material == self.material) and
+                (transform == self.transform) and
+                (fixed == self.fixed))
+
 
 def regressionTest ():
     global expandedCuboids
@@ -281,7 +287,7 @@ def regressionTest ():
     b = cuboid (pos, size, "wall", 0)
     for i in range (1, 10):
         pos = [i, 1, 1]
-        if b.combined (pos, size, "wall"):
+        if b.combined (pos, size, "wall", "wall", True):
             print("pass x growth", end=' ')
             print("pos =", pos, "size =", size, end=' ')
             print("will be combined into existing brick")
@@ -294,7 +300,7 @@ def regressionTest ():
     b = cuboid (pos, size, "wall", 0)
     for j in range (1, 10):
         pos = [1, j, 1]
-        if b.combined (pos, size, "wall"):
+        if b.combined (pos, size, "wall", "wall", True):
             print("pass y growth", end=' ')
             print("pos =", pos, "size =", size, end=' ')
             print("will be combined into existing brick")
@@ -307,7 +313,7 @@ def regressionTest ():
     b = cuboid (pos, size, "wall", 0)
     for k in range (1, 10):
         pos = [1, 1, k]
-        if b.combined (pos, size, "wall"):
+        if b.combined (pos, size, "wall", "wall", True):
             print("pass z growth", end=' ')
             print("pos =", pos, "size =", size, end=' ')
             print("will be combined into existing brick")

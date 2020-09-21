@@ -2477,7 +2477,7 @@ def doOpen (r, e):
             if enableVisportals:
                 # visportal doorway
                 #
-                # (mcomp your code goes here)
+                # (your code goes here)
                 #
                 # fill in the doorway with visportal block
                 # vertical visportal code
@@ -2501,7 +2501,7 @@ def doOpen (r, e):
             if enableVisportals:
                 # visportal doorway
                 #
-                # (mcomp your code goes here)
+                # (your code goes here)
                 #
                 # horizontal visportal doorway
                 pass

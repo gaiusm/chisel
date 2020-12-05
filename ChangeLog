@@ -1,27 +1,32 @@
-2020-01-08      Gaius Mulley <gaius@southwales.ac.uk>
+2020-09-21      Gaius Mulley <gaiusmod2@gmail.com>
+
+	* tidied up comments.
+	* updated chvec to use the extra material parameter.
+
+2020-01-08      Gaius Mulley <gaiusmod2@gmail.com>
 
 	* added secret doors and labels to chisel.
 	* updated copyright dates for 2020.
 	* added many new test maps and corrected older
 	  maps to use new lighting and texturing syntax.
 
-2019-11-06      Gaius Mulley <gaius@southwales.ac.uk>
+2019-11-06      Gaius Mulley <gaius@gnu.org>
 
 	* map/label.txt:  New file.
 	* added many textures to the map examples.
 
-2019-10-16      Gaius Mulley <gaius@southwales.ac.uk>
+2019-10-16      Gaius Mulley <gaius@gnu.org>
 
 	* python/pen2map.py:  fixed spawn position bug
           for human player.
 
-2019-10-05      Gaius Mulley <gaius@southwales.ac.uk>
+2019-10-05      Gaius Mulley <gaius@gnu.org>
 
 	* python/pen2map.py:  fixed bug relating to the
           position of assets, monsters, players, python
 	  monster and sounds.
 
-2019-09-21      Gaius Mulley <gaius@southwales.ac.uk>
+2019-09-21      Gaius Mulley <gaius@gnu.org>
 
 	* NEWS:  updated.
 	* Using Python 3 throughout.
@@ -31,24 +36,24 @@
           added texture field.
 	* maps/lighting13.txt:  new file.
 
-2019-02-22      Gaius Mulley <gaius@southwales.ac.uk>
+2019-02-22      Gaius Mulley <gaius@gnu.org>
 
 	* python/student/chcuboid.py:  improved comments.
 
-2018-10-01      Gaius Mulley <gaius@southwales.ac.uk>
+2018-10-01      Gaius Mulley <gaius@gnu.org>
 
 	* python/developer-txt2map:  improved descriptions.
 	* python/pen2map.py:  suppressed many prints
 	  (turned on via debugging -d flag).
         * python/txt2pen.py:  added comment for errorLine.
 
-2018-09-21      Gaius Mulley <gaius@southwales.ac.uk>
+2018-09-21      Gaius Mulley <gaius@gnu.org>
 
 	* maps/onebot.txt:  New file.
 	* maps/twobots.txt:  New file.
 	* maps/threebots.txt:  New file.
 
-2018-09-20      Gaius Mulley <gaius@southwales.ac.uk>
+2018-09-20      Gaius Mulley <gaius@gnu.org>
 
 	* TODO:  New file.
 	* maps/five.txt:  changed definition of ammo.

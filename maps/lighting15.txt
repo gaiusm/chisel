@@ -15,7 +15,6 @@ define L ammo moveable_item_rocketlauncher 1
 define A ammo item_medkit 1
 define l light
 define d default ceil colour 210 199 130
-define P monster python_doommarine_mp
 
 define yellow colour 190 180 170
 define darkyellow colour 190 185 66
@@ -40,7 +39,7 @@ define ceiling default texture ceiling textures/quake1/pine_wood
 
 ##################################
 # 1              # 2             #
-#                #               #
+#         S      #               #
 #                #               #
 #                .               #
 #                .               #
@@ -49,12 +48,12 @@ define ceiling default texture ceiling textures/quake1/pine_wood
 ###..#########################..##
 # 3    #  4   # 5   #  6  #     #
 #      .      .     .     .  7  #
-#      .      .  S  .   P .     #
+#      .      .     .     .     #
 #      #      #     #     #     #
-############################..###
+############################==###
                           #     #
                           #  8  #
-                          #     #
-                          #     #
-                          #     #
+                          #  R  #
+                          # G L #
+                          #  A  #
                           #######

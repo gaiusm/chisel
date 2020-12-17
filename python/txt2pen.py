@@ -488,15 +488,15 @@ def scanRoom (topleft, p, mapGrid, walls, doors):
 #  checkLight - add a mid light if lightCount == lightFrequency
 #
 
-def checkLight (p, l, lightCount):
+def checkLight (position, lightList, lightCount):
     if lightCount == lightFrequency:
         li = light ()
         li.settype ('MID')
-        l += [p + [li]]
+        lightList += [position + [li]]
         lightCount = 0
     else:
         lightCount += 1
-    return l, lightCount
+    return lightList, lightCount
 
 """
 #
@@ -717,58 +717,58 @@ def printDefaults (r, o):
         o.write ("   DEFAULT TEXTURE %s %s\n" % (k, rooms[r].defaultTexture[k]))
 
 
-def printRoom (r, o):
-    o.write ("ROOM " + str (r) + "\n")
-    printDefaults (r, o)
-    o.write ("   WALL\n")
-    for p in rooms[r].walls:
-        o.write ("   ")
-        for c in p:
-            o.write ("  ")
-            printCoord (c, o)
-        o.write ("\n")
-    for i, d in enumerate (rooms[r].doors):
-        o.write ("   DOOR ")
-        for c in d[:-1]:
-            printCoord (c, o)
-            o.write (" ")
-        o.write ("STATUS ")
-        if d[-1] == openDoor:
-            o.write ("OPEN")
-        elif d[-1] == closedDoor:
-            o.write ("CLOSED")
-        elif d[-1] == secretDoor:
-            o.write ("SECRET")
-        o.write (" LEADS TO " + str (rooms[r].doorLeadsTo[i]) + "\n")
-    o = printMonsters (rooms[r].monsters, o)
-    o = printAmmo (rooms[r].ammo, o)
-    o = printWeapons (rooms[r].weapons, o)
-    if autoLights and (rooms[r].lights == []):
-        o = printLights (rooms[r].autoLights, o)
+def printRoom (roomNo, outputFile):
+    outputFile.write ("ROOM " + str (roomNo) + "\n")
+    printDefaults (roomNo, outputFile)
+    outputFile.write ("   WALL\n")
+    for wall in rooms[roomNo].walls:
+        outputFile.write ("   ")
+        for coord in wall:
+            outputFile.write ("  ")
+            outputFile = printCoord (coord, outputFile)
+        outputFile.write ("\n")
+    for i, door in enumerate (rooms[roomNo].doors):
+        outputFile.write ("   DOOR ")
+        for coord in door[:-1]:
+            outputFile = printCoord (coord, outputFile)
+            outputFile.write (" ")
+        outputFile.write ("STATUS ")
+        if door[-1] == openDoor:
+            outputFile.write ("OPEN")
+        elif door[-1] == closedDoor:
+            outputFile.write ("CLOSED")
+        elif door[-1] == secretDoor:
+            outputFile.write ("SECRET")
+        outputFile.write (" LEADS TO " + str (rooms[roomNo].doorLeadsTo[i]) + "\n")
+    outputFile = printMonsters (rooms[roomNo].monsters, outputFile)
+    outputFile = printAmmo (rooms[roomNo].ammo, outputFile)
+    outputFile = printWeapons (rooms[roomNo].weapons, outputFile)
+    if autoLights and (rooms[roomNo].lights == []):
+        outputFile = printLights (rooms[roomNo].autoLights, outputFile)
     else:
-        o = printLights (rooms[r].lights, o)
-    o = printSpawnPlayer (rooms[r].worldspawn, o)
-    o = printInside (rooms[r].inside, o)
-    o = printSounds (rooms[r].sounds, o)
-    o = printLabels (rooms[r].labels, o)
-    o.write ("END\n\n")
-    return o
+        outputFile = printLights (rooms[roomNo].lights, outputFile)
+    outputFile = printSpawnPlayer (rooms[roomNo].worldspawn, outputFile)
+    outputFile = printInside (rooms[roomNo].inside, outputFile)
+    outputFile = printSounds (rooms[roomNo].sounds, outputFile)
+    outputFile = printLabels (rooms[roomNo].labels, outputFile)
+    outputFile.write ("END\n\n")
+    return outputFile
 
 
-def generateRoom (r, p, mapGrid, start, i):
+def generateRoom (roomNo, position, mapGrid, start, lineNo):
     global verbose, rooms, debugging
 
-    inside = p
-    p = moveBy (p, [-1, -1], mapGrid)
+    inside = position
+    position = moveBy (position, [-1, -1], mapGrid)
     if debugging:
-        print("top left is", p)
-    s = p
-    walls, doors = scanRoom (s, p, mapGrid, [], [])
+        print ("top left is", position)
+    start = position
+    walls, doors = scanRoom (start, position, mapGrid, [], [])
     if debugging:
         print(walls)
-    rooms[r] = roomInfo (walls, doors)
-    rooms[r].autoLights += introduceLights (p, mapGrid, [], [])
-    rooms[r].inside = inside
+    rooms[roomNo] = roomInfo (walls, doors)
+    rooms[roomNo].autoLights += introduceLights (position, mapGrid, [], [])
+    rooms[roomNo].inside = inside
 
 
 def plot (w, value):
@@ -1417,44 +1417,44 @@ def findEntities (g, room, p):
 
 #
 #  generatePen - generate penguin tower map from, mapGrid.
-#                start is the line number in file, i, where
-#                the map grid commences.  o is the outputfile.
+#                start is the line number in fileContents where
+#                the map grid commences.
 #
 
-def generatePen (mapGrid, start, i, o):
+def generatePen (mapGrid, start, fileContents, outputFile):
     global maxx, maxy
-    listOfRooms, pos = getListOfRooms (mapGrid, start, i)
+    listOfRooms, pos = getListOfRooms (mapGrid, start, fileContents)
     if listOfRooms == []:
         errorLine (start, mapGrid[0], "the map must have at least one room defined")
     else:
-        for r, p in zip (listOfRooms, pos):
-            vprintf ("[%s]", r)
-            generateRoom (r, p, mapGrid, start, i)
+        for roomNo, position in zip (listOfRooms, pos):
+            vprintf ("[%s]", roomNo)
+            generateRoom (roomNo, position, mapGrid, start, fileContents)
         vprintf ("\n")
-        for r in listOfRooms:
-            findMax (r)
+        for roomNo in listOfRooms:
+            findMax (roomNo)
         initFloor (maxx, maxy, emptyValue)
-        for r in listOfRooms:
-            onFloor (r)
+        for roomNo in listOfRooms:
+            onFloor (roomNo)
         vprintf ("floor: ")
-        for r, p in zip (listOfRooms, pos):
-            vprintf ("[%s]", r)
-            floodRoom (r, p)
+        for roomNo, position in zip (listOfRooms, pos):
+            vprintf ("[%s]", roomNo)
+            floodRoom (roomNo, position)
         vprintf ("\n")
         vprintf ("doors: ")
-        for r, p in zip (listOfRooms, pos):
-            vprintf ("[%s]", r)
-            findDoors (r, p)
+        for roomNo, position in zip (listOfRooms, pos):
+            vprintf ("[%s]", roomNo)
+            findDoors (roomNo, position)
         vprintf ("\n")
         vprintf ("entities: ")
-        for r, p in zip (listOfRooms, pos):
-            vprintf ("[%s]", r)
-            findEntities (mapGrid, r, p)
+        for roomNo, position in zip (listOfRooms, pos):
+            vprintf ("[%s]", roomNo)
+            findEntities (mapGrid, roomNo, position)
         vprintf ("\n")
-        for r in listOfRooms:
-            o = printRoom (r, o)
-        o.write ("END.\n")
-    return o
+        for roomNo in listOfRooms:
+            outputFile = printRoom (roomNo, outputFile)
+        outputFile.write ("END.\n")
+    return outputFile
 
 
 #

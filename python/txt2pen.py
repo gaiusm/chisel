@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# Copyright (C) 2017-2020
+# Copyright (C) 2017-2021
 #               Free Software Foundation, Inc.
 # This file is part of Chisel.
 #
@@ -96,6 +96,7 @@ class roomInfo:
         self.defaultTexture = {}
         self.sounds = []
         self.labels = []
+        self.plinths = []
 
 
 #
@@ -673,6 +674,13 @@ def printLabels (labels, o):
     return o
 
 
+def printPlinths (plinths, o):
+    if plinths != []:
+        for p in plinths:
+            o = p.write (o)
+    return o
+
+
 def printAmmo (m, o):
     if m != []:
         for name, amount, pos in m:
@@ -751,6 +759,7 @@ def printRoom (roomNo, outputFile):
     outputFile = printInside (rooms[roomNo].inside, outputFile)
     outputFile = printSounds (rooms[roomNo].sounds, outputFile)
     outputFile = printLabels (rooms[roomNo].labels, outputFile)
+    outputFile = printPlinths (rooms[roomNo].plinths, outputFile)
     outputFile.write ("END\n\n")
     return outputFile
 
@@ -956,9 +965,18 @@ class label:
         f.write (" %s\n" % self.label_desc)
         return f
 
+class plinth:
+    def __init__ (self, x, y, h):
+        self.x = x
+        self.y = y
+        self.h = h
+    def write (self, f):
+        f.write ("   PLINTH %d %d %d\n" % (self.x, self.y, self.h))
+        return f
+
 
 #
-#  ebnf := roomNo | worldSpawn | ammoSpawn | lightSpawn | configDefaults | monsterSpawn | weaponSpawn | soundSpawn | label =:
+#  ebnf := roomNo | worldSpawn | ammoSpawn | lightSpawn | configDefaults | monsterSpawn | weaponSpawn | soundSpawn | label | plinth =:
 #
 #  roomNo := 'room' int =:
 #  worldSpawn := 'worldspawn' =:
@@ -968,18 +986,20 @@ class label:
 #  configDefaults := 'default' configDefault =:
 #  configDefault := lightDefault | textureDefault =:
 #  lightDefault := 'light' ( 'floor' | 'mid' | 'ceiling' ) colourDefinition =:
-#  textureDefault := 'texture' ( 'floor' | 'ceiling' | 'wall' ) string =:
+#  textureDefault := 'texture' ( 'floor' | 'ceiling' | 'wall' | 'plinth' ) string =:
 #  colourDefinition := 'colour int int int' =:
 #  monsterSpawn := 'monster' string =:
 #  weaponSpawn := 'weapon' int =:
 #  soundSpawn := 'sound' filename { "volume" int | "looping" | "wait" int } =:
 #  label := 'label' 'at' int int string =:
+#  plinth := 'plinth' 'height' int =:
 #
 
 
 reservedKeywords = ['ammo', 'ceiling', 'colour', 'default',
-                    'floor', 'label', 'light', 'looping',
+                    'floor', 'height', 'label', 'light', 'looping',
                     'mid', 'monster',
+                    'plinth',
                     'worldspawn',
                     'room', 'sound',
                     'texture', 'type',
@@ -1191,6 +1211,8 @@ def ebnf (room, x, y):
             pass
         elif parseLabelSpawn (room, x, y):
             pass
+        elif parsePlinth (room, x, y):
+            pass
         else:
             w = tokens.split ()[0]
             error ("unexpected token " + w + " in room " +
@@ -1334,7 +1356,7 @@ def parseConfigDefault (room, x, y):
 
 
 #
-#  textureDefault := 'texture' ( 'floor' | 'ceiling' | 'wall' ) string =:
+#  textureDefault := 'texture' ( 'floor' | 'ceiling' | 'wall' | 'plinth' ) string =:
 #
 
 def parseTextureDefault (room, x, y):
@@ -1349,8 +1371,11 @@ def parseTextureDefault (room, x, y):
     elif expecting (['wall']):
         expect ('wall', room, x, y)
         rooms[room].defaultTexture['WALL'] = expectString (room, x, y, 'a texture after the wall keyword')
+    elif expecting (['plinth']):
+        expect ('plinth', room, x, y)
+        rooms[room].defaultTexture['PLINTH'] = expectString (room, x, y, 'a texture after the plinth keyword')
     else:
-        error ("expecting floor, ceiling or wall after the texture keyword\n")
+        error ("expecting floor, ceiling, wall or plinth after the texture keyword\n")
 
 
 #
@@ -1361,6 +1386,21 @@ def parseLabelSpawn (room, x, y):
     if expecting (['label']):
         expect ('label', room, x, y)
         parseLabel (room, x, y)
+        return True
+    return False
+
+
+#
+#  parsePlinth := 'plinth' 'height' int int int =:
+#
+
+def parsePlinth (room, x, y):
+    if expecting (['plinth']):
+        expect ('plinth', room, x, y)
+        expect ('height', room, x, y)
+        h = expectInt (room, x, y, 'a height integer quantity after the height keyword')
+        p = plinth (x, y, h)
+        rooms[room].plinths += [p]
         return True
     return False
 

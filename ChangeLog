@@ -1,3 +1,9 @@
+2021-03-01      Gaius Mulley <gaiusmod2@gmail.com>
+
+	* python/pen2map.py:  added plinth feature.
+	* python/tiny.ss:  added plinth texture.
+	* python/txt2pen.py:  added plinth feature.
+
 2020-12-17      Gaius Mulley <gaiusmod2@gmail.com>
 
 	* python/txt2pen.py:  improved many of the parameter

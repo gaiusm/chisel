@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# Copyright (C) 2017-2020
+# Copyright (C) 2017-2021
 #               Free Software Foundation, Inc.
 # This file is part of Chisel.
 #
@@ -35,7 +35,8 @@ FileUnit := RoomDesc { RoomDesc } "END." =:
 
 roomDesc := "ROOM" integer { doorDesc | wallDesc | treasureDesc | ammoDesc |
                             lightDesc | insideDesc | weaponDesc | monsterDesc |
-                            spawnDesc | defaultDesc | soundDesc | labelDesc } =:
+                            spawnDesc | defaultDesc | soundDesc | labelDesc |
+                            plinthDesc } =:
 
 soundDesc := "SOUND" "AT" { volumeDesc | loopingDesc | waitDesc } =:
 
@@ -49,7 +50,7 @@ defaultDesc := "DEFAULT" defaultConfig =:
 
 defaultColourConfig := "COLOUR" ( "CEILING" | "MID" | "FLOOR" ) int int int =:
 
-defaultTextureConfig := ( "CEILING" | "FLOOR" | "WALL" ) string =:
+defaultTextureConfig := ( "CEILING" | "FLOOR" | "WALL" | "PLINTH" ) string =:
 
 defaultConfig := "COLOUR" defaultColourConfig |
                  "TEXTURE" defaultTextureConfig =:
@@ -77,6 +78,8 @@ doorCoords := integer integer integer integer status "LEADS" "TO" integer =:
 status := "STATUS" ( [ 'OPEN' | 'CLOSED' | 'SECRET' ] ) =:
 
 WallDesc := 'WALL' WallCoords { WallCoords } =:
+
+PlinthDesc := 'PLINTH int int int =:
 
 WallCoords := Integer Integer Integer Integer =:
 
@@ -140,6 +143,7 @@ defaults = { "portal":"textures/editor/visportal",
              "portal_transform" :"( ( 0.0078125 0 0 ) ( 0 0.0078125 1.5 ) )",
              "wall_transform"   :"( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) )",
              "floor_transform"  :"( ( 0.03 0 0 ) ( 0 0.03 0 ) )",
+             "plinth_transform" :"( ( 0.03 0 0 ) ( 0 0.03 0 ) )",
              "ceiling_transform":"( ( 0.0078125 0 0 ) ( 0 0.0078125 0 ) )",
              "secret_transform" :"( ( 0.0156250019 0 1.0000002384 ) ( 0 0.015625 6.25 ) )",
              "brick_transform"  :"( ( 0.015625 0 0 ) ( 0 0.0078125 0 ) )" }
@@ -498,6 +502,7 @@ class roomInfo:
         self.defaultTextures = {}
         self.sounds = []
         self.labels = []
+        self.plinths = []
     def addWall (self, line):
         global maxx, maxy
         line = toLine (line)
@@ -531,6 +536,8 @@ class roomInfo:
         self.sounds += [[s, pos]]
     def addLabel (self, label, pos):
         self.labels += [[label, pos]]
+    def addPlinth (self, x, y, h):
+        self.plinths += [[int (x), int (y), int (h)]]
 
 def newRoom (n):
     global rooms
@@ -958,6 +965,28 @@ def wallDesc ():
 
 
 #
+# PlinthDesc := 'PLINTH' int int int =:
+#
+
+def plinthDesc ():
+    expect ('PLINTH')
+    global curRoom
+    if integer ():
+        x = curInteger
+        if integer ():
+            y = curInteger
+            if integer ():
+                h = curInteger
+                curRoom.addPlinth (x, y, h)
+            else:
+                errorLine ('expecting third integer, the height, for a plinth')
+        else:
+            errorLine ('expecting second integer, the Y axis, for a plinth')
+    else:
+        errorLine ('expecting first integer, the X axis, for a plinth')
+
+
+#
 #  status := "STATUS" ( [ 'OPEN' | 'CLOSED' | 'SECRET' ] ) =:
 #
 
@@ -1258,7 +1287,7 @@ def defaultConfig ():
         errorLine ('expecting COLOUR or TEXTURE after DEFAULT')
 
 #
-#  defaultTextureConfig := ( "CEILING" | "FLOOR" | "WALL" ) string =:
+#  defaultTextureConfig := ( "CEILING" | "FLOOR" | "WALL" | "PLINTH" ) string =:
 #
 
 def defaultTextureConfig ():
@@ -1272,8 +1301,11 @@ def defaultTextureConfig ():
     elif expecting (['WALL']):
         expect ('WALL')
         curRoom.defaultTextures['wall'] = get ()
+    elif expecting (['PLINTH']):
+        expect ('PLINTH')
+        curRoom.defaultTextures['plinth'] = get ()
     else:
-        errorLine ("expecting FLOOR, WALL or CEILING after DEFAULT TEXTURE")
+        errorLine ("expecting FLOOR, WALL, CEILING and PLINTH after DEFAULT TEXTURE")
 
 #
 #  defaultColourConfig := "COLOUR" ( "CEILING" | "MID" | "FLOOR" ) int int int =:
@@ -1365,7 +1397,7 @@ def roomDesc ():
             curRoom = newRoom (curRoomNo)
             if debugging:
                 print("roomDesc", curRoomNo)
-            while expecting (['DOOR', 'WALL', 'TREASURE', 'AMMO', 'WEAPON', 'LIGHT', 'INSIDE', 'MONSTER', 'SPAWN', 'DEFAULT', 'SOUND', 'LABEL']):
+            while expecting (['DOOR', 'WALL', 'TREASURE', 'AMMO', 'WEAPON', 'LIGHT', 'INSIDE', 'MONSTER', 'SPAWN', 'DEFAULT', 'SOUND', 'LABEL', 'PLINTH']):
                 if expecting (['DOOR']):
                     doorDesc ()
                 elif expecting (['WALL']):
@@ -1390,6 +1422,8 @@ def roomDesc ():
                     defaultDesc ()
                 elif expecting (['SOUND']):
                     soundDesc ()
+                elif expecting (['PLINTH']):
+                    plinthDesc ()
             expect ('END')
             return True
         else:
@@ -3415,6 +3449,7 @@ def generateEntities (o):
             generateCeiling (r, e)
             generateFloor (r, e)
             generateLightBlocks (r, el)
+            generatePlinths (r)
     vprintf ("\n")
     vprintf ("brick optimisation...")
     o, bcount = flushBricks (o, bcount)
@@ -3537,6 +3572,12 @@ def midReposition (pos):
     return v
 
 
+def getPlinthHeight (r, x, y):
+    for plinths in rooms[r].plinths:
+        if (plinths[0] == x) and (plinths[1] == y):
+            return float (plinths[2]) / inchesPerUnit
+    return 0
+
 def generatePlayer (o, e):
     for r in list(rooms.keys()):
         if rooms[r].worldspawn != []:
@@ -3551,7 +3592,7 @@ def generatePlayer (o, e):
             o.write ('    "origin" "')
             xy = rooms[r].worldspawn[0]
             xyz = toIntList (xy) + [-invSpawnHeight]
-            xyz = subVec (xyz, [minx, miny, getFloorLevel (r)])
+            xyz = subVec (xyz, [minx, miny, getFloorLevel (r) + getPlinthHeight (r, xy[0], xy[1])])
             v = midReposition (xyz)
             o.write ('%f %f %f"\n' % (v[0], v[1], v[2]))
             o.write ('    "angle" "180"\n')
@@ -3745,6 +3786,14 @@ def generateLightBlocks (r, walls):
             error ("unrecognised light position " + l[1].getOn ())
 
 
+def generatePlinths (r):
+    for p in rooms[r].plinths:
+        pos = [int (p[0]), int (p[1]), rooms[r].floorLevel]
+        size = [1, 1, float (p[2]) / inchesPerUnit]
+        print (pos, size)
+        newcuboid (pos, size, 'plinth', r)
+
+
 def generatePythonMonsters (o, e):
     n = 1
     for r in list(rooms.keys()):
@@ -3756,7 +3805,7 @@ def generatePythonMonsters (o, e):
             o.write ('    "anim" "idle"\n')
             o.write ('    "origin" "')
             xyz = toIntList (xy) + [-invSpawnHeight]
-            xyz = subVec (xyz, [minx, miny, getFloorLevel (r)])
+            xyz = subVec (xyz, [minx, miny, getFloorLevel (r) + getPlinthHeight (r, xy[0], xy[1])])
             v = midReposition (xyz)
             o.write ('%f %f %f"\n' % (v[0], v[1], v[2]))
             o.write ('    "ambush" "1"\n')
@@ -3777,7 +3826,7 @@ def generateMonsters (o, e):
             o.write ('    "anim" "idle"\n')
             o.write ('    "origin" "')
             xyz = toIntList (xy) + [-invSpawnHeight]
-            xyz = subVec (xyz, [minx, miny, getFloorLevel (r)])
+            xyz = subVec (xyz, [minx, miny, getFloorLevel (r) + getPlinthHeight (r, xy[0], xy[1])])
             v = midReposition (xyz)
             o.write ('%f %f %f"\n' % (v[0], v[1], v[2]))
             o.write ('    "ambush" "1"\n')
@@ -3800,7 +3849,7 @@ def generateAmmo (o, e):
             o.write ('    "name" "' + ammo_kind + '_' + str (n) + '"\n')
             o.write ('    "origin" "')
             xyz = toIntList (xy) + [-invSpawnHeight]
-            xyz = subVec (xyz, [minx, miny, getFloorLevel (r)])
+            xyz = subVec (xyz, [minx, miny, getFloorLevel (r) + getPlinthHeight (r, xy[0], xy[1])])
             v = midReposition (xyz)
             o.write ('%f %f %f"\n' % (v[0], v[1], v[2]))
             o.write ("}\n")
@@ -3821,7 +3870,7 @@ def generateSounds (o, e):
             o.write ('    "name" "speaker_%d"\n' % e)
             o.write ('    "origin" "')
             xyz = toIntList (xy) + [-invSpawnHeight]
-            xyz = subVec (xyz, [minx, miny, getFloorLevel (r)])
+            xyz = subVec (xyz, [minx, miny, getFloorLevel (r) + getPlinthHeight (r, xy[0], xy[1])])
             v = midReposition (xyz)
             o.write ('%f %f %f"\n' % (v[0], v[1], v[2]))
             o.write ('    "s_shader" "%s"\n' % s.filename)
@@ -3843,6 +3892,7 @@ def generateSounds (o, e):
             e += 1
     return o, e
 
+
 def generateWeapons (o, e):
     n = 1
     for r in list(rooms.keys ()):
@@ -3856,13 +3906,14 @@ def generateWeapons (o, e):
             o.write ('    "name" "' + weapon_kind + '"\n')
             o.write ('    "origin" "')
             xyz = toIntList (xy) + [-invSpawnHeight]
-            xyz = subVec (xyz, [minx, miny, getFloorLevel (r)])
+            xyz = subVec (xyz, [minx, miny, getFloorLevel (r) + getPlinthHeight (r, xy[0], xy[1])])
             v = midReposition (xyz)
             o.write ('%f %f %f"\n' % (v[0], v[1], v[2]))
             o.write ("}\n")
             n += 1
             e += 1
     return o, e
+
 
 def generateLabels (o, e):
     n = 1
@@ -3877,13 +3928,14 @@ def generateLabels (o, e):
             o.write ('    "label" "' + label_desc + '"\n')
             o.write ('    "origin" "')
             xyz = toIntList (xy) + [-invSpawnHeight]
-            xyz = subVec (xyz, [minx, miny, getFloorLevel (r)])
+            xyz = subVec (xyz, [minx, miny, getFloorLevel (r) + getPlinthHeight (r, xy[0], xy[1])])
             v = midReposition (xyz)
             o.write ('%f %f %f"\n' % (v[0], v[1], v[2]))
             o.write ("}\n")
             n += 1
             e += 1
     return o, e
+
 
 def assignFloorLevel (f):
     global rooms

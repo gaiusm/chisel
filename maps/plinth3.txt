@@ -1,0 +1,34 @@
+define 1 room 1 [defroom]
+define 2 room 2 [defroom]
+define 3 room 3 [defroom]
+define s worldspawn
+define o monster monster_demon_imp
+define n monster monster_demon_hellknight
+define i light
+define a ammo ammo_grenade 16
+define g plinth height 48 [a]
+
+define yellow colour 190 180 170
+define darkyellow colour 190 185 66
+define flame colour 170 107 7
+define slatefloor default texture floor textures/quake1/slate_tile_floor
+define defroom default light mid [yellow] default light ceiling [flame] default light floor [darkyellow] default texture plinth textures/quake1/slate_tile_floor
+
+
+##################################
+# 1              # 2             #
+#                #               #
+# s    g  g      .               #
+#                .               #
+#      g  g      .               #
+#                #      g        #
+#                #               #
+#######....#######################
+# 3              #
+#                #
+#   g            #
+#   g            #
+#   g            #
+#                #
+#                #
+##################

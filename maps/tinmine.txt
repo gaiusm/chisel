@@ -1,0 +1,33 @@
+define varied_tile_floor1 default texture floor textures/tileshade/tile_floor_{%d,79-86}
+define varied_tile_floor2 default texture floor textures/tileshade/tile_floor_{%d,49-58}
+define varied_tile_floor3 default texture floor textures/tileshade/tile_floor_95
+define varied_tile_floor4 default texture floor textures/base_floor/a_sofloor1_d01aclean
+
+define yellow colour 190 180 170
+define darkyellow colour 190 185 66
+define flame colour 170 107 7
+define lightflame colour 150 107 7
+
+define red colour 180 0 0
+define blue colour 0 0 180
+define green colour 0 180 0
+define darkblue colour 100 100 180
+
+define defroom default light mid [yellow] default light ceiling [flame] default light floor [flame]
+
+define 1 room 1 [defroom] [varied_tile_floor1]
+define 2 room 2 [defroom] [varied_tile_floor4]
+
+define S worldspawn
+
+
+##################################
+#               #                #
+# 1             # 2              #
+#               .                #
+#               .                #
+#    S          .                #
+#               #                #
+#               #                #
+#               #                #
+##################################

@@ -499,7 +499,7 @@ def checkLight (position, lightList, lightCount):
         lightCount += 1
     return lightList, lightCount
 
-"""
+
 #
 #  introduceLights - returns a list of lights which are dropped
 #                    near the perimeter of the wall.  The algorithm
@@ -531,101 +531,6 @@ def introduceLights (p, mapGrid, walls, doors):
     needToAvoidDoor = False
     # your code goes here, complete this function.
     return []
-"""
-
-#
-#  introduceLights - returns a list of lights which are dropped
-#                    near the perimeter of the wall.  The algorithm
-#                    walks around the wall touching the left hand edge
-#                    (it moves clockwise).
-#                    Pre-condition:  p is the start point and it will
-#                                    be touching a left hand wall.
-#                                    mapGrid is the 2D map a list of lists.
-#                                    walls is a list of walls.
-#                                    doors is a list of doors.
-#                    Post-condition: a list of lights is returned.
-#
-
-def introduceLights (p, mapGrid, walls, doors):
-    global debuging
-
-    s = p
-    a = addVec (p, [-1, -1])
-    d = 1  # 0 up, 1 right, 2 down, 3 left
-    leftVec = [[-1, 0], [0, -1], [1, 0], [0, 1]]
-    forwardVec = [[0, -1], [1, 0], [0, 1], [-1, 0]]
-    if debugging:
-        print ("wall corner", p)
-
-    lightCount = 0
-    lights = []
-    doorStartPoint = None
-    doorEndPoint = None
-    needToAvoidDoor = False
-    while True:
-        if debugging:
-            print ("point currently at", p, d)
-        if (doorStartPoint == None) and lookingLeft (p, leftVec[d], mapGrid, '. '):
-            if debugging:
-                print ("seen first point", p)
-            # first point on the wall is a door
-            doorStartPoint = addVec (p, leftVec[d])
-            doorEndPoint = doorStartPoint
-            needToAvoidDoor = True
-        if lookingLeft (addVec (p, forwardVec[d]), leftVec[d], mapGrid, '. '):
-            if debugging:
-                print ("seen a door point", p)
-            if doorStartPoint == None:
-                doorStartPoint = addVec (addVec (p, forwardVec[d]), leftVec[d])
-            doorEndPoint = addVec (addVec (p, forwardVec[d]), leftVec[d])
-            needToAvoidDoor = True
-        else:
-            # end of door?
-            if doorEndPoint != None:
-                doorStartPoint = None
-                doorEndPoint = None
-                needToAvoidDoor = True
-        if lookingLeft (addVec (p, forwardVec[d]), leftVec[d], mapGrid, 'x '):
-            # carry on
-            if needToAvoidDoor:
-                li = light ()
-                li.settype ('FLOOR')
-                lights += [p + [li]]
-            else:
-                lights, lightCount = checkLight (p, lights, lightCount)
-            needToAvoidDoor = False
-            p = addVec (p, forwardVec[d])
-        elif lookingLeft (addVec (p, forwardVec[d]), leftVec[d], mapGrid, 'x.'):
-            if debugging:
-                print ("wall corner (x.)", p)
-            doorStartPoint = None
-            doorEndPoint = None
-            # turn right
-            d = (d + 1) % 4
-            if s == p:
-                # back to the start
-                return lights
-        elif lookingLeft (addVec (p, forwardVec[d]), leftVec[d], mapGrid, 'xx'):
-            if debugging:
-                print ("wall corner (xx)", p)
-            doorStartPoint = None
-            doorEndPoint = None
-            # turn right
-            d = (d + 1) % 4
-            if s == p:
-                # back to the start
-                return lights
-        elif lookingLeft (addVec (p, forwardVec[d]), leftVec[d], mapGrid, '  '):
-            if debugging:
-                print ("wall corner (  )", p)
-            # turn left
-            p = addVec (p, forwardVec[d])
-            d = (d + 3) % 4
-            if s == p:
-                # back to the start
-                return lights
-        else:
-            printf ("something went wrong here\n")
 
 
 def printCoord (c, o):

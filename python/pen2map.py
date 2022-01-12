@@ -25,7 +25,7 @@
 import getopt, sys, string
 from chvec import *
 from chcuboid import *
-import math
+import math, random
 
 
 """
@@ -134,7 +134,7 @@ defaults = { "portal":"textures/editor/visportal",
              "open":"textures/editor/visportal",
              "closed":"textures/hell/wood1",
              "secret":"secret",
-             "wall":"textures/hell/cbrick2b",
+             "wall":"textures/hell/cbrick2",
              "floor":"textures/hell/qfloor",
              "ceiling":"textures/hell/wood1",
              "brick" : "textures/caves/sbricks2",
@@ -142,6 +142,7 @@ defaults = { "portal":"textures/editor/visportal",
              # portal transform is a no-op but it allows code reuse.
              "portal_transform" :"( ( 0.0078125 0 0 ) ( 0 0.0078125 1.5 ) )",
              "wall_transform"   :"( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) )",
+             ##### "wall_transform"   :"( ( 0.0156250019 0 1.0000002384 ) ( 0 0.015625 6.25 ) )",
              "floor_transform"  :"( ( 0.03 0 0 ) ( 0 0.03 0 ) )",
              "plinth_transform" :"( ( 0.03 0 0 ) ( 0 0.03 0 ) )",
              "ceiling_transform":"( ( 0.0078125 0 0 ) ( 0 0.0078125 0 ) )",
@@ -386,7 +387,7 @@ def alreadyExists (pos, size, material, transform):
 #
 brickCount = 0
 brickTextures = [
-    "textures/hell/cbrick2b",
+    "textures/hell/cbrick2",
     "textures/object/cabinettop_blk01_d",
     "textures/object/cabinettop_blue02_d",
     "textures/object/cabinettop_brnblk01_d",
@@ -425,6 +426,44 @@ def newcuboid (pos, size, material, roomNo, allowExtend = True, fixed = True):
         else:
             # ok we are forced into adding a newcuboid
             addcuboid (pos, size, doommat, transform, fixed)
+
+transformCount = None
+
+#
+#  regexpTransform - return the transformed material string if result
+#                    contains a regexp.
+#
+
+def regexpTransform (roomNo, result):
+    global transformCount
+    i = result.find ("{")
+    j = result.find ("}")
+    if i != -1:
+        if j == -1:
+            error ("regexp is incomplete as there is no terminating } in regexp: " + result)
+            os.sys.exit (1)
+        before = result[:i]
+        if j+1 < len (result):
+            after = result[j+1:]
+        else:
+            after = ""
+        regexp = result[i+1:j]
+        if len (regexp) > 0:
+            words = regexp.split(",")
+            if len (words) > 0:
+                fmt = words[0]
+                limit = words[1].split ("-")
+                transformMin = int (limit[0])
+                transformMax = int (limit[1])
+                if transformCount is None:
+                    transformCount = transformMin
+                else:
+                    transformCount += 1
+                if transformCount > transformMax:
+                    transformCount = transformMin
+                result = fmt % (random.randint (transformMin, transformMax))
+                result = before + result + after
+    return result
 
 
 #
@@ -466,6 +505,7 @@ def lookupMaterial (roomNo, material):
     if result == None:
         error ("material " + material + " is not known about in room "
                + str (roomNo) + "\n")
+    result = regexpTransform (roomNo, result)
     popScope ()
     return result
 
@@ -683,6 +723,10 @@ def usage (code):
     print("  -q                a pitched ceiling for four walled rooms")
     print("  -s                generate statistics about the map file")
     print("  -t                create a txt file from the pen file")
+    print("  -C                disable candle lights on beams")
+    print("  -P                disable lights on pillars")
+    print("  -F                disable lights on the floor")
+    print("  -O                optimize cuboid generation")
     print("  -V                generate verbose information")
     print("  -v                print the version")
     print("  -o outputfile     place output into outputfile")
@@ -694,11 +738,14 @@ def usage (code):
 #
 
 def handleOptions ():
-    global debugging, verbose, outputName, toTxt, toMap, ssName, comments, statistics, gameType, genSteps, optimise, regressionRequired, autoBeams, enableVisportals, enablePitched
+    global debugging, verbose, outputName, toTxt, toMap, ssName
+    global comments, statistics, gameType, genSteps, optimise
+    global regressionRequired, autoBeams, enableVisportals, enablePitched
+    global enableFloorLights, enablePillarLights, enableCandleLights
 
     outputName = None
     try:
-        optlist, l = getopt.getopt(sys.argv[1:], ':bc:defg:hmo:pqrstvVO')
+        optlist, l = getopt.getopt(sys.argv[1:], ':bc:defg:hmo:pqrstvVOCFP')
         for opt in optlist:
             if opt[0] == '-b':
                 autoBeams = True
@@ -736,6 +783,12 @@ def handleOptions ():
                 regressionRequired = True
             elif opt[0] == '-m':
                 toMap = True
+            elif opt[0] == '-C':
+                enableCandleLights = False
+            elif opt[0] == '-P':
+                enablePillarLights = False
+            elif opt[0] == '-F':
+                enableFloorLights = False
             elif opt[0] == '-V':
                 verbose = True
             elif opt[0] == '-O':
@@ -3788,7 +3841,7 @@ def generateLightBlocks (r, walls):
 
 def generatePlinths (r):
     for p in rooms[r].plinths:
-        pos = [int (p[0]), int (p[1]), rooms[r].floorLevel]
+        pos = [int (p[0]), int (p[1]), getFloorLevel (r)]
         size = [1, 1, float (p[2]) / inchesPerUnit]
         print (pos, size)
         newcuboid (pos, size, 'plinth', r)

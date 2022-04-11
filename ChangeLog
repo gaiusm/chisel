@@ -1,3 +1,9 @@
+2022-04-11      Gaius Mulley <gaiusmod2@gmail.com>
+
+	* python/txt2pen.py (findEntities): Renamed
+	parameter g to mapGrid.  Tidied up formatting.
+	* python/tiny.pen: Removed.
+
 2022-01-12      Gaius Mulley <gaiusmod2@gmail.com>
 
 	* maps:  added new tests.

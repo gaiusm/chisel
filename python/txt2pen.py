@@ -690,6 +690,8 @@ def plot (w, value):
     x1 = max (w[0][0], w[1][0])
     y0 = min (w[0][1], w[1][1])
     y1 = max (w[0][1], w[1][1])
+    if debugging:
+        printf ("plot x0 = %d, x1 = %d, y0 = %d, y1 = %d\n", x0, x1, y0, y1)
     if x0 == x1:
         for j in range (y0, y1+1):
             setFloor (x0, j, value)
@@ -1331,7 +1333,7 @@ def parseEntities (k, room, x, y):
 
     tokens = tokenise (k)
     if debugging:
-        print(tokens)
+        print (tokens)
     ebnf (room, x, y)
 
 
@@ -1340,23 +1342,34 @@ def parseEntities (k, room, x, y):
 #                 which is then parsed.
 #
 
-def findEntities (g, room, p):
+def findEntities (mapGrid, room, p):
     if debugging:
-        for l in g:
-            print(l, end=' ')
-        for l in floor:
-            print(l)
-    for y, r in enumerate (g):
+        for line in mapGrid:
+            print (line, end=' ')
+        printf ("floor list for room %s\n", room)
+        for line in floor:
+            print (line)
+        dumpFloor ()
+    for y, gridLine in enumerate (mapGrid):
+        if debugging:
+            printf ("gridLine = %s, y = %d\n", gridLine, y)
         for x in range (maxx+1):
+            if debugging:
+                printf ("gridLine = %s, x, y = %d, %d\n", gridLine, x, y)
+                printf ("getFloor (%d, %d) = %d\n", x, y, getFloor (x, y))
             if getFloor (x, y) == int (room):
-                c = r[x]
+                if debugging:
+                    printf ("getFloor matches, finding entities now\n")
+                c = gridLine[x]
+                if debugging:
+                    printf ("  entity %s\n", c)
                 if c in defines:
                     if debugging:
-                        print("seen", c, "at", x, y)
-                        print("pos", x, y, c, "=>", end=' ')
+                        print ("seen", c, "at", x, y)
+                        print ("pos", x, y, c, "=>", end=' ')
                     k = macro (defines[c])
                     if debugging:
-                        print(k)
+                        print (k)
                     parseEntities (k, room, x, y)
 
 

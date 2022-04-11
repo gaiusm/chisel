@@ -4,6 +4,9 @@
 	parameter g to mapGrid.  Tidied up formatting.
 	* python/tiny.pen: Removed.
 	* pen2map.py: corrected light pillar position.
+	* maps/minatour.txt: New file.
+	* maps/threeextra.txt: New file.
+	* maps/threedeath.txt: New file.
 
 2022-01-12      Gaius Mulley <gaiusmod2@gmail.com>
 

@@ -3735,39 +3735,46 @@ def newlight (pos, size, desc):
         print("new light at", lightPoints[-1], lightPoints[-1][-1].getOn ())
 
 
-pillarOffset = {'left':[0, 0], 'right':[1.0-lightBlock, 0], 'top':[0, 1.0-lightBlock], 'bottom':[0, 0]}
+pillarOffset = {'left':[0, 0, 0], 'right':[1.0-lightBlock, 0, 0],
+                'top':[0, 1.0-lightBlock, 0], 'bottom':[0, 0, 0],
+                'mid':[0.5-lightBlock/2.0, 0.5-lightBlock/2.0, 0]}
 
 
-def generateLightPillar (r, l, el):
+#
+#  generateLightPillar - places a light pillar in room_no.
+#
+
+def generateLightPillar (room_no, light_element, walls):
     light_stand_material = 'wall'
-    lp = l[0]
-    li = l[1]
-    for w in el:
-        if nextTo (w, l[0]):
+    light_pos = light_element[0]
+    light_obj = light_element[1]
+    for wall in walls:
+        if nextTo (wall, light_pos):
             if debugging:
-                print("light at", l, "is next to wall", w, "in room", r)
+                print ("light at", light_pos, "is next to wall", wall, "in room", room_no)
             # place pillar next to the wall using the offset above
-            # p0 = addVec ([float (lp[0]), float (lp[1])], pillarOffset[w[-1]])
-            p0 = [float (lp[0]), float (lp[1]), getFloorLevel (r)]
+            p0 = [float (light_pos[0]), float (light_pos[1]), getFloorLevel (room_no)]
             size = [lightBlock, lightBlock, lightBlockHeight]
-            # print "light is touching a wall", l
-            pos = [p0[0], p0[1], getFloorLevel (r)]
-            newcuboid (pos, size, light_stand_material, r)
-            # size = [lightBlock, lightBlock, lightHeight]
-            pos = [float (lp[0]), float (lp[1]), lightHeight]
+            # print "light is touching a wall", wall
+            pos = addVec (p0, pillarOffset[wall[-1]])
+            newcuboid (pos, size, light_stand_material, room_no)
+            pos = [float (light_pos[0]), float (light_pos[1]), lightHeight]
+            pos = addVec (pos, pillarOffset[wall[-1]])
             size = [lightBlock, lightBlock, 0]
-            newlight (pos, size, li)
+            newlight (pos, size, light_obj)
             if debugging:
                 print("pos =", pos, "p0 =", p0, "light =", lightPoints[-1])
             return
-    return
-    print("light is not touching a wall", l)
-    pos = [int (lp[0]), int (lp[1]), getFloorLevel (r)]
+    if debugging:
+        print ("light is not touching a wall, placing it in the middle of the square")
+    pos = [int (light_pos[0]), int (light_pos[1]), getFloorLevel (room_no)]
+    pos = addVec (pos, pillarOffset["mid"])
     size = [lightBlock, lightBlock, lightBlockHeight]
-    newcuboid (pos, size, light_stand_material, r)
-    pos = [int (lp[0]), int (lp[1]), lightHeight]
+    newcuboid (pos, size, light_stand_material, room_no)
+    pos = [int (light_pos[0]), int (light_pos[1]), lightHeight]
+    pos = addVec (pos, pillarOffset["mid"])
     size = [lightBlock, lightBlock, 0]
-    newlight (pos, size, li)
+    newlight (pos, size, light_obj)
 
 
 #

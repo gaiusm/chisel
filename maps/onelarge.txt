@@ -8,17 +8,17 @@ define f light type floor
 define H ammo ammo_shells_large 32
 define R ammo ammo_rockets_large 32
 define G ammo ammo_grenade_small 32
-define B ammo ammo_shells_large 32
+define B ammo ammo_shells_large 4
 define L ammo moveable_item_rocketlauncher 1
 define A ammo item_medkit 1
 define D ammo weapon_shotgun_double 1
 
 define P monster python_doommarine_mp
 
-define U label the_ammo_loc_0 [A] [f]
-define V label the_ammo_loc_1 [A] [f]
-define W label the_ammo_loc_2 [A] [f]
-define X label the_ammo_loc_3 [A] [f]
+define U label the_shells_loc_0 [B] [f]
+define V label the_med_loc_1 [A] [f]
+define W label the_med_loc_2 [A] [f]
+define X label the_med_loc_3 [A] [f]
 
 
 ###########################################

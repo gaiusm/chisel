@@ -90,8 +90,8 @@ define defroom default light mid [yellow] default light ceiling [flame] default 
 #   #   ###.##    #     #                 .      #
 #   #####    .    #     #                 ########
 #   .        . m  # n   ###  o       ##..##
-#   .        .    #       #          #p  #
-#   #        #    #       #          #   #
+#   .        .    #       #          #   #
+#   #        #    #       #          # p #
 #   .   ##.###    #       #          #   #
 #   .   #    ##   #       #          #####
 #   . q # r   #   #    ####...########

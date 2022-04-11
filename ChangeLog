@@ -3,6 +3,7 @@
 	* python/txt2pen.py (findEntities): Renamed
 	parameter g to mapGrid.  Tidied up formatting.
 	* python/tiny.pen: Removed.
+	* pen2map.py: corrected light pillar position.
 
 2022-01-12      Gaius Mulley <gaiusmod2@gmail.com>
 

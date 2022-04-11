@@ -1,11 +1,12 @@
 #!/bin/bash
 
-OPTIONS=-fsoft-check-all
+OPTIONS="-fsoft-check-all -flibs=m2pim,m2iso"
 
 for i in *.mod ; do
    gm2 ${OPTIONS} -g -c $i
 done
 
-gcc -g -c getopt.c
+# gcc -g -c getopt.c
 
+echo gm2 ${OPTIONS} -g -o map Map.mod
 gm2 ${OPTIONS} -g -o map Map.mod

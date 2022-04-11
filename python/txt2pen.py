@@ -513,6 +513,7 @@ def checkLight (position, lightList, lightCount):
 #                    Post-condition: a list of lights is returned.
 #
 
+"""
 def introduceLights (p, mapGrid, walls, doors):
     global debuging
 
@@ -531,6 +532,108 @@ def introduceLights (p, mapGrid, walls, doors):
     needToAvoidDoor = False
     # your code goes here, complete this function.
     return []
+"""
+
+
+#
+#  introduceLights - returns a list of lights which are dropped
+#                    near the perimeter of the wall.  The algorithm
+#                    walks around the wall touching the left hand edge
+#                    (it moves clockwise).
+#                    Pre-condition:  p is the start point and it will
+#                                    be touching a left hand wall.
+#                                    mapGrid is the 2D map a list of lists.
+#                                    walls is a list of walls.
+#                                    doors is a list of doors.
+#                    Post-condition: a list of lights is returned.
+#
+
+def introduceLights (p, mapGrid, walls, doors):
+    global debugging
+
+    s = p
+    a = addVec (p, [-1, -1])
+    d = 1  # 0 up, 1 right, 2 down, 3 left
+    leftVec = [[-1, 0], [0, -1], [1, 0], [0, 1]]
+    forwardVec = [[0, -1], [1, 0], [0, 1], [-1, 0]]
+    if debugging:
+        print("wall corner", p)
+
+    lightCount = 0
+    lights = []
+    doorStartPoint = None
+    doorEndPoint = None
+    # your code goes here, complete this function.
+    suppressDoor = False
+
+    while True:
+        # print (p)
+        if debugging:
+            print("point currently at", p, d)
+        if (doorStartPoint == None) and lookingLeft (p, leftVec[d], mapGrid, '. '):
+            if debugging:
+                print("seen first point", p)
+            # first point on the wall is a door
+            doorEndPoint = doorStartPoint
+            suppressDoor = True
+        if lookingLeft (addVec (p, forwardVec[d]), leftVec[d], mapGrid, '. '):
+            if debugging:
+                print("seen a door point", p, end=' ')
+            suppressDoor = True
+            doorEndPoint = addVec (addVec (p, forwardVec[d]), leftVec[d])
+        else:
+            # end of door?
+            if doorEndPoint != None:
+                doorEndPoint = None
+                doorStartPoint = None
+                suppressDoor = True
+        if lookingLeft (addVec (p, forwardVec[d]), leftVec[d], mapGrid, 'x '):
+            # carry on
+            if suppressDoor:
+                li = light ()
+                li.settype ('FLOOR')
+                lights += [p + [li]]
+            else:
+                lights, lightCount = checkLight (p, lights, lightCount)
+            p = addVec (p, forwardVec[d])
+            suppressDoor = False
+        elif lookingLeft (addVec (p, forwardVec[d]), leftVec[d], mapGrid, 'x.'):
+            if debugging:
+                print("wall corner (x.)", p)
+            # end of door?
+            doorStartPoint = None
+            doorEndPoint = None
+            suppressDoor = True
+            # turn right
+            d = (d + 1) % 4
+            if s == p:
+                # back to the start
+                return lights
+        elif lookingLeft (addVec (p, forwardVec[d]), leftVec[d], mapGrid, 'xx'):
+            if debugging:
+                print("wall corner (xx)", p)
+            # end of door?
+            doorStartPoint = None
+            doorEndPoint = None
+            suppressDoor = False
+            # turn right
+            d = (d + 1) % 4
+            if s == p:
+                # back to the start
+                return lights
+        elif lookingLeft (addVec (p, forwardVec[d]), leftVec[d], mapGrid, '  '):
+            if debugging:
+                print("wall corner (  )", p, end=' ')
+            # turn left
+            p = addVec (p, forwardVec[d])
+            d = (d + 3) % 4
+            suppressDoor = True   # dont want a light on the obtuse corner of a wall
+            if s == p:
+                # back to the start
+                return lights
+        else:
+            error ("introduceLights at %s has gone wrong, maybe the room is too small\n", p)
+    return lights
 
 
 def printCoord (c, o):

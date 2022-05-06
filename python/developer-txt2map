@@ -19,7 +19,7 @@ LIGHTS=-l
 
 rm -f *.pyc
 echo -n "txt2pen: converting txt representation into pen map:  "
-if PYTHONPATH=${SEARCH} python3 txt2pen.py -l -f 1 -o tiny.pen $1 ; then
+if PYTHONPATH=${SEARCH} python3 txt2pen.py -l -f 3 -o tiny.pen $1 ; then
     echo "pass"
 else
     echo "failed"

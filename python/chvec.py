@@ -123,15 +123,58 @@ def sqr (m):
     return m*m
 
 #
+#  magnitude - return the magnitude of the vector v.
+#
+
+def magnitude (v):
+    m = 0
+    for i in v:
+        m += sqr (Decimal ("%g" % i))
+    return sqrt (m)
+
+#
 #
 #
 
 def normaliseVec (v):
-    m = 0
+    m = magnitude (v)
     r = []
     for i in v:
-        m += sqr (Decimal (i))
-    m = sqrt (m)
-    for i in v:
-        r += [Decimal (i)/ Decimal (m)]
+        r += [Decimal (i) / Decimal (m)]
     return r
+
+
+def scalarMult (v, s):
+    r = []
+    for i in v:
+        r += [float (i) * s]
+    return r
+
+#
+#  return list of vertices which will have been scaled by vec.
+#
+
+def multPolyVec (vertices, vec):
+    result = []
+    for vertix in vertices:
+        print (vertix, vec)
+        r = []
+        for a, b in zip (vertix, vec):
+            r += [a*b]
+        result += [r]
+    return result
+
+
+#
+#  return list of vertices which will have been translated by vec.
+#
+
+def addPolyVec (vertices, vec):
+    result = []
+    for vertix in vertices:
+        print (vertix, vec)
+        r = []
+        for a, b in zip (vertix, vec):
+            r += [a + b]
+        result += [r]
+    return result

@@ -26,6 +26,7 @@ import getopt, sys, string
 from chvec import *
 from chcuboid import *
 import math, random
+from poly import poly
 
 
 """
@@ -50,7 +51,7 @@ defaultDesc := "DEFAULT" defaultConfig =:
 
 defaultColourConfig := "COLOUR" ( "CEILING" | "MID" | "FLOOR" ) int int int =:
 
-defaultTextureConfig := ( "CEILING" | "FLOOR" | "WALL" | "PLINTH" ) string =:
+defaultTextureConfig := ( "CEILING" | "FLOOR" | "WALL" | "PLINTH" | "BEAM" ) string =:
 
 defaultConfig := "COLOUR" defaultColourConfig |
                  "TEXTURE" defaultTextureConfig =:
@@ -130,6 +131,27 @@ enableCeilingLights = False
 enableFloorLights = True
 enablePillarLights = True
 enableCandleLights = True
+
+plinthBase = 4*3 #  inches
+plinthTop = 2*3  #  inches
+plinthMid = 1*3  #  inch
+plinthReduction = 2*3 # inches
+plinthReduction2 = 3*3 # inches
+
+archBase       = 12 * 3 # inches
+archBaseHeight = 12 * 3 # inches
+archTop        = 12 * 3 # inches
+archTopHeight  = 2*3 # inches
+archMidHeight  = 1*3 # inches
+archReduction  = 10 * 3 # inches
+archReduction2 =  8 * 3 # inches
+
+archBlockAngle = 15     # degrees
+archCapAngle   = 20     # degrees
+archBaseAngle  = 20     # degrees
+archBlockBase  = 12 * 4 # inches
+archSegmentBase= 9  * 4 # inches
+
 defaults = { "portal":"textures/editor/visportal",
              "open":"textures/editor/visportal",
              "closed":"textures/hell/wood1",
@@ -137,15 +159,18 @@ defaults = { "portal":"textures/editor/visportal",
              "wall":"textures/hell/cbrick2",
              "floor":"textures/hell/qfloor",
              "ceiling":"textures/hell/wood1",
+             "beam"   :"textures/hell/wood1",
              "brick" : "textures/caves/sbricks2",
              "open_transform"   :"( ( 0.0078125 0 0 ) ( 0 0.0078125 1.5 ) )",
              # portal transform is a no-op but it allows code reuse.
              "portal_transform" :"( ( 0.0078125 0 0 ) ( 0 0.0078125 1.5 ) )",
              "wall_transform"   :"( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) )",
              ##### "wall_transform"   :"( ( 0.0156250019 0 1.0000002384 ) ( 0 0.015625 6.25 ) )",
-             "floor_transform"  :"( ( 0.03 0 0 ) ( 0 0.03 0 ) )",
+             # "floor_transform"  :"( ( 0.03 0 0 ) ( 0 0.03 0 ) )",  # works well for quake1 textures
+             "floor_transform"  :"( ( 0.0078125 0 0.5 ) ( 0 -0.0078125 -1 ) )",
              "plinth_transform" :"( ( 0.03 0 0 ) ( 0 0.03 0 ) )",
              "ceiling_transform":"( ( 0.0078125 0 0 ) ( 0 0.0078125 0 ) )",
+             "beam_transform"   :"( ( 0.0078125 0 0 ) ( 0 0.0078125 0 ) )",
              "secret_transform" :"( ( 0.0156250019 0 1.0000002384 ) ( 0 0.015625 6.25 ) )",
              "brick_transform"  :"( ( 0.015625 0 0 ) ( 0 0.0078125 0 ) )" }
 secretDoorLintal = "wall"
@@ -279,10 +304,12 @@ def vecInches2 (vec):
     return result
 
 
-cuboidno = 1          #  total number of cuboids used.
+cuboidno = 1          #  total number of extendable cuboids used.
 cuboids = {}
 roofno = 1
 roofBricks = {}
+polyobjno = 1         #  number of non extenable bricks used
+polyobjs = {}
 
 
 #
@@ -317,13 +344,41 @@ class roofbrick:
 #                 These are the same throughout all the Z changes of the brick.
 #
 
-def addroofbrick (polygon_points, faces, material, r):
+def addroofbrick (polygon_points, faces, material, roomNo):
     global roofBricks, roofno
 
     roofBricks[roofno] = roofbrick (polygon_points, faces,
-                                    lookupMaterial (r, material),
-                                    lookupTransform (r, material))
+                                    lookupMaterial (roomNo, material),
+                                    lookupTransform (roomNo, material))
     roofno += 1
+
+
+#
+#  polyobj - used to represent objects of any polygon shape which are
+#            not extended.
+#
+
+class polyobj:
+    def __init__ (self, polygon_points, faces, material, transform):
+        verify_polygon_points (polygon_points, "arch")
+        self.polygon_points = polygon_points
+        self.faces = faces
+        self.material = material
+        self.transform = transform
+
+
+#
+#  addpolyobj - adds a polygon brick to the dictionary of polyobjs.
+#               Each brick has a unique number.
+#
+
+def addpolyobj (polygon_points, faces, material, room):
+    global polyobjs, polyobjno
+
+    polyobjs[polyobjno] = polyobj (polygon_points, faces,
+                                   lookupMaterial (room, material),
+                                   lookupTransform (room, material))
+    polyobjno += 1
 
 
 #
@@ -482,12 +537,30 @@ def popScope ():
     global scopeStack
     scopeStack = scopeStack[1:]
 
+plinthtextureno = 0
+plinthoverride = ["textures/masonary/Marble001", "textures/masonary/Marble002",
+                  "textures/masonary/Marble003", "textures/masonary/Marble004",
+                  "textures/masonary/Marble005", "textures/masonary/Marble006",
+                  "textures/masonary/Marble007", "textures/masonary/Marble008",
+                  "textures/masonary/Marble009", "textures/masonary/Marble010",
+                  "textures/masonary/Marble011", "textures/masonary/Marble012",
+                  "textures/masonary/Marble013",
+                  "textures/masonary/Marble016", "textures/masonary/Marble020",
+                  "textures/masonary/Marble021", "textures/masonary/Marble022",
+                  "textures/masonary/Marble023", "textures/masonary/Marble024"]
 
 #
 #  lookupEntry - returns the entry for, name, in the stacked scope stack.
 #
 
 def lookupEntry (name):
+    ### hack
+    global plinthtextureno, plinthoverride
+    if name == "plinth":
+        plinthtextureno += 1
+        if plinthtextureno == len (plinthoverride):
+            plinthtextureno = 0
+        return plinthoverride[plinthtextureno]
     for s in scopeStack:
         if name in s:
             return s[name]
@@ -505,6 +578,7 @@ def lookupMaterial (roomNo, material):
     if result == None:
         error ("material " + material + " is not known about in room "
                + str (roomNo) + "\n")
+    printf ("lookupMaterial, room %s: %s -> %s\n", roomNo, material, result)
     result = regexpTransform (roomNo, result)
     popScope ()
     return result
@@ -634,7 +708,7 @@ def getFloorLevel (r):
 #
 
 def printf (format, *args):
-    print(str(format) % args, end=' ')
+    print (str (format) % args, end=' ')
 
 
 #
@@ -642,7 +716,7 @@ def printf (format, *args):
 #
 
 def error (format, *args):
-    print(str (format) % args, end=' ')
+    print (str (format) % args, end=' ')
     sys.exit (1)
 
 
@@ -1357,6 +1431,9 @@ def defaultTextureConfig ():
     elif expecting (['PLINTH']):
         expect ('PLINTH')
         curRoom.defaultTextures['plinth'] = get ()
+    elif expecting (['BEAM']):
+        expect ('BEAM')
+        curRoom.defaultTextures['beam'] = get ()
     else:
         errorLine ("expecting FLOOR, WALL, CEILING and PLINTH after DEFAULT TEXTURE")
 
@@ -2156,6 +2233,8 @@ def zPlane (o, d, z0, text, transform, comment):
 #
 
 def simplify_unit (unit):
+    if isEpsilon (unit, 0.000001):
+        return 0
     if abs (unit) == unit:
         unit = abs (unit)
     if int (unit) == unit:
@@ -2344,8 +2423,12 @@ def calc_face (p0, p1, p2):
     return [a, b, c], d
 
 
+def isEpsilon (r, e = 0.0001):
+    return abs (r) < e
+
+
 def isNearZero (r):
-    return abs (r) < 0.0001
+    return isEpsilon (r, 0.001)
 
 
 def verify_point_on_plane (vec, distance, p):
@@ -2354,10 +2437,19 @@ def verify_point_on_plane (vec, distance, p):
     B = vec[1] * p[1]
     C = vec[2] * p[2]
     D = distance
-    assert (isNearZero (A + B + C + D))
+    if isNearZero (A + B + C + D):
+        # printf ("yes point (p = %s) is on plane: A = %g, B = %g, C = %g, D = %g, A + B + C + D = %g\n",
+        # p, A, B, C, D, A+B+C+D)
+        pass
+    else:
+        printf ("no point (p = %s) is not on plane: A = %g, B = %g, C = %g, D = %g, A + B + C + D = %g\n",
+                p, A, B, C, D, A+B+C+D)
+    assert (isEpsilon (A + B + C + D), 0.001)
+
 
 def verify_plane_points (vec, distance, f, polygon_points):
     for i in f:
+        # printf ("vertice %d  %s\n", i, polygon_points[i])
         verify_point_on_plane (vec, distance, polygon_points[i])
 
 #
@@ -2376,6 +2468,31 @@ def roof (o, polygon_points, faces, material, transform):
     polygon_points = translatePoints (polygon_points)
     verify_polygon_points (polygon_points, "calc_face")
     for i, f in enumerate (faces):
+        vec, distance = calc_face (polygon_points[f[0]], polygon_points[f[1]], polygon_points[f[2]])
+        verify_plane_points (vec, distance, f, polygon_points)
+        o = plane (o, vec, distance, material, transform, "")
+    return o
+
+
+#
+#  translatePoly - translate and return a list of vertices.
+#
+
+def translatePoly (vertices):
+    result = []
+    for v in vertices:
+        result += [translatePos (v)]
+    return result
+
+
+def polybrick (o, polygon_points, faces, material, transform):
+    printf ("faces = %s\n", faces)
+    printf ("vertices = %s\n", polygon_points)
+    verify_polygon_points (polygon_points, "poly_brick_face before translate")
+    polygon_points = translatePoly (polygon_points)
+    verify_polygon_points (polygon_points, "poly_brick_face after translate")
+    for i, f in enumerate (faces):
+        printf ("face no %d  %s\n", i, f)
         vec, distance = calc_face (polygon_points[f[0]], polygon_points[f[1]], polygon_points[f[2]])
         verify_plane_points (vec, distance, f, polygon_points)
         o = plane (o, vec, distance, material, transform, "")
@@ -2409,7 +2526,7 @@ def flushCuboids (o, bcount, fixed):
 #
 
 def flushRoofBricks (o, bcount):
-    for k in list(roofBricks.keys ()):
+    for k in list (roofBricks.keys ()):
         b = roofBricks[k]
         # print "roofbrick, polygon_points =", b.polygon_points, "material =", b.material
         o.write ('    // roof brick ' + str (k) + "\n")
@@ -2424,12 +2541,32 @@ def flushRoofBricks (o, bcount):
 
 
 #
+#  flushPolyObjects - flush the poly objects.
+#
+
+def flushPolyObjects (o, bcount):
+    for k in list (polyobjs.keys ()):
+        b = polyobjs[k]
+        # print "roofbrick, polygon_points =", b.polygon_points, "material =", b.material
+        o.write ('    // polygon object ' + str (k) + "\n")
+        o.write ('    {\n')
+        o.write ('         brushDef3\n')
+        o.write ('         {\n')
+        o = polybrick (o, b.polygon_points, b.faces, b.material, b.transform)
+        o.write ('         }\n')
+        o.write ('    }\n')
+        bcount += 1
+    return o, bcount
+
+
+#
 #  flushBricks - flushes all used fixed cuboids to the output file, o
 #
 
 def flushBricks (o, bcount):
     o, bcount = flushCuboids (o, bcount, True)
     o, bcount = flushRoofBricks (o, bcount)
+    o, bcount = flushPolyObjects (o, bcount)
     return o, bcount
 
 
@@ -2484,7 +2621,6 @@ def generateStepsVerticalWall (r, e, l):
     leftLevel  = rooms[str (getFloor (e[0][0]-1, e[0][1]))].floorLevel
     rightLevel = rooms[str (getFloor (e[0][0]+1, e[0][1]))].floorLevel
     winc = 1.0/float (noSteps)
-    # quit ()
     if leftLevel == rightLevel:
         hinc = 0
     else:
@@ -2534,6 +2670,245 @@ def generateStepsHorizontalWall (r, e, l):
         size = subVec (end, pos)
         newcuboid (pos, size, 'wall', r)
 
+#
+#  generateBaseCoord - returns a list of the arch footprint
+#                      at an angle and r0 away from the midpoint.
+#
+
+def generateBaseCoords (length, width, r0, angle):
+    radians = Decimal ("%g" % angle) * Decimal (math.pi) / Decimal (180.0)
+    x0 = 0
+    y0 = math.cos (radians) * r0
+    z0 = math.sin (radians) * r0
+    x1 = width
+    y1 = math.cos (radians) * (length + r0)
+    z1 = math.sin (radians) * (length + r0)
+    return [[x0, y0, z0], [x0, y1, z1], [x1, y1, z1], [x1, y0, z0]]
+
+
+#  faces and vertices of the cube (ascii art)
+#
+#                                         +............+
+#                                       / .          . .
+#    6+-----+7                        +------------+/  .
+#    /|    /|                         |   .        |   .
+#  5+-----+4|                         |   +............+
+#   | |   | |                         |  /         |  /
+#   |0+---|-+1                 y axis | /Z axis    | /
+#   |/    |/                          |/           |/
+#  3+-----+2                          +------------+
+#                                         x axis
+#
+#   all labelled anti-clockwise when viewed from the front.
+#   (rotate the cube so that the face is closest to the viewer).
+#
+#   faces = [[2, 4, 3, 5],    #  front
+#            [1, 7, 2, 4],    #  right
+#            [3, 5, 0, 6],    #  left
+#            [6, 7, 0, 1],    #  back
+#            [5, 4, 6, 7],    #  top
+#            [3, 0, 2, 1]]    #  bottom
+#
+#
+#  generate_cube_points - return the points and faces of a cube.
+#                         The points returned will be in the order:
+#                         [botpos, botpos+x, botpos+y, botpos+z,
+#                          toppos, botpos-x, botpos-y, botpos-z]
+#
+#                         assuming botpos is the lowest left back corner
+#                                  toppos is the highest right front corner
+
+def createPolyArch (p):
+    printf ("p = %s\n", p)
+    points = [p[2], p[3], p[0], p[1],
+              p[4], p[5], p[6], p[7]]
+    #
+    #  faces is a list of face.  Each faces is a list of points.
+    #
+    faces = [[2, 4, 3, 5],    #  front
+             [1, 7, 2, 4],    #  right
+             [3, 5, 0, 6],    #  left
+             [6, 7, 0, 1],    #  back
+             [5, 4, 6, 7],    #  top
+             [3, 0, 2, 1]]    #  bottom
+    printf ("faces = %s\n", faces)
+    printf ("vertices = %s\n", points)
+    for i, v in enumerate (points):
+        printf ("%d %s\n", i, v)
+    return points, faces
+
+#
+#  generateArchBrick - create an arch brick
+#
+
+def generateArchBrick (room, edgepos, midpos, angle0, angle1,
+                       length, width, isVertical, direction):
+    r0 = magnitude (subVec (edgepos, midpos))
+    printf ("r0 = %g\n", r0)
+    basefootprint = generateBaseCoords (length, width, r0, angle0)
+    printf ("basefootprint = %s\n", basefootprint)
+    basefootprint = multPolyVec (basefootprint, direction)
+    printf ("basefootprint = %s\n", basefootprint)
+    basecoords = addPolyVec (basefootprint, midpos)
+    printf ("basecoords = %s\n", basecoords)
+    topfootprint = generateBaseCoords (length, width, r0, angle1)
+    printf ("topfootprint = %s\n", topfootprint)
+    topfootprint = multPolyVec (topfootprint, direction)
+    topcoords = addPolyVec (topfootprint, midpos)
+    poly, faces = createPolyArch (basecoords + topcoords)
+    addpolyobj (poly, faces, "plinth", room)
+
+
+#
+#  generateVerticalArch
+#
+
+def generateVerticalArch (room, entity, miny, maxy):
+    floorLevel = getFloorLevel (room)
+    xpos = entity[0][0]
+    #
+    #  arch pillar on the miny side of the archway
+    #
+    straightEdgePos = [xpos, miny, floorLevel]
+    height = 0
+    for xyoffset, zoffset in [[archBase, archBaseHeight],
+                              [archReduction, archMidHeight],
+                              [archReduction2, minDoorHeight / 1.6 * inchesPerUnit - archMidHeight - archBaseHeight - archTopHeight],
+                              [archReduction, archMidHeight],
+                              [archTop, archTopHeight]]:
+        pos = subVec (straightEdgePos, [xyoffset / inchesPerUnit,
+                                        xyoffset / inchesPerUnit,
+                                        0])
+        pos = addVec (pos, [0, 0, height])
+        size = [xyoffset / inchesPerUnit,
+                xyoffset / inchesPerUnit,
+                zoffset  / inchesPerUnit]
+        print ("archway, pos =", pos, "size =", size)
+        newcuboid (pos, size, 'plinth', room)
+        height += zoffset / inchesPerUnit
+
+    #
+    #  arch pillar on the maxy side of the archway
+    #
+    straightEdgePos = [xpos, maxy + 1, floorLevel]
+    height = 0
+    for xyoffset, zoffset in [[archBase, archBaseHeight],
+                              [archReduction, archMidHeight],
+                              [archReduction2, minDoorHeight / 1.6 * inchesPerUnit - archMidHeight - archBaseHeight - archTopHeight],
+                              [archReduction, archMidHeight],
+                              [archTop, archTopHeight]]:
+        pos = subVec (straightEdgePos, [xyoffset / inchesPerUnit, 0, 0])
+        pos = addVec (pos, [0, 0, height])
+        size = [xyoffset / inchesPerUnit,
+                xyoffset / inchesPerUnit,
+                zoffset  / inchesPerUnit]
+        print ("archway, pos =", pos, "size =", size)
+        newcuboid (pos, size, 'plinth', room)
+        height += zoffset / inchesPerUnit
+    #
+    #  arch on miny
+    #
+    straightEdgePos = [xpos, miny, floorLevel]
+    straightEdgePos = addVec (straightEdgePos, [0, 0, .5])  ## --fixme--
+    printf ("straightEdgePos = %s\n", straightEdgePos)
+    angleIncLength = [[archBaseAngle, archBlockBase / inchesPerUnit]]
+    printf ("angleIncLength = %s\n", angleIncLength)
+    angle = archBaseAngle
+    while angle < 90 - archCapAngle / 2:
+        angle += archBlockAngle
+        angleIncLength += [[archBlockAngle, archSegmentBase / inchesPerUnit]]
+    angleIncLength += [[archCapAngle, archBlockBase / inchesPerUnit]]
+    angle += archCapAngle
+    while angle < 180 - archCapAngle:
+        angle += archBlockAngle
+        angleIncLength += [[archBlockAngle, archSegmentBase / inchesPerUnit]]
+    angleIncLength += [[archCapAngle, archBlockBase / inchesPerUnit]]
+    # angleIncLength = [angleIncLength[1]]
+    printf ("angleIncLength = %s\n", angleIncLength)
+    angle = 0
+    # pos = addVec (straightEdgePos, [0, 0, height])
+    for inc, length in angleIncLength:
+        pos = subVec (straightEdgePos, [length + 1, 1, 0])
+        printf ("pos = %s\n", pos)
+        midpos = addVec (pos, [0, (maxy + 1 - miny) / 2, 0])
+        printf ("midpos = %s\n", midpos)
+        printf ("angle = %g, length = %g\n", angle, length)
+        generateArchBrick (room, pos, midpos, angle, angle + inc,
+                           length, length, True, [1, -1, 1])
+        angle += inc
+    # and the cap stone
+    print ("angle =", angle)
+    # addpolyobj (prevBase1 + prevBase2, faces, "plinth", room)
+
+
+#
+#  generateVerticalArch2
+#
+
+def generateVerticalArch2 (room, entity, miny, maxy):
+    floorLevel = getFloorLevel (room)
+    xpos = entity[0][0]
+    #
+    #  arch pillar on the miny side of the archway
+    #
+    straightEdgePosMin = [xpos, miny, floorLevel]
+    height = 0
+    #
+    #  create the minpillar at the origin
+    #
+    minpillar = []
+    for xyoffset, zoffset in [[archBase, archBaseHeight],
+                              [archReduction, archMidHeight],
+                              [archReduction2, minDoorHeight / 1.6 * inchesPerUnit - archMidHeight - archBaseHeight - archTopHeight],
+                              [archReduction, archMidHeight],
+                              [archTop, archTopHeight]]:
+        brick = poly ().unit_cube ().set_texture ('all', 'plinth')
+        pos = subVec (straightEdgePosMin, [xyoffset / inchesPerUnit,
+                                           xyoffset / inchesPerUnit,
+                                           0])
+        pos = addVec (pos, [0, 0, height])
+        size = [xyoffset / inchesPerUnit,
+                xyoffset / inchesPerUnit,
+                zoffset  / inchesPerUnit,
+                0]
+        print (pos)
+        brick = brick.scale (size).translate (pos)
+        minpillar += [brick]
+        height += zoffset / inchesPerUnit
+    #
+    #  create the maxpillar using the minpillar and translating it.
+    #
+    maxpillar = []
+    straightEdgePosMax = [xpos, maxy, floorLevel]
+    for brick in minpillar:
+        maxpillar += [brick.copy.reflect_x ().translate (straightEdgePosMax)]
+    c = []
+    #
+    #  finally move the minpillar into the correct position.
+    #
+    for brick in minpillar:
+        c += [brick.copy.translate (straightEdgePosMin)]
+    minpillar = c
+    for obj in minpillar + maxpillar:
+        addpolyobj (obj.get_vertices (),
+                    obj.get_faces (),
+                    obj.get_texture ('top'),
+                    room)
+
+
+#
+#  staircase
+#
+
+def staircase (room, pos, height, r0, r1, increment, angle):
+    floor_level = get_floor_level (room)
+    stair_level_offset = 0
+    stair_angle = 0
+    while stair_level_offset < height:
+        newstair (room, pos, r0, r1, increment,
+                  angle, stair_angle, stair_level_offset)
+        stair_angle += angle
+        stair_level_offset += increment
 
 #
 #  doOpen - create an open door.
@@ -2569,6 +2944,8 @@ def doOpen (r, e):
                 # fill in the doorway with visportal block
                 # vertical visportal code
                 pass
+        # generateVerticalArch (r, e, a, b)
+        generateVerticalArch2 (r, e, a, b)
     else:
         #
         #  horizontal door (on the 2D map)
@@ -2959,7 +3336,7 @@ def beamSupport (r, x, y, h):
 
 def beamTransim (r, botpos, toppos, translate_top):
     points, faces = generate_roof_points (botpos, toppos, translate_top)
-    addroofbrick (points, faces, "ceiling", r)   # facing up 2D when viewed from top
+    addroofbrick (points, faces, "beam", r)   # facing up 2D when viewed from top
 
 
 def makeBeamX (r, x, y0, y1):
@@ -2974,7 +3351,7 @@ def makeBeamX (r, x, y0, y1):
         size = [0.5, 1.0, 0.5]
         if debugging:
             print("beamX block", x, y, h)
-        newcuboid (pos, size, 'ceiling', r)
+        newcuboid (pos, size, 'beam', r)
     h = getFloorLevel (r) + minCeilingHeight
     #
     #  A shape support (right)
@@ -3059,7 +3436,7 @@ def makeBeamY (r, x0, x1, y):
         size = [1.0, 0.5, 0.5]
         if debugging:
             print("beamY block", x, y, h)
-        newcuboid (pos, size, 'ceiling', r)
+        newcuboid (pos, size, 'beam', r)
     #
     #  A shape support (right)
     #
@@ -3241,18 +3618,18 @@ def generateBeams (r, e):
 
 #
 #  generateFlatCeiling - generate a simple flat surface (slab) at
-#                        rooms[r].floorLevel+minCeilingHeight .. minCeilingHeight
+#                        rooms[roomNo].floorLevel+minCeilingHeight .. minCeilingHeight
 #                        on the Z axis.
 #
 
-def generateFlatCeiling (r, e):
+def generateFlatCeiling (roomNo, e):
     for x in range (1, maxx):
         for y in range (1, maxy):
-            if getFloor (x, y) == int (r):
-                pos = [x, y, getFloorLevel (r) + minCeilingHeight]
-                end = [x+1, y+1, getFloorLevel (r) + minCeilingHeight + 1.0]
+            if getFloor (x, y) == int (roomNo):
+                pos = [x, y, getFloorLevel (roomNo) + minCeilingHeight]
+                end = [x+1, y+1, getFloorLevel (roomNo) + minCeilingHeight + 1.0]
                 size = subVec (end, pos)
-                newcuboid (pos, size, 'ceiling', r)
+                newcuboid (pos, size, 'ceiling', roomNo)
 
 
 def apply_translate_top (points, translate_top, z_value):
@@ -3433,13 +3810,13 @@ def testFaces (r):
         addroofbrick (points, faces, "ceiling", r)  # facing up 2D when viewed from top
 
 
-def generateCeiling (r, e):
-    if (len (rooms[r].walls) == 4) and enablePitched:
-        generatePitchedCeiling (r, e)
+def generateCeiling (roomNo, e):
+    if (len (rooms[roomNo].walls) == 4) and enablePitched:
+        generatePitchedCeiling (roomNo, e)
     else:
-        generateFlatCeiling (r, e)
+        generateFlatCeiling (roomNo, e)
     if autoBeams:
-        generateBeams (r, e)
+        generateBeams (roomNo, e)
 
 
 def generateFloor (r, e):
@@ -3489,20 +3866,22 @@ def generateEntities (o):
     initRoomFloor ()
     o = generateLimits (o)
     vprintf ("room: ")
-    for r in list(rooms.keys ()):
-        el = roomToEntities (r)
-        vprintf ("[%s]", r)
-        p = findMinMax (r)
-        o.write ("    // room " + r + "\n")
+    for roomNo in list(rooms.keys ()):
+        el = roomToEntities (roomNo)
+        vprintf ("[%s]", roomNo)
+        p = findMinMax (roomNo)
+        o.write ("    // room " + roomNo + "\n")
         if False:
-            testFaces (r)
+            testFaces (roomNo)
         else:
+            pushScope (roomNo)
             for e in el:
-                generateBricks (r, e)
-            generateCeiling (r, e)
-            generateFloor (r, e)
-            generateLightBlocks (r, el)
-            generatePlinths (r)
+                generateBricks (roomNo, e)
+            generateCeiling (roomNo, e)
+            generateFloor (roomNo, e)
+            generateLightBlocks (roomNo, el)
+            generatePlinths (roomNo)
+            popScope ()
     vprintf ("\n")
     vprintf ("brick optimisation...")
     o, bcount = flushBricks (o, bcount)
@@ -3745,7 +4124,7 @@ pillarOffset = {'left':[0, 0, 0], 'right':[1.0-lightBlock, 0, 0],
 #
 
 def generateLightPillar (room_no, light_element, walls):
-    light_stand_material = 'wall'
+    light_stand_material = 'plinth'
     light_pos = light_element[0]
     light_obj = light_element[1]
     for wall in walls:
@@ -3848,15 +4227,33 @@ def generateLightBlocks (r, walls):
 
 def generatePlinths (r):
     for p in rooms[r].plinths:
-        pos = [int (p[0]), int (p[1]), getFloorLevel (r)]
-        size = [1, 1, float (p[2]) / inchesPerUnit]
-        print (pos, size)
-        newcuboid (pos, size, 'plinth', r)
+        plinthHeight = p[2]
+        if plinthHeight > plinthBase + plinthTop + plinthMid * 2:
+            height = 0
+            #                         [-xy,  +z]  offsets for each component of the plinth
+            for xyoffset, zoffset in [[0, plinthBase],
+                                      [plinthReduction, plinthMid],
+                                      [plinthReduction2, plinthHeight - plinthBase + plinthTop + plinthMid * 2],
+                                      [plinthReduction, plinthMid],
+                                      [0, plinthTop]]:
+                pos = [int (p[0]), int (p[1]), getFloorLevel (r)]
+                # pos = addVec (pos, [1, 2, 0])
+                # pos = addVec (pos, [minx, miny, 0])
+                pos = addVec (pos, [xyoffset / inchesPerUnit, xyoffset / inchesPerUnit, height / inchesPerUnit])
+                size = [1, 1, zoffset / inchesPerUnit]
+                size = subVec (size, [xyoffset * 2 / inchesPerUnit, xyoffset * 2 / inchesPerUnit, 0])
+                newcuboid (pos, size, 'plinth', r)
+                height += zoffset
+        else:
+            pos = [int (p[0]), int (p[1]), getFloorLevel (r)]
+            size = [1, 1, float (p[2]) / inchesPerUnit]
+            print (pos, size)
+            newcuboid (pos, size, 'plinth', r)
 
 
 def generatePythonMonsters (o, e):
     n = 1
-    for r in list(rooms.keys()):
+    for r in list (rooms.keys ()):
         for monster, xy in rooms[r].pythonMonsters:
             o.write ("// entity " + str (e) + '\n')
             o.write ("{\n")
@@ -3896,26 +4293,27 @@ def generateMonsters (o, e):
     return o, e
 
 
-def generateAmmo (o, e):
+def generateAmmo (o, entno):
     n = 1
-    for r in list(rooms.keys()):
+    for room in list(rooms.keys()):
         if debugging:
-            print(rooms[r].ammo)
-        for ammo_kind, a, xy in rooms[r].ammo:
-            o.write ("// entity " + str (e) + '\n')
+            print(rooms[room].ammo)
+        for ammo_kind, a, xy in rooms[room].ammo:
+            o.write ("// entity " + str (entno) + '\n')
             o.write ("{\n")
             o.write ('    "inv_item" "4"\n')
             o.write ('    "classname" "' + ammo_kind + '"\n')
             o.write ('    "name" "' + ammo_kind + '_' + str (n) + '"\n')
             o.write ('    "origin" "')
             xyz = toIntList (xy) + [-invSpawnHeight]
-            xyz = subVec (xyz, [minx, miny, getFloorLevel (r) + getPlinthHeight (r, xy[0], xy[1])])
+            xyz = subVec (xyz, [minx, miny,
+                                getFloorLevel (room) + getPlinthHeight (room, xy[0], xy[1])])
             v = midReposition (xyz)
             o.write ('%f %f %f"\n' % (v[0], v[1], v[2]))
             o.write ("}\n")
             n += 1
-            e += 1
-    return o, e
+            entno += 1
+    return o, entno
 
 
 def generateSounds (o, e):

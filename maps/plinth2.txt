@@ -1,25 +1,63 @@
-define 1 room 1 [defroom]
-define 2 room 2 [defroom]
+define 1 room 1 [defroom1]
+define 2 room 2 [defroom2]
+define 3 room 3 [defroom3]
+define 4 room 4 [defroom4]
 define s worldspawn
 define o monster monster_demon_imp
 define n monster monster_demon_hellknight
 define i light
-define a ammo ammo_grenade 16
+define a ammo weapon_shotgun_double 1
 define g plinth height 48 [a]
 
 define yellow colour 190 180 170
 define darkyellow colour 190 185 66
 define flame colour 170 107 7
 define slatefloor default texture floor textures/quake1/slate_tile_floor
-define defroom default light mid [yellow] default light ceiling [flame] default light floor [darkyellow] default texture plinth textures/quake1/slate_tile_floor
+define woodfloor default texture floor textures/masonary/WoodFloor044
+define woodfloor default texture floor textures/masonary/WoodFloor043
+define floor default texture floor textures/masonary/Tiles111
+define floor default texture floor textures/masonary/Rock020
+define bwtiles default texture floor textures/masonary/Tiles074
+define btiles default texture floor textures/masonary/Tiles114
+define gfloor default texture floor textures/masonary/Planks027C
+define plinth default texture plinth textures/masonary/Marble006
+define darkceiling default texture ceiling textures/masonary/WoodFloor042
+define lightceiling default texture ceiling textures/masonary/WoodFloor044
+define lightceiling default texture ceiling textures/masonary/Planks026A
+define lightbricks default texture wall textures/masonary/Bricks038
+
+define defroom1 default light mid [yellow] default light ceiling [flame] default light floor [darkyellow] [plinth] [woodfloor] [darkceiling]
+
+define defroom2 default light mid [yellow] default light ceiling [flame] default light floor [darkyellow] [plinth] [bwtiles] [lightceiling]
+
+define defroom3 default light mid [yellow] default light ceiling [flame] default light floor [darkyellow] [plinth] [gfloor] [lightceiling]
+
+define defroom4 default light mid [yellow] default light ceiling [flame] default light floor [darkyellow] [plinth] [btiles] [darkceiling]
 
 
-##################################
-# 1              # 2             #
-#                #               #
-# s    g  g      .               #
-#                .               #
-#      g  g      .               #
-#                #      g        #
-#                #               #
-##################################
+###################
+# 1      # 2      #
+#        #        #
+# s      .        #
+#        .        #
+#        .        #
+#        #        #
+#        #        #
+####...############
+#        #        #
+# 3      #  4     #
+#        #        #
+#        #        #
+#        #        #
+#        #        #
+#        #        #
+#        #        #
+#        .        #
+#        .        #
+#        .        #
+#        #        #
+#        #        #
+#        #        #
+#        #        #
+#        #        #
+###################

@@ -1366,7 +1366,7 @@ def parseConfigDefault (room, x, y):
 
 
 #
-#  textureDefault := 'texture' ( 'floor' | 'ceiling' | 'wall' | 'plinth' ) string =:
+#  textureDefault := 'texture' ( 'floor' | 'ceiling' | 'wall' | 'plinth' | 'beam' ) string =:
 #
 
 def parseTextureDefault (room, x, y):
@@ -1384,8 +1384,11 @@ def parseTextureDefault (room, x, y):
     elif expecting (['plinth']):
         expect ('plinth', room, x, y)
         rooms[room].defaultTexture['PLINTH'] = expectString (room, x, y, 'a texture after the plinth keyword')
+    elif expecting (['beam']):
+        expect ('beam', room, x, y)
+        rooms[room].defaultTexture['BEAM'] = expectString (room, x, y, 'a texture after the beam keyword')
     else:
-        error ("expecting floor, ceiling, wall or plinth after the texture keyword\n")
+        error ("expecting floor, ceiling, wall, plinth or beam after the texture keyword\n")
 
 
 #

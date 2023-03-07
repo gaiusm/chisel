@@ -26,12 +26,12 @@ define defroom1 default light mid [yellow] default light ceiling [flame] default
 define defroom2 default light mid [yellow] default light ceiling [flame] default light floor [darkyellow] default texture [plinth] [floor2] [lightceiling]
 
 
-##################################
-# 1              # 2             #
-#                #               #
-# s    g         .               #
-#                .               #
-#                .               #
-#                #      g        #
-#                #               #
-##################################
+##########################################
+# 1              # 2                     #
+#                #                       #
+# s    g         .                       #
+#                .                       #
+#                .                       #
+#                #      g                #
+#                #                       #
+##########################################

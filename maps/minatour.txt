@@ -1,29 +1,36 @@
-define 1 room 1  [defroom] [redfloor]
-define 2 room 2  [defroom] [bluefloor]
-define 3 room 3  [defroom] [greenfloor]
-define 4 room 4  [defroom] [slatefloor]
-define 5 room 5  [defroom] [redfloor]
-define 6 room 6  [defroom] [bluefloor]
-define 7 room 7  [defroom] [greenfloor]
-define 8 room 8  [defroom] [slatefloor]
+define 1 room 1  [defroom1]
+define 2 room 2  [defroom2]
+define 3 room 3  [defroom1]
+define 4 room 4  [defroom2]
+define 5 room 5  [defroom1]
+define 6 room 6  [defroom2]
+define 7 room 7  [defroom1]
+define 8 room 8  [defroom2]
 define s worldspawn
 define h monster monster_demon_hellknight
+
+define lightflame colour 150 107 7
 
 define yellow colour 190 180 170
 define darkyellow colour 190 185 66
 define flame colour 170 107 7
-define lightflame colour 150 107 7
+define slatefloor default texture floor textures/quake1/slate_tile_floor
+define woodfloor default texture floor textures/masonary/WoodFloor044
+define woodfloor default texture floor textures/masonary/WoodFloor040
+define woodfloor default texture floor textures/masonary/WoodFloor043
+define floor default texture floor textures/masonary/Tiles111
+define floor default texture floor textures/masonary/Rock020
+define floor default texture floor textures/masonary/Tiles074
+define floor1 default texture floor textures/masonary/WoodFloor043
+define floor2 default texture floor textures/masonary/Tiles074
+define plinth plinth textures/masonary/Marble006
+define lightceiling default texture ceiling textures/masonary/Planks026A
+
 
 define defroom default light mid [yellow] default light ceiling [flame] default light floor [flame]
+define defroom1 default light mid [yellow] default light ceiling [flame] default light floor [darkyellow] default texture [plinth] [floor1] [lightceiling]
+define defroom2 default light mid [yellow] default light ceiling [flame] default light floor [darkyellow] default texture [plinth] [floor2] [lightceiling]
 
-define redfloor default texture floor textures/quake1/red_tile_floor
-define bluefloor default texture floor textures/quake1/blue_tile_floor
-define greenfloor default texture floor textures/quake1/green_tile_floor
-define purplefloor default texture floor textures/quake1/purple_tile_floor
-define blackfloor default texture floor textures/quake1/black_tile_floor
-define slatefloor default texture floor textures/quake1/slate_tile_floor
-define aquafloor default texture floor textures/quake1/slate_aqua_floor
-define ceiling default texture ceiling textures/quake1/pine_wood
 
 ######
 #    #

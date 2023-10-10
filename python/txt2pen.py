@@ -37,6 +37,24 @@ versionNumber = 0.2
 lightFrequency = 5
 defaultColour = None
 openDoor, closedDoor, secretDoor = range (3)
+inputStack = []
+includeDir = []
+
+
+def pushInput (filename, lineno, contents):
+    global inputStack
+    inputStack += [[filename, lineno, contents]]
+
+def popInput ():
+    global inputStack
+    if inputStack == []:
+        return None, 0, None
+    result = inputStack[0]
+    if len (inputStack) == 1:
+        inputStack = []
+    else:
+        inputStack = inputStack[1:]
+    return result
 
 
 def mycut (l, i):
@@ -140,7 +158,7 @@ def debugf (format, *args):
 
 
 def usage (code):
-    print("Usage: txt2pen [-dhlvV] [-f frequency] [-o outputfile] inputfile")
+    print("Usage: txt2pen [-dhlvV] [-f frequency] [-o outputfile] [-I path] inputfile")
     print("  -d debugging")
     print("  -h help")
     print("  -l automatic lighting")
@@ -148,6 +166,7 @@ def usage (code):
     print("  -V verbose")
     print("  -v version")
     print("  -o outputfile name")
+    print("  -I includedirectory")
     sys.exit (code)
 
 
@@ -156,11 +175,11 @@ def usage (code):
 #
 
 def handleOptions ():
-    global debugging, verbose, outputName, autoLights, lightFrequency
+    global debugging, verbose, outputName, autoLights, lightFrequency, includeDir
 
     outputName = None
     try:
-        optlist, l = getopt.getopt(sys.argv[1:], ':df:hlo:vV')
+        optlist, l = getopt.getopt(sys.argv[1:], ':df:hlo:vI:V')
         for opt in optlist:
             if opt[0] == '-d':
                 debugging = True
@@ -175,6 +194,8 @@ def handleOptions ():
             elif opt[0] == '-v':
                 printf ("txt2pen version " + str (versionNumber) + "\n")
                 sys.exit (0)
+            elif opt[0] == '-I':
+                includeDir += [opt[1]]
             elif opt[0] == '-V':
                 verbose = True
         if l != []:
@@ -216,6 +237,14 @@ def isSubstr (s, c):
     return (s == c) or ((len (s) > len (c)) and (s[:len(c)] == c))
 
 
+def findFile (name):
+    for path in includeDir:
+        attempt = os.path.join (path, name)
+        if os.path.isfile (attempt):
+            return attempt
+    return None
+
+
 #
 #  readDefines - read the defines and store the definitions into the dictionary.
 #                Pre-condition:  contents is a list of source file lines.
@@ -224,15 +253,31 @@ def isSubstr (s, c):
 #                                 dictionary.
 #
 
-def readDefines (contents):
-    lineNo = 1
-    for line in contents:
-        text = line.lstrip ()
-        if isSubstr (text, 'define'):
-            text = text[len ('define'):]  # strip off the word define
-            text = text.lstrip ()         # remove preceeding spaces
-            addDef (text, line, lineNo)
-        lineNo += 1
+def readDefines ():
+    global inputFile
+    while len (inputStack) > 0:
+        inputFile, prevLineNo, contents = popInput ()
+        lineNo = 1
+        for line in contents:
+            text = line.lstrip ()
+            if isSubstr (text, 'define'):
+                text = text[len ('define'):]  # strip off the word define
+                text = text.lstrip ()         # remove preceeding spaces
+                addDef (text, line, lineNo)
+            elif isSubstr (text, 'include'):
+                text = text[len ('include'):] # strip off the word include
+                text = text.lstrip ()         # remove preceeding spaces
+                text = text.split ()[0]
+                filename = findFile (text)
+                if filename is None:
+                    errorLine (lineNo, line, "include file " + text + " not found")
+                    sys.exit (1)
+                else:
+                    pushInput (inputFile, lineNo, open (filename).readlines ())
+                    prevInput = inputFile
+                    readDefines ()
+                    inputFile = prevInput
+            lineNo += 1
     return contents
 
 
@@ -1528,10 +1573,10 @@ def generatePen (mapGrid, start, fileContents, outputFile):
 #                               output file is returned.
 #
 
-def processMap (contents, outputFile):
+def processMap (outputFile):
     global verbose
     vprintf ("reading defines: ")
-    contents = readDefines (contents)
+    contents = readDefines ()
     vprintf ("done\n")
     vprintf ("reading map: ")
     grid, startLineNo = readMap (contents)
@@ -1561,7 +1606,8 @@ def main ():
         o = sys.stdout
     else:
         o = open (io[1], 'w')
-    o = processMap (i.readlines (), o)
+    pushInput (inputFile, None, i.readlines ())
+    o = processMap (o)
     o.flush ()
 
 

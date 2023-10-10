@@ -5,7 +5,7 @@ bin_PROGRAMS = rndmap
 
 rndmap_SOURCES = AdvMap.mod Chance.mod Geometry.mod MakeBoxes.mod \
                  MapOptions.mod RoomMap.mod StoreCoords.mod WriteMap.mod \
-                 BoxMap.mod GetOpt.mod Map.mod Options.mod getopt.c
+                 BoxMap.mod Options.mod
 
 rndmap_LINK = gm2 -g -I$(srcdir) $(srcdir)/Map.mod -o $@
 

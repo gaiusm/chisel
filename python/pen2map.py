@@ -2444,7 +2444,7 @@ def verify_point_on_plane (vec, distance, p):
     else:
         printf ("no point (p = %s) is not on plane: A = %g, B = %g, C = %g, D = %g, A + B + C + D = %g\n",
                 p, A, B, C, D, A+B+C+D)
-    assert (isEpsilon (A + B + C + D), 0.001)
+    assert (isNearZero (A + B + C + D))
 
 
 def verify_plane_points (vec, distance, f, polygon_points):
@@ -2945,7 +2945,7 @@ def doOpen (r, e):
                 # vertical visportal code
                 pass
         # generateVerticalArch (r, e, a, b)
-        generateVerticalArch2 (r, e, a, b)
+        # generateVerticalArch2 (r, e, a, b)
     else:
         #
         #  horizontal door (on the 2D map)
@@ -3320,12 +3320,15 @@ def initRoomFloor ():
         for f in floor:
             print(f)
 
-
-def candle (r, x, y):
-    pos = [x, y, candleHeight]
+def candleCeil (r, x, y, z):
+    pos = [x, y, z]
     size = [0.5, 0.5, 0.0]
     col = scopeColourRoom (r, "CEIL")
     newlight (pos, size, light (col, "CEIL", r))
+
+
+def candle (r, x, y):
+    candleCeil (r, x, y, candleHeight)
 
 
 def beamSupport (r, x, y, h):
@@ -3514,12 +3517,22 @@ def makeCandleX (r, x, y0, y1):
     if enableCandleLights:
         candle (r, x, y0+1.0)
         candle (r, x, y1-0.5)
+        if y1 - y0 > 8:
+            mid = int ((y1 - y0) / 2)
+            for y in range (4, mid, 4):
+                candle (r, x, y0+1.0+y)
+                candle (r, x, y1-0.5-y)
 
 
 def makeCandleY (r, x0, x1, y):
     if enableCandleLights:
         candle (r, x0+1.0, y)
         candle (r, x1-0.5, y)
+        if x1 - x0 > 8:
+            mid = int ((x1 - x0) / 2)
+            for x in range (4, mid, 4):
+                candle (r, x0+1.0+x, y)
+                candle (r, x1-0.5-x, y)
 
 #
 #  inBetween - return True if c lies between, a, and, b.

@@ -1,5 +1,13 @@
 2023-03-07      Gaius Mulley <gaiusmod2@gmail.com>
 
+	* chisel 3.0
+	* Use python3 throughout and fix install rules.
+	* Minimise configure.ac.
+	* Add include directive to chisel txt2pen.
+	* Allow building of rndmap with gm2 (13/14).
+
+2023-03-07      Gaius Mulley <gaiusmod2@gmail.com>
+
 	* Updated email address and dates.
 	* Minor changes to test maps.
 

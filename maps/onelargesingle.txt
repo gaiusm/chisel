@@ -1,0 +1,38 @@
+
+define 1 room 1 [defroom2]
+define s worldspawn
+
+define lightflame colour 150 107 7
+define yellow colour 190 180 170
+define darkyellow colour 190 185 66
+define flame colour 170 107 7
+define plinth plinth textures/masonary/Marble006
+define lightceiling default texture ceiling textures/masonary/Planks026A
+define floor1 default texture floor textures/masonary/WoodFloor043
+define floor2 default texture floor textures/masonary/Tiles074
+
+define defroom1 default light mid [yellow] default light ceiling [flame] default light floor [darkyellow] default texture [plinth] [floor1] [lightceiling]
+define defroom2 default light mid [yellow] default light ceiling [flame] default light floor [darkyellow] default texture [plinth] [floor2] [lightceiling]
+
+
+####################################
+# 1                                #
+#                                  #
+#   s                              #
+#                                  #
+#                                  #
+#                                  #
+#                                  #
+#                                  #
+#                                  #
+#                                  #
+#                                  #
+#                                  #
+#                                  #
+#                                  #
+#                                  #
+#                                  #
+#                                  #
+#                                  #
+#                                  #
+####################################

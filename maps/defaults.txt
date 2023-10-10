@@ -1,0 +1,84 @@
+define 1 room 1  [defroom2]
+define 2 room 2  [defcor]
+define 3 room 3  [defroom7]
+define 4 room 4  [defroom8]
+define 5 room 5  [defcor]
+define 6 room 6  [defcor]
+define 7 room 7  [defroom2]
+define 8 room 8  [defroom2]
+define 9 room 9  [defroom7]
+define A room 10  [defroom8]
+define B room 11  [defroom9]
+define C room 12  [defroom10]
+define D room 13  [defroom2]
+define E room 14  [defcor]
+define F room 15  [defroom7]
+define G room 16  [defstaircase]
+define H room 17  [defstaircase]
+define I room 18  [defstaircase]
+define J room 19  [defstaircase]
+define K room 20  [defstaircase]
+define L room 21  [defstaircase]
+define M room 22  [defstaircase]
+define N room 23  [defstaircase]
+define O room 24  [defstaircase]
+define P room 25  [defstaircase]
+define Q room 26  [defstaircase]
+define R room 27  [defstaircase]
+define S room 28  [defstaircase]
+define T room 29  [defstaircase]
+define U room 30  [defroom8]
+define V room 31  [defroom9]
+define W room 32  [defroom10]
+
+define a ammo item_medkit 1
+define b ammo ammo_shells_large 32
+define d ammo weapon_shotgun_double 1
+define f light type floor
+define h monster monster_demon_hellknight
+define l ammo moveable_item_rocketlauncher 1
+define m light type mid
+define s worldspawn
+define o monster monster_demon_imp
+define p plinth height 48 [d]
+define x monster monster_demon_tick
+
+define lightflame colour 150 107 7
+
+define yellow colour 190 180 170
+define darkyellow colour 190 185 66
+define flame colour 170 107 7
+define slatefloor default texture floor textures/quake1/slate_tile_floor
+define woodfloor default texture floor textures/masonary/WoodFloor044
+define woodfloor default texture floor textures/masonary/WoodFloor040
+define woodfloor default texture floor textures/masonary/WoodFloor043
+define floor default texture floor textures/masonary/Rock020
+define floor default texture floor textures/masonary/Tiles074
+define floor1 default texture floor textures/masonary/WoodFloor043
+define floor2 default texture floor textures/masonary/Tiles074
+define floor3 default texture floor textures/masonary/Tiles114
+define floor4 default texture floor textures/masonary/WoodFloor042
+define floor5 default texture floor textures/masonary/WoodFloor044
+define floor6 default texture floor textures/masonary/WoodFloor040
+define floor7 default texture floor textures/masonary/Tiles114
+define floor8 default texture floor textures/masonary/Tiles114
+define floor9 default texture floor textures/masonary/Tiles074
+define floor10 default texture floor textures/masonary/Tiles074
+define staircasefloor default texture floor textures/masonary/Tiles084
+
+define plinth plinth textures/masonary/Marble006
+define lightceiling default texture ceiling textures/masonary/Planks026A
+
+define defroom default light mid [yellow] default light ceiling [flame] default light floor [flame]
+define defroom1 default light mid [yellow] default light ceiling [flame] default light floor [darkyellow] default texture [plinth] [floor1] [lightceiling]
+define defroom2 default light mid [yellow] default light ceiling [flame] default light floor [darkyellow] default texture [plinth] [floor2] [lightceiling]
+define defroom3 default light mid [yellow] default light ceiling [flame] default light floor [darkyellow] default texture [plinth] [floor3] [lightceiling]
+define defroom4 default light mid [yellow] default light ceiling [flame] default light floor [darkyellow] default texture [plinth] [floor4] [lightceiling]
+define defroom5 default light mid [yellow] default light ceiling [flame] default light floor [darkyellow] default texture [plinth] [floor5] [lightceiling]
+define defroom6 default light mid [yellow] default light ceiling [flame] default light floor [darkyellow] default texture [plinth] [floor6] [lightceiling]
+define defroom7 default light mid [yellow] default light ceiling [flame] default light floor [darkyellow] default texture [plinth] [floor7] [lightceiling]
+define defroom8 default light mid [yellow] default light ceiling [flame] default light floor [darkyellow] default texture [plinth] [floor8] [lightceiling]
+define defroom9 default light mid [yellow] default light ceiling [flame] default light floor [darkyellow] default texture [plinth] [floor9] [lightceiling]
+define defroom10 default light mid [yellow] default light ceiling [flame] default light floor [darkyellow] default texture [plinth] [floor10] [lightceiling]
+define defcor default light mid [yellow] default light ceiling [flame] default light floor [darkyellow] default texture [plinth] [floor1] [lightceiling]
+define defstaircase default light mid [yellow] default light ceiling [flame] default light floor [darkyellow] default texture [plinth] [staircasefloor] [lightceiling]

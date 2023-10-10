@@ -1,7 +1,7 @@
 #!/bin/bash
 
 prefix=@prefix@
-pythondir=@pythondir@
+pythondir=@pythondir@/chisel
 
 if test -z "${PYTHONPATH}"; then
    PYTHONPATH=${pythondir}
@@ -9,4 +9,4 @@ else
    PYTHONPATH=${pythondir}:${PYTHONPATH}
 fi
 export PYTHONPATH
-python ${pythondir}/`basename $0`.py $*
+python3 ${pythondir}/`basename $0`.py $*

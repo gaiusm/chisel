@@ -1,32 +1,34 @@
 #!/bin/bash
 
-FLOOR=
 FLOOR=-f
-VISPORTALS=-p
+FLOOR=
+VISPORTALS=-q
 VISPORTALS=
 ROOF=
-ROOF=-q
+ROOF=-p
 OPT=-O
 BEAM=-b
 SEARCH=../../solutions
 SEARCH=student
 VERBOSE=
 VERBOSE=-V
-LIGHTS=-l
-# FLOORLIGHTOFF=-F
-# CANDLELIGHTOFF=-C
-# PILLARLIGHTOFF=-P
+LIGHTS=-a
+FLOORLIGHT=-F
+CANDLELIGHT=-C
+PILLARLIGHT=-P
+CEILINGLIST=-E
+# GAME="-g deathmatch"
 
 rm -f *.pyc
 echo -n "txt2pen: converting txt representation into pen map:  "
-if PYTHONPATH=${SEARCH} python3 txt2pen.py -I ../maps -l -f 3 -o tiny.pen $1 ; then
+if PYTHONPATH=${SEARCH} python3 txt2pen.py -I ../maps ${LIGHTS} -f 3 -o tiny.pen -i $1 ; then
     echo "pass"
 else
     echo "failed"
     exit 1
 fi
 
-if PYTHONPATH=${SEARCH} python3 pen2map.py ${VERBOSE} ${VISPORTALS} ${FLOOR} ${OPT} ${BEAM} ${ROOF} ${FLOORLIGHTOFF} ${CANDLELIGHTOFF} ${PILLARLIGHTOFF} -c tiny.ss -s -e -o tiny.map tiny.pen ; then
+if PYTHONPATH=${SEARCH} python3 pen2map.py ${GAME} ${VERBOSE} ${VISPORTALS} ${FLOOR} ${OPT} ${BEAM} ${ROOF} ${FLOORLIGHT} ${CANDLELIGHT} ${PILLARLIGHT} ${CEILINGLIST} -y tiny.ss -s -o tiny.map -i tiny.pen ; then
     echo "pen2map: converting pen map into doom3 map: pass"
 else
     echo "pen2map: converting pen map into doom3 map: failed"

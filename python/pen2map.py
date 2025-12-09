@@ -22,11 +22,11 @@
 # Author Gaius Mulley <gaiusmod2@gmail.com>
 #
 
-import getopt, sys, string
+import argparse, sys, string
 from chvec import *
 from chcuboid import *
 import math, random
-from poly import poly
+from poly import poly, vec, unit_tests, mat
 
 
 """
@@ -86,13 +86,8 @@ WallCoords := Integer Integer Integer Integer =:
 
 """
 
-inputFile = None
 defines = {}
-verbose = False
-debugging = False
 debugFloorLevel = False
-comments = False
-statistics = False
 toTxt, toMap = False, False
 ssName = None
 floor = []
@@ -104,7 +99,7 @@ versionNumber = "0.1"
 currentLineNo = 1
 words = []
 curStatus = None
-status_open, status_closed, status_secret = list(range(3))
+status_open, status_closed, status_secret = list (range (3))
 curRoom = None
 curRoomNo = None
 curPos = None
@@ -112,8 +107,6 @@ direction = ["left", "top", "right", "bottom"]
 doorStatus = ["open", "closed", "secret"]
 maxEntities = 4096    # doom3 limitation
 singlePlayer, deathMatch = list(range(2))
-gameType = singlePlayer
-genSteps = False
 maxd3Units = 5000
 minx, miny, minz, maxz = None, None, None, None
 lightPoints = []
@@ -123,14 +116,12 @@ curCol = []
 defaultOn = "MID"
 curOn = defaultOn
 defaultColour = [150, 150, 150]
-autoBeams = False
-enableVisportals = False
 minFloor, maxFloor = 0, 0
-enablePitched = False
-enableCeilingLights = False
-enableFloorLights = True
-enablePillarLights = True
-enableCandleLights = True
+args = None
+enableSpiralStairs = True
+roomCuboids = True
+stepAngleClockwise = 10.0  # Degrees
+
 
 plinthBase = 4*3 #  inches
 plinthTop = 2*3  #  inches
@@ -204,10 +195,13 @@ lightHeight        = 1.25      # 5 foot high
 lightBlockHeight   = 1.0       # 4 foot high
 lightFloorHeight   = 0.0625    # 3 inches
 lightFloorHeight   = 0.125     # 6 inches
-lightFloorHeight   = 0.125     # 6 inches
+lightFloorHeight   = 0.25      # 1 foot
+lightFloorHeight   = 0.5       # 2 foot
 lightCeilingHeight = minCeilingHeight - 1.5
 floorStep          = 0.25      # 1 foot
 noSteps            = 4         # how many steps per unit
+stairWall          = 0.25      # 1 foot
+stairLight         = 0.25      # 1 foot
 #
 #  the bricks are used to construct secret doors (not ordinary walls)
 #
@@ -220,7 +214,30 @@ brickWidth         = 0.25      # 4 inches wide
 brickHeight        = 0.5    # 3 inches height
 brickMidOffset     = 0.25 #  - brickWidth/2.0
 
-def mycut (l, i):
+
+class staircase:
+    def __init__ (self, x, y, orient, clockwise, up, dest):
+        self.x = x
+        self.y = y
+        self.orient = orient
+        self.clockwise = clockwise
+        self.up = up
+        self.dest = dest
+
+
+class coke:
+    def __init__ (self, x, y, z):
+        self.x = x
+        self.y = y
+        self.z = z
+
+
+def coke_can (r, x, y, z):
+    global rooms
+    rooms[r].cokeCans += [coke (x, y, z)]
+
+
+def cut (l, i):
     if i == 0:
         if len (l) > 1:
             return None, l[i], l[i+1:]
@@ -230,7 +247,7 @@ def mycut (l, i):
     return l[:i], l[i], None
 
 
-def mystitch (a, b, c):
+def stitch (a, b, c):
     if a == None:
         d = b
     else:
@@ -242,10 +259,10 @@ def mystitch (a, b, c):
 
 def setFloor (x, y, value):
     global floor
-    a, b, c = mycut (floor, y)
-    x, y, z = mycut (b, x)
-    b = mystitch (x, [value], z)
-    floor = mystitch (a, [b], c)
+    a, b, c = cut (floor, y)
+    x, y, z = cut (b, x)
+    b = stitch (x, [value], z)
+    floor = stitch (a, [b], c)
 
 
 def getFloor (x, y):
@@ -313,7 +330,7 @@ polyobjs = {}
 
 
 #
-#  verify_polygon_points - runs a conistency check to ensure all points are unique.
+#  verify_polygon_points - runs a consistency check to ensure all points are unique.
 #
 
 def verify_polygon_points (polygon_points, name):
@@ -359,12 +376,13 @@ def addroofbrick (polygon_points, faces, material, roomNo):
 #
 
 class polyobj:
-    def __init__ (self, polygon_points, faces, material, transform):
-        verify_polygon_points (polygon_points, "arch")
+    def __init__ (self, polygon_points, faces, material, transform, name):
+        verify_polygon_points (polygon_points, name)
         self.polygon_points = polygon_points
         self.faces = faces
         self.material = material
         self.transform = transform
+        self.name = name
 
 
 #
@@ -372,12 +390,14 @@ class polyobj:
 #               Each brick has a unique number.
 #
 
-def addpolyobj (polygon_points, faces, material, room):
+def addpolyobj (polygon_points, faces, material, room, name):
     global polyobjs, polyobjno
 
+    print (polygon_points)
     polyobjs[polyobjno] = polyobj (polygon_points, faces,
                                    lookupMaterial (room, material),
-                                   lookupTransform (room, material))
+                                   lookupTransform (room, material),
+                                   name)
     polyobjno += 1
 
 
@@ -399,7 +419,7 @@ def addcuboid (pos, size, material, transform, fixed):
 #
 
 def combined (pos, size, material, transform, fixed):
-    if debugging:
+    if args.debug:
         print ("examine cuboid", pos, size, end=' ')
     for k in list(cuboids.keys ()):
         b = cuboids[k]
@@ -408,14 +428,14 @@ def combined (pos, size, material, transform, fixed):
                 print ("brick at", pos, size, "intersects with", b.pos, b.size, b.cuboidno)
                 error ("brick is being overwritten   (consider giving the room number for more detail)  the two cubiods have material " + b.material + " and " + material)
             # differing material cannot be merged.
-            if debugging:
+            if args.debug:
                 print ("differing material")
             return False
         if b.combined (pos, size, material, transform, fixed):
-            if debugging:
+            if args.debug:
                 print ("combined!")
             return True
-    if debugging:
+    if args.debug:
         print ("no join")
     return False
 
@@ -425,13 +445,13 @@ def combined (pos, size, material, transform, fixed):
 #
 
 def alreadyExists (pos, size, material, transform):
-    if debugging:
+    if args.debug:
         print ("checking", material)
     for k in list (cuboids.keys ()):
         b = cuboids[k]
         if (b.material == material) and (b.transform == transform):
             if b.subset (pos, size):
-                if debugging:
+                if args.debug:
                     print ("yes found duplicate", material)
                 return True
     return False
@@ -617,6 +637,9 @@ class roomInfo:
         self.sounds = []
         self.labels = []
         self.plinths = []
+        self.columns = []
+        self.stairs = []
+        self.cokeCans = []
     def addWall (self, line):
         global maxx, maxy
         line = toLine (line)
@@ -652,6 +675,11 @@ class roomInfo:
         self.labels += [[label, pos]]
     def addPlinth (self, x, y, h):
         self.plinths += [[int (x), int (y), int (h)]]
+    def addColumn (self, x, y):
+        self.columns += [[int (x), int (y)]]
+    def addStaircase (self, staircase):
+        self.stairs += [staircase]
+
 
 def newRoom (n):
     global rooms
@@ -731,12 +759,11 @@ def warning (format, *args):
 
 
 #
-#  debugf - issues prints if debugging is set
+#  debugf - issues prints if args.debug is set
 #
 
 def debugf (format, *args):
-    global debugging
-    if debugging:
+    if args.debug:
         print(str (format) % args, end=' ')
 
 
@@ -744,9 +771,9 @@ def debugf (format, *args):
 #  vprintf - verbose printf
 #
 
-def vprintf (format, *args):
-    if verbose:
-        print(str(format) % args, end=' ')
+def vprintf (format, *params):
+    if args.verbose:
+        print(str(format) % params, end=' ')
         sys.stdout.flush ()
 
 
@@ -783,107 +810,79 @@ def readDefaults (name):
             sys.exit (1)
 
 
-def usage (code):
-    print("Usage: pen2map [-c filename.ss] [-defhmtvV] [-o outputfile] inputfile")
-    print("  -b                introduce beams and ceiling candle lights")
-    print("  -c filename.ss    use filename.ss as the defaults for the map file")
-    print("  -d                debugging")
-    print("  -e                provide comments in the map file")
-    print("  -f                introduce steps between rooms")
-    print("  -g type           game type.  The type must be 'single' or 'deathmatch'")
-    print("  -h                help")
-    print("  -m                create a doom3 map file from the pen file")
-    print("  -p                generate visportals")
-    print("  -q                a pitched ceiling for four walled rooms")
-    print("  -s                generate statistics about the map file")
-    print("  -t                create a txt file from the pen file")
-    print("  -C                disable candle lights on beams")
-    print("  -P                disable lights on pillars")
-    print("  -F                disable lights on the floor")
-    print("  -O                optimize cuboid generation")
-    print("  -V                generate verbose information")
-    print("  -v                print the version")
-    print("  -o outputfile     place output into outputfile")
-    sys.exit (code)
-
-
 #
-#  handleOptions -
+#  initOptions - return arg which has been configured using
+#                argparse.
 #
 
-def handleOptions ():
-    global debugging, verbose, outputName, toTxt, toMap, ssName
-    global comments, statistics, gameType, genSteps, optimise
-    global regressionRequired, autoBeams, enableVisportals, enablePitched
-    global enableFloorLights, enablePillarLights, enableCandleLights
-
-    outputName = None
-    try:
-        optlist, l = getopt.getopt(sys.argv[1:], ':bc:defg:hmo:pqrstvVOCFP')
-        for opt in optlist:
-            if opt[0] == '-b':
-                autoBeams = True
-            elif opt[0] == '-c':
-                ssName = opt[1]
-            elif opt[0] == '-d':
-                debugging = True
-            elif opt[0] == '-e':
-                comments = True
-            elif opt[0] == '-f':
-                genSteps = True
-            elif opt[0] == '-g':
-                if opt[1] == 'single':
-                    gameType = singlePlayer
-                elif opt[1] == 'deathmatch':
-                    gameType = deathMatch
-                else:
-                    usage (1)
-            elif opt[0] == '-h':
-                usage (0)
-            elif opt[0] == '-p':
-                enableVisportals = True
-            elif opt[0] == '-q':
-                enablePitched = True
-            elif opt[0] == '-o':
-                outputName = opt[1]
-            elif opt[0] == '-v':
-                printf ("pen2map version %s\n", versionNumber)
-                sys.exit (0)
-            elif opt[0] == '-t':
-                toTxt = True
-            elif opt[0] == '-s':
-                statistics = True
-            elif opt[0] == '-r':
-                regressionRequired = True
-            elif opt[0] == '-m':
-                toMap = True
-            elif opt[0] == '-C':
-                enableCandleLights = False
-            elif opt[0] == '-P':
-                enablePillarLights = False
-            elif opt[0] == '-F':
-                enableFloorLights = False
-            elif opt[0] == '-V':
-                verbose = True
-            elif opt[0] == '-O':
-                optimise = True
-        if toTxt and toMap:
-            print ("you need to choose either a text file or map file but not both")
-            usage (1)
-        readDefaults (ssName)
-        if l != []:
-            return (l[0], outputName)
-        print ("you need to supply an input file or use - for stdin")
-        usage (1)
-
-    except getopt.GetoptError:
-       usage (1)
-    return (None, outputName)
+def initOptions ():
+    parser = argparse.ArgumentParser ()
+    parser.add_argument ('-b', '--autobeams',
+                         help='turn on autobeams',
+                         default=False, action='store_true')
+    parser.add_argument ('-d', '--debug',
+                         help='generate internal debugging messages',
+                         default=False, action='store_true')
+    parser.add_argument ('-V', '--verbose',
+                         help='generate verbose information',
+                         default=False, action='store_true')
+    parser.add_argument ('-y', '--style',
+                         help='specify the sheet filename',
+                         default=None, action='store')
+    parser.add_argument ('-o', '--outputfile',
+                         help='specify the output filename',
+                         default=None, action='store')
+    parser.add_argument ('-i', '--inputfile',
+                         help='specify the input filename',
+                         default=None, action='store')
+    parser.add_argument ('-g', '--gametype',
+                         help='specify the game type which should be single or deathmatch',
+                         default='single', action='store')
+    parser.add_argument ('-c', '--comments',
+                         help='provide comments in the map file',
+                         default=False, action='store_true')
+    parser.add_argument ('-f', '--floor',
+                         help='introduce steps between rooms',
+                         default=False, action='store_true')
+    parser.add_argument ('-m', '--map',
+                         help='create a doom3 map file from the pen file',
+                         default=False, action='store_true')
+    parser.add_argument ('-q', '--visportals',
+                         help='generate visportals at doorways',
+                         default=False, action='store_true')
+    parser.add_argument ('-p', '--pitch',
+                         help='a pitched ceiling for four walled rooms',
+                         default=False, action='store_true')
+    parser.add_argument ('-s', '--statistics',
+                         help='generate statistics about the map file',
+                         default=False, action='store_true')
+    parser.add_argument ('-t', '--txt',
+                         help='create a txt file from the pen file',
+                         default=False, action='store_true')
+    parser.add_argument ('-E', '--ceilinglights',
+                         help='enable ceiling lights',
+                         default=False, action='store_true')
+    parser.add_argument ('-C', '--candlelights',
+                         help='enable candle lights on beams',
+                         default=False, action='store_true')
+    parser.add_argument ('-P', '--pillarlights',
+                         help='enable lights on pillars',
+                         default=False, action='store_true')
+    parser.add_argument ('-F', '--floorlights',
+                         help='enable lights on the floor',
+                         default=False, action='store_true')
+    parser.add_argument ('-O', '--optimize',
+                         help='optimize cuboid generation',
+                         default=False, action='store_true')
+    parser.add_argument ('-v', '--version',
+                         help='print the version',
+                         default=False, action='store_true')
+    return parser.parse_args ()
 
 
 def errorLine (text):
-    global inputFile, currentLineNo
-    full = "%s:%d:%s\n" % (inputFile, currentLineNo, text)
+    global currentLineNo
+    full = "%s:%d:%s\n" % (args.inputfile, currentLineNo, text)
     print (full)
     sys.stderr (full)
 
@@ -935,7 +934,7 @@ def floodFloor (r, p):
 
 def floodRoom (r, p):
     # print "floodRoom", r, p,
-    if debugging:
+    if args.debug:
         if getFloor (p[0], p[1]) == emptyValue:
             print("will start")
         else:
@@ -1519,15 +1518,15 @@ def soundDesc ():
 #
 
 def roomDesc ():
-    global curRoom, curInteger, curRoomNo, verbose
+    global curRoom, curInteger, curRoomNo
     if expecting (['ROOM']):
         expect ("ROOM")
         if integer ():
             curRoomNo = curInteger
             curRoom = newRoom (curRoomNo)
-            if debugging:
+            if args.debug:
                 print("roomDesc", curRoomNo)
-            while expecting (['DOOR', 'WALL', 'TREASURE', 'AMMO', 'WEAPON', 'LIGHT', 'INSIDE', 'MONSTER', 'SPAWN', 'DEFAULT', 'SOUND', 'LABEL', 'PLINTH']):
+            while expecting (['DOOR', 'WALL', 'TREASURE', 'AMMO', 'WEAPON', 'LIGHT', 'INSIDE', 'MONSTER', 'SPAWN', 'DEFAULT', 'SOUND', 'LABEL', 'PLINTH', 'STAIRCASE', 'COLUMN']):
                 if expecting (['DOOR']):
                     doorDesc ()
                 elif expecting (['WALL']):
@@ -1554,10 +1553,103 @@ def roomDesc ():
                     soundDesc ()
                 elif expecting (['PLINTH']):
                     plinthDesc ()
+                elif expecting (['COLUMN']):
+                    columnDesc ()
+                elif expecting (['STAIRCASE']):
+                    staircaseDesc ()
             expect ('END')
             return True
         else:
             errorLine ('expecting an integer after ROOM')
+    return False
+
+
+def columnDesc ():
+    global curRoom
+    if expecting (['COLUMN']):
+        expect ("COLUMN")
+        if integer ():
+            x = curInteger
+            if integer ():
+                y = curInteger
+                curRoom.addColumn (x, y)
+                return True
+            else:
+                errorLine ('expecting an integer for the y position for the column')
+        else:
+            errorLine ('expecting an integer for the x position for the column')
+    return False
+
+
+#
+#
+#
+
+def orientDesc ():
+    if expecting (['NORTH']):
+        expect ("NORTH")
+        return 0
+    if expecting (['EAST']):
+        expect ("EAST")
+        return 1
+    if expecting (['SOUTH']):
+        expect ("SOUTH")
+        return 2
+    if expecting (['WEST']):
+        expect ("WEST")
+        return 3
+    errorLine ('expecting NORTH, EAST, SOUTH, WEST')
+
+
+
+#
+#  staircaseDesc := 'STAIRCASE' x y
+#                    ( 'NORTH' | 'EAST' | 'SOUTH' | 'WEST' )
+#                    ( 'CLOCKWISE' | 'ANTICLOCK' )
+#                    ( 'UP' | 'DOWN' ) 'TO' dest =:
+#
+
+def staircaseDesc ():
+    if expecting (['STAIRCASE']):
+        expect ("STAIRCASE")
+        if integer ():
+            x = curInteger
+            if integer ():
+                y = curInteger
+                orient = orientDesc ()
+                if expecting (['CLOCKWISE', 'ANTICLOCK']):
+                    if expecting (['CLOCKWISE']):
+                        expect ('CLOCKWISE')
+                        clockwise = True
+                    else:
+                        expect ('ANTICLOCK')
+                        clockwise = False
+                    if expecting (['UP', 'DOWN']):
+                        if expecting (['UP']):
+                            expect ('UP')
+                            up = True
+                        else:
+                            expect ('DOWN')
+                            up = False
+                        if expecting (['TO']):
+                            expect ('TO')
+                            if integer ():
+                                dest = curInteger
+                                curRoom.addStaircase (staircase (x, y,
+                                                                 orient,
+                                                                 clockwise, up,
+                                                                 dest))
+                                return True
+                            else:
+                                errorLine ('expecting integer dest')
+                    else:
+                        errorLine ('expecting UP or DOWN')
+                else:
+                    errorLine ('expecting CLOCKWISE or ANTICLOCK')
+            else:
+                errorLine ('expecting integer y coordinate')
+        else:
+            errorLine ('expecting integer x coordinate')
     return False
 
 
@@ -1773,7 +1865,7 @@ def findJoining (r, w, e, p):
             return i
         if isHorizontal (l) and (getRight (l) == e):
             return i
-    if debugging:
+    if args.debug:
         print("w =", w)
         print("e =", e)
         print("p =", p)
@@ -1797,20 +1889,20 @@ def orderWalls (r, w):
     if w == [] or w == None:
         return w
     w = w[:]  # make a new copy of w
-    if debugging:
+    if args.debug:
         print("orderWalls, entered")
         for i in w:
             print(i)
     n = []
     i = findLowestLeftVertical (w)
-    if debugging:
+    if args.debug:
         print("findLowestLeftVertical =", i)
     n += [sortWall (w[i])]
     e = getHighest (w[i])
-    if debugging:
+    if args.debug:
         print("w[i] =", w[i], "e =", e)
     p = [getLowest (w[i])]
-    if debugging:
+    if args.debug:
         print("i =", i)
         print("w =", w)
         print("n =", n)
@@ -1821,7 +1913,7 @@ def orderWalls (r, w):
     while w != []:
         i = findJoining (r, w, e, p)
         n += [sortWall (w[i])]
-        if debugging:
+        if args.debug:
             print("i =", i)
             print("n =", n)
             print("2nd p =", p)
@@ -1832,10 +1924,10 @@ def orderWalls (r, w):
             e = w[i][1]
         else:
             e = w[i][0]
-        if debugging:
+        if args.debug:
             print("3rd p =", p, "e =", e)
         del w[i]
-    if debugging:
+    if args.debug:
         print("orderWalls, exiting with", n)
     if not isVertical (n[0]):
         internalError ('expecting first wall to be vertical')
@@ -1843,7 +1935,7 @@ def orderWalls (r, w):
 
 
 def createBoxes (r, w, d):
-    if debugging:
+    if args.debug:
         print("createBoxes", r, w, d)
     if len (w) == 4:
         # must be a single box
@@ -1872,7 +1964,7 @@ def onWall (wall, door):
 #
 
 def sortWall (w):
-    if debugging:
+    if args.debug:
         print("sortwall", w)
     if isVertical (w):
         if w[0][1] > w[1][1]:
@@ -1925,7 +2017,7 @@ def getDoors (w, d):
 #
 
 def entityWall (start, end, d):
-    if debugging:
+    if args.debug:
         print("entityWall", start, end, d)
     if isHorizontal ([start, end]) or isVertical ([start, end]):
         return [[start, end, "wall", direction[d]]]
@@ -2091,7 +2183,7 @@ def checkOnWall (r, p, w):
 
 
 def createWallDoorList (r, walls, doors):
-    if debugging:
+    if args.debug:
         print("createWallDoorList")
         print("==================")
         print("room", r, "has walls")
@@ -2103,31 +2195,31 @@ def createWallDoorList (r, walls, doors):
     e = []
     d = 0   # direction is left
     p = walls[0][0]
-    if debugging:
+    if args.debug:
         print("lowest left, p =", p)
     for i, w in enumerate (walls):
-        if debugging:
+        if args.debug:
             print("direction", d, "position", p, "looking at", w)
         checkOnWall (r, p, w)
         if (d == 0) or (d == 2):
             # on left or right vertical wall
             if movesRight (w, p):
                 d = 1  # from left to top wall
-                if debugging:
+                if args.debug:
                     print("moves to top because of wall", w)
             elif movesLeft (w, p):
                 d = 3  # from left to bottom wall
-                if debugging:
+                if args.debug:
                     print("moves to bottom because of wall", w)
         else:
             # must be on either top or bottom wall
             if movesUp (w, p):
                 d = 0  # from top/bottom to left vertical wall
-                if debugging:
+                if args.debug:
                     print("moves to left because of wall", w)
             elif movesDown (w, p):
                 d = 2  # from top/bottom to right vertical wall
-                if debugging:
+                if args.debug:
                     print("moves to right because of wall", w)
         if (d == 0) or (d == 2):
             if not isVertical (w):
@@ -2143,16 +2235,16 @@ def createWallDoorList (r, walls, doors):
             p = w[1]
         else:
             p = w[0]
-        if debugging:
+        if args.debug:
             print("entity list", e)
-    if debugging:
+    if args.debug:
         print("entity list is", e)
     return e
 
 
 def roomToEntities (r):
     w = orderWalls (r, rooms[r].walls)
-    if debugging:
+    if args.debug:
         print("ordered walls =", w)
     return createWallDoorList (r, w, rooms[r].doors)
 
@@ -2278,18 +2370,24 @@ def mag (v):
 
 
 #
-#  reorder the coordinates to make a lowest, left, back corner
-#  b highest, top, right corner
+#  reorderVertices
+#
+#  reorder the coordinates (vertices) which describe a cubiod.
+#  v0 and v1 are the input vertices.
+#  returns two new vertices w0 and w1.
+#  w0 is the bottom left hand corner
+#  w1 is the top right hand corner.
 #
 
-def reorderVertices (a, b):
-    assert (len (a) == len (b))
-    c = []
-    d = []
-    for i, j in zip (a, b):
-        c += [min (i, j)]
-        d += [max (i, j)]
-    return c, d
+def reorderVertices (v0, v1):
+    assert (len (v0) == len (v1))
+    w0 = []
+    w1 = []
+    for i, j in zip (v0, v1):
+        w0 += [min (i, j)]
+        w1 += [max (i, j)]
+    return w0, w1
+
 
 
 #
@@ -2428,7 +2526,7 @@ def isEpsilon (r, e = 0.0001):
 
 
 def isNearZero (r):
-    return isEpsilon (r, 0.001)
+    return isEpsilon (r, 0.1)
 
 
 def verify_point_on_plane (vec, distance, p):
@@ -2508,7 +2606,7 @@ def flushCuboids (o, bcount, fixed):
     for k in list (cuboids.keys ()):
         b = cuboids[k]  # Python v2 and v3 compatible
         if b.fixed == fixed:
-            if debugging:
+            if args.debug:
                 print("cuboid", b.pos, "size", b.size)
             o.write ('    // cuboid ' + str (k) + '\n')
             o.write ('    {\n')
@@ -2547,12 +2645,15 @@ def flushRoofBricks (o, bcount):
 def flushPolyObjects (o, bcount):
     for k in list (polyobjs.keys ()):
         b = polyobjs[k]
+        # sort_vertices ()
+        vert = b.polygon_points
+        faces = b.faces
         # print "roofbrick, polygon_points =", b.polygon_points, "material =", b.material
-        o.write ('    // polygon object ' + str (k) + "\n")
+        o.write ('    // polygon object ' + str (k) + " " + b.name + "\n")
         o.write ('    {\n')
         o.write ('         brushDef3\n')
         o.write ('         {\n')
-        o = polybrick (o, b.polygon_points, b.faces, b.material, b.transform)
+        o = polybrick (o, vert, faces, b.material, b.transform)
         o.write ('         }\n')
         o.write ('    }\n')
         bcount += 1
@@ -2598,10 +2699,10 @@ def doWall (r, e):
 def brushHeader (o, e, description):
     o.write ('         brushDef3\n')
     o.write ('         {\n')
-    if comments:
+    if args.comments:
         o.write ('             ')
         o.write ("// " + str (e) + '\n')
-    if debugging:
+    if args.debug:
         print(e)
     o.write ('             // ' + description + ' ' + str (e) + '\n')
     return o
@@ -2616,7 +2717,7 @@ def brushFooter (o):
 #
 
 def generateStepsVerticalWall (r, e, l):
-    if debugging:
+    if args.debug:
         print("vertical steps in room", r, e)
     leftLevel  = rooms[str (getFloor (e[0][0]-1, e[0][1]))].floorLevel
     rightLevel = rooms[str (getFloor (e[0][0]+1, e[0][1]))].floorLevel
@@ -2625,13 +2726,13 @@ def generateStepsVerticalWall (r, e, l):
         hinc = 0
     else:
         hinc = floorStep
-    if debugging:
+    if args.debug:
         print("rightLevel =", rightLevel, "leftLevel =", leftLevel, "winc =", winc, "hinc =", hinc)
     widthOffset = 0
     heightOffset = 0
     for s in range (noSteps):
         pos = [e[0][0]+widthOffset, l, minFloor-1]
-        if debugging:
+        if args.debug:
             print(leftLevel, rightLevel, widthOffset, heightOffset)
         widthOffset += winc
         heightOffset += hinc
@@ -2648,7 +2749,7 @@ def generateStepsVerticalWall (r, e, l):
 #
 
 def generateStepsHorizontalWall (r, e, l):
-    if debugging:
+    if args.debug:
         print("horizontal steps in room", r, e)
     botLevel = rooms[str (getFloor (e[0][0], e[0][1]-1))].floorLevel
     topLevel = rooms[str (getFloor (e[0][0], e[0][1]+1))].floorLevel
@@ -2688,16 +2789,29 @@ def generateBaseCoords (length, width, r0, angle):
 
 #  faces and vertices of the cube (ascii art)
 #
-#                                         +............+
-#                                       / .          . .
-#    6+-----+7                        +------------+/  .
-#    /|    /|                         |   .        |   .
-#  5+-----+4|                         |   +............+
-#   | |   | |                         |  /         |  /
-#   |0+---|-+1                 y axis | /Z axis    | /
-#   |/    |/                          |/           |/
-#  3+-----+2                          +------------+
+#                                       6 +-------------+ 7
+#                                        /.            /|
+#                                       / .           / |
+#                                      /  .          /  |
+#    6+-----+7                      5 +-------------+ 4 |
+#    /|    /|                         |   .         |   |
+#  5+-----+4|                  y axis | 0 +.............+ 1
+#   | |   | |                         |  /          |  /
+#   |0+---|-+1                        | /Z axis     | /
+#   |/    |/                          |/            |/
+#  3+-----+2                        3 +-------------+ 2
 #                                         x axis
+#
+#
+#   Vertice 0:     (0, 0, 0)
+#           1:     (1, 0, 0)
+#           2:     (1, 0, 1)
+#           3:     (0, 0, 1)
+#           4:     (1, 1, 1)
+#           5:     (0, 1, 1)
+#           6:     (0, 1, 0)
+#           7:     (1, 1, 0)
+#
 #
 #   all labelled anti-clockwise when viewed from the front.
 #   (rotate the cube so that the face is closest to the viewer).
@@ -2756,7 +2870,7 @@ def generateArchBrick (room, edgepos, midpos, angle0, angle1,
     topfootprint = multPolyVec (topfootprint, direction)
     topcoords = addPolyVec (topfootprint, midpos)
     poly, faces = createPolyArch (basecoords + topcoords)
-    addpolyobj (poly, faces, "plinth", room)
+    addpolyobj (poly, faces, "plinth", room, "arch")
 
 
 #
@@ -2893,13 +3007,15 @@ def generateVerticalArch2 (room, entity, miny, maxy):
         addpolyobj (obj.get_vertices (),
                     obj.get_faces (),
                     obj.get_texture ('top'),
-                    room)
+                    room,
+                    'pillar')
 
 
 #
 #  staircase
 #
 
+"""
 def staircase (room, pos, height, r0, r1, increment, angle):
     floor_level = get_floor_level (room)
     stair_level_offset = 0
@@ -2909,6 +3025,8 @@ def staircase (room, pos, height, r0, r1, increment, angle):
                   angle, stair_angle, stair_level_offset)
         stair_angle += angle
         stair_level_offset += increment
+"""
+
 
 #
 #  doOpen - create an open door.
@@ -2916,7 +3034,7 @@ def staircase (room, pos, height, r0, r1, increment, angle):
 
 def doOpen (r, e):
     global minFloor, maxFloor
-    if debugging:
+    if args.debug:
         print("building floor and ceiling for doorway")
     if (e[-1] == 'left') or (e[-1] == 'right'):
         #
@@ -2933,18 +3051,20 @@ def doOpen (r, e):
             pos = [e[0][0], l, h]   # bottom left
             end = [e[1][0]+1, l+1, maxz + getFloorLevel (r)]  # top right
             size = subVec (end, pos)  #  size of ceiling
-            if debugging:
+            if args.debug:
                 print("vertical ceiling block at", pos, end, size)
             newcuboid (pos, size, 'wall', r)   # ceiling
-            if enableVisportals:
+            if args.visportals:
                 # visportal doorway
                 #
-                # (your code goes here)
-                #
                 # fill in the doorway with visportal block
+                #
                 # vertical visportal code
-                pass
-        # generateVerticalArch (r, e, a, b)
+                pos = [e[0][0], l, rooms[r].floorLevel]
+                end = [e[1][0]+1, l+1, minCeilingHeight]
+                size = subVec (end, pos)
+                newcuboid (pos, size, e[-2], r)
+        generateVerticalArch (r, e, a, b)  ### old orig arch code
         # generateVerticalArch2 (r, e, a, b)
     else:
         #
@@ -2959,16 +3079,20 @@ def doOpen (r, e):
             pos = [l, e[0][1], h]
             end = [l+1, e[1][1]+1, maxz + getFloorLevel (r)]
             size = subVec (end, pos)
-            if debugging:
+            if args.debug:
                 print("horiz ceiling block at", pos, end, size)
             newcuboid (pos, size, 'wall', r)   # ceiling
-            if enableVisportals:
+            if args.visportals:
                 # visportal doorway
                 #
-                # (your code goes here)
+                # fill in the doorway with visportal block
                 #
                 # horizontal visportal doorway
-                pass
+                pos = [l, e[0][1], rooms[r].floorLevel]
+                end = [l+1, e[1][1]+1, minCeilingHeight]
+                size = subVec (end, pos)
+                newcuboid (pos, size, e[-2], r)
+
 
 
 def buildVerticalBrickWall (xaxis, miny, maxy, minz, maxz, roomNo):
@@ -3088,7 +3212,7 @@ def calcBrickOrigin (brick):
 
 def doSecret (roomNo, e):
     global minFloor, maxFloor
-    if debugging:
+    if args.debug:
         print ("secret door, building floor and ceiling for doorway")
     if (e[-1] == 'left') or (e[-1] == 'right'):
         #
@@ -3105,7 +3229,7 @@ def doSecret (roomNo, e):
             pos = [e[0][0], y, h]   # bottom left
             end = [e[1][0]+1, y+1, maxz + getFloorLevel (roomNo)]  # top right
             size = subVec (end, pos)  #  size of ceiling
-            if debugging:
+            if args.debug:
                 print("vertical ceiling block at", pos, end, size)
             newcuboid (pos, size, 'wall', roomNo)   # ceiling
 
@@ -3126,7 +3250,7 @@ def doSecret (roomNo, e):
             pos = [x, e[0][1], h]
             end = [x+1, e[1][1]+1, maxz + getFloorLevel (roomNo)]
             size = subVec (end, pos)
-            if debugging:
+            if args.debug:
                 print("horiz ceiling block at", pos, end, size)
             newcuboid (pos, size, 'wall', roomNo)   # ceiling
         buildHorizBrickWall (e[0][1], minx, maxx, getFloorLevel (roomNo), h, roomNo)
@@ -3181,7 +3305,7 @@ def setBuilt (e):
 #
 
 def generateBricks (r, e):
-    if debugging:
+    if args.debug:
         print("room", r, e, end=' ')
     if brickFunc[e[-1]+e[-2]] == None:
         warning ("do not know how to build " + str (e) + " in room " + r)
@@ -3189,7 +3313,7 @@ def generateBricks (r, e):
     # doorways are known about from both rooms, but we only need to build it once
     #
     if alreadyBuilt (e):
-        if debugging:
+        if args.debug:
             print("aready built")
     else:
         brickFunc[e[-1]+e[-2]] (r, e)
@@ -3202,16 +3326,16 @@ def generateBricks (r, e):
 #
 
 def generateBrushes (r, e, o, bcount):
-    if debugging:
+    if args.debug:
         print("room", r, e, end=' ')
     if entityFunc[e[-1]+e[-2]] == None:
         warning ("do not know how to build brush" + str (e) + "in room " + r)
         return o, bcount
     if alreadyBuilt (e):
-        if debugging:
+        if args.debug:
             print("aready built")
         return o, bcount
-    if debugging:
+    if args.debug:
         print("building")
     o.write ('    // primitive ' + str (bcount) + '\n')
     o.write ('    {\n')
@@ -3316,7 +3440,7 @@ def initRoomFloor ():
             error ('room %d must have an inside position', int (r))
         else:
             floodFloor (int (r), intVec (rooms[r].inside))
-    if debugging:
+    if args.debug:
         for f in floor:
             print(f)
 
@@ -3325,6 +3449,13 @@ def candleCeil (r, x, y, z):
     size = [0.5, 0.5, 0.0]
     col = scopeColourRoom (r, "CEIL")
     newlight (pos, size, light (col, "CEIL", r))
+
+
+def candleStair (r, x, y, z):
+    pos = [x, y, z]
+    size = [0.0, 0.0, 0.0]
+    col = scopeColourRoom (r, "FLOOR")
+    newlight (pos, size, light (col, "FLOOR", r))
 
 
 def candle (r, x, y):
@@ -3344,7 +3475,7 @@ def beamTransim (r, botpos, toppos, translate_top):
 
 def makeBeamX (r, x, y0, y1):
     h = getFloorLevel (r) + minCeilingHeight - 0.5
-    if debugging:
+    if args.debug:
         print("beamX", x, y0, y1, h)
     #
     #  main flat, support beam
@@ -3352,7 +3483,7 @@ def makeBeamX (r, x, y0, y1):
     for y in range (y0+1, y1):
         pos = [x, y, h]
         size = [0.5, 1.0, 0.5]
-        if debugging:
+        if args.debug:
             print("beamX block", x, y, h)
         newcuboid (pos, size, 'beam', r)
     h = getFloorLevel (r) + minCeilingHeight
@@ -3429,7 +3560,7 @@ def makeBeamX (r, x, y0, y1):
 
 def makeBeamY (r, x0, x1, y):
     h = getFloorLevel (r) + minCeilingHeight - 0.5
-    if debugging:
+    if args.debug:
         print("beamY", x0, x1, y, h)
     #
     #  main flat, support beam
@@ -3437,7 +3568,7 @@ def makeBeamY (r, x0, x1, y):
     for x in range (x0+1, x1):
         pos = [x, y, h]
         size = [1.0, 0.5, 0.5]
-        if debugging:
+        if args.debug:
             print("beamY block", x, y, h)
         newcuboid (pos, size, 'beam', r)
     #
@@ -3513,8 +3644,26 @@ def makeBeamY (r, x0, x1, y):
     beamSupport (r, x1-0.5, y, h-1.0)
 
 
+def makeCandleXapex (r, x, y0, y1):
+    if args.candlelights and (y1 - y0 > 8):
+        mid = (y0 + y1) / 2
+        candleCeil (r, x, mid, candleHeight + mid -y0 -1)
+        quarter = (y0 + y1) / 4 - y0
+        # candleCeil (r, x, y0 + quarter, candleHeight + quarter)
+        # candleCeil (r, x, y0 + 3 * quarter, candleHeight + quarter)
+
+
+def makeCandleYapex (r, x0, x1, y):
+    if args.candlelights and (x1 - x0 > 8):
+        mid = (x0 + x1) / 2
+        candleCeil (r, mid, y, candleHeight + mid -x0 -1)
+        quarter = (x0 + x1) / 4 - x0
+        # candleCeil (r, x0 + quarter, y, candleHeight + quarter)
+        # candleCeil (r, x0 + 3 * quarter, y, candleHeight + quarter)
+
+
 def makeCandleX (r, x, y0, y1):
-    if enableCandleLights:
+    if args.candlelights:
         candle (r, x, y0+1.0)
         candle (r, x, y1-0.5)
         if y1 - y0 > 8:
@@ -3525,7 +3674,7 @@ def makeCandleX (r, x, y0, y1):
 
 
 def makeCandleY (r, x0, x1, y):
-    if enableCandleLights:
+    if args.candlelights:
         candle (r, x0+1.0, y)
         candle (r, x1-0.5, y)
         if x1 - x0 > 8:
@@ -3549,7 +3698,7 @@ def inBetween (c, a, b):
 #
 
 def onDoor (x, y):
-    if debugging:
+    if args.debug:
         print("is", x, y, "on a door")
     for r in list(rooms.keys ()):
         for d in rooms[r].doors:
@@ -3557,16 +3706,16 @@ def onDoor (x, y):
             if coords[0][0] == coords[1][0]:
                 # vertical
                 if (x == coords[0][0]) and inBetween (y, coords[0][1], coords[1][1]):
-                    if debugging:
+                    if args.debug:
                         print("yes")
                     return True
             else:
                 # horizontal
                 if (y == coords[0][1]) and inBetween (x, coords[0][0], coords[1][0]):
-                    if debugging:
+                    if args.debug:
                         print("yes")
                     return True
-    if debugging:
+    if args.debug:
         print("no")
     return False
 
@@ -3577,16 +3726,16 @@ def onDoor (x, y):
 
 def generateBeams (r, e):
     if len (rooms[r].walls) == 4:
-        if debugging:
+        if args.debug:
             print("room", r, "beams being created")
         p = findMinMax (r)
         w0, w1 = None, None
-        if debugging:
+        if args.debug:
             print(r, p)
             print(rooms[r].walls)
         x0, y0 = p[0]
         x1, y1 = p[1]
-        if debugging:
+        if args.debug:
             print("x0, y0 =", x0, y0)
             print("x1, y1 =", x1, y1)
         if abs (x0-x1) > abs (y0-y1):
@@ -3600,7 +3749,7 @@ def generateBeams (r, e):
                         w1 = sortWall (w)
             y0 = min (w0[0][1], w1[0][1])
             y1 = max (w0[0][1], w1[0][1])
-            if debugging:
+            if args.debug:
                 print(w0, w1)
             for x in range (w0[0][0]+1, w0[1][0], 4):
                 if (not onDoor (x, y0)) and (not onDoor (x, y1)):
@@ -3608,6 +3757,8 @@ def generateBeams (r, e):
             for x in range (w0[0][0]+3, w0[1][0], 4):
                 if (not onDoor (x, y0)) and (not onDoor (x, y1)):
                     makeCandleX (r, x, y0, y1)
+            for x in range (w0[0][0]+2, w0[1][0], 4):
+                makeCandleXapex (r, x, y0, y1)
         else:
             # vertical corridor, therefore create horizontal beams
             # find the vertical walls
@@ -3619,7 +3770,7 @@ def generateBeams (r, e):
                         w1 = sortWall (w)
             x0 = min (w0[0][0], w1[0][0])
             x1 = max (w0[0][0], w1[0][0])
-            if debugging:
+            if args.debug:
                 print(w0, w1)
             for y in range (w0[0][1]+1, w0[1][1], 4):
                 if (not onDoor (x0, y)) and (not onDoor (x1, y)):
@@ -3627,6 +3778,8 @@ def generateBeams (r, e):
             for y in range (w0[0][1]+3, w0[1][1], 4):
                 if (not onDoor (x0, y)) and (not onDoor (x1, y)):
                     makeCandleY (r, x0, x1, y)
+            for y in range (w0[0][1]+2, w0[1][1], 4):
+                makeCandleYapex (r, x0, x1, y)
 
 
 #
@@ -3646,18 +3799,18 @@ def generateFlatCeiling (roomNo, e):
 
 
 def apply_translate_top (points, translate_top, z_value):
-    if debugging:
+    if args.debug:
         print("z_value =", z_value)
         print("before", points)
     translated = []
     for p in points:
         if p[2] == z_value:
-            if debugging:
+            if args.debug:
                 print("translating", translate_top)
             translated += [addVec (p, translate_top)]
         else:
             translated += [p]
-    if debugging:
+    if args.debug:
         print("after", translated)
     return translated
 
@@ -3693,7 +3846,6 @@ def apply_translate_top (points, translate_top, z_value):
 #
 
 def generate_cube_points (botpos, toppos):
-    points = []
     size = subVec (toppos, botpos)
     points = [botpos,
               addVec (botpos, [0, size[1], 0]),
@@ -3725,28 +3877,28 @@ def generate_roof_points (botpos, toppos, translate_top):
     toppos = translatePos (toppos)
     botpos, toppos = reorderVertices (botpos, toppos)
     points, faces = generate_cube_points (botpos, toppos)
-    if debugging:
+    if args.debug:
         print("cuboid roof =", points)
     points = apply_translate_top (points, translate_top, botpos[2])
-    if debugging:
+    if args.debug:
         print("slanted roof =", points)
     return points, faces
 
 
 def generatePitchedCeiling (r, e):
-    if debugging:
+    if args.debug:
         print("generatePitchedCeiling")
     if len (rooms[r].walls) == 4:
         p = findMinMax (r)
         x0, y0 = p[0]
         x1, y1 = p[1]
-        if debugging:
+        if args.debug:
             print("simple room", r, "coords", x0, y0, x1, y1)
         h = getFloorLevel (r) + minCeilingHeight
         if abs (x0-x1) > abs (y0-y1):
             x0, x1 = sortMinMax (x0, x1)
             y0, y1 = sortMinMax (y0, y1)
-            if debugging:
+            if args.debug:
                 print("horizontal")
             # horizontal corridor, therefore create vertical pitched ceiling
             roof_width = (y1-y0) / 2
@@ -3775,7 +3927,7 @@ def generatePitchedCeiling (r, e):
             pos = [x1, y0, h]
             newcuboid (pos, size, "wall", r)
         else:
-            if debugging:
+            if args.debug:
                 print("vertical")
             # vertical corridor, therefore create horizontal pitched ceiling
             x0, x1 = sortMinMax (x0, x1)
@@ -3824,11 +3976,11 @@ def testFaces (r):
 
 
 def generateCeiling (roomNo, e):
-    if (len (rooms[roomNo].walls) == 4) and enablePitched:
+    if (len (rooms[roomNo].walls) == 4) and args.pitch:
         generatePitchedCeiling (roomNo, e)
     else:
         generateFlatCeiling (roomNo, e)
-    if autoBeams:
+    if args.autobeams:
         generateBeams (roomNo, e)
 
 
@@ -3839,7 +3991,7 @@ def generateFloor (r, e):
             if getFloor (x, y) == int (r):
                 pos = [x, y, minFloor-1]
                 size = [1, 1, rooms[r].floorLevel-minFloor+1]
-                if debugging:
+                if args.debug:
                     print("floor at", pos, size)
                 newcuboid (pos, size, 'floor', r)
 
@@ -3848,22 +4000,22 @@ def generateFloor (r, e):
 #
 
 def generateLimits (o):
-    o.write ('    "penminx" "' + str (minx) + '"\n')
-    o.write ('    "penminy" "' + str (miny) + '"\n')
-    o.write ('    "penmaxx" "' + str (maxx) + '"\n')
-    o.write ('    "penmaxy" "' + str (maxy) + '"\n')
+    o.write ('    "minx_pen" "' + str (minx) + '"\n')
+    o.write ('    "miny_pen" "' + str (miny) + '"\n')
+    o.write ('    "maxx_pen" "' + str (maxx) + '"\n')
+    o.write ('    "maxy_pen" "' + str (maxy) + '"\n')
 
     pen_xyz = toIntList ([minx, miny, 0])
     pen_xyz = subVec (pen_xyz, [minx, miny, 0])
     v = midReposition (pen_xyz)
-    o.write ('    "doomminx" "' + str (v[0]) + '"\n')
-    o.write ('    "doomminy" "' + str (v[1]) + '"\n')
+    o.write ('    "minx_doom" "' + str (v[0]) + '"\n')
+    o.write ('    "miny_doom" "' + str (v[1]) + '"\n')
 
     pen_xyz = toIntList ([maxx, maxy, 0])
     pen_xyz = subVec (pen_xyz, [minx, miny, 0])
     v = midReposition (pen_xyz)
-    o.write ('    "doommaxx" "' + str (v[0]) + '"\n')
-    o.write ('    "doommaxy" "' + str (v[1]) + '"\n')
+    o.write ('    "maxx_doom" "' + str (v[0]) + '"\n')
+    o.write ('    "maxy_doom" "' + str (v[1]) + '"\n')
     return o
 
 
@@ -3874,7 +4026,7 @@ def generateEntities (o):
     # first entity must have these attributes set
     o.write ('    "classname" "worldspawn"\n')
     o.write ('    "spawnflags" "1"\n')
-    o.write ('    "penmap" "' + inputFile + '"\n')
+    o.write ('    "penmap" "' + args.inputfile + '"\n')
     findOffsets ()  # sets minx, miny, minz, maxx, maxy, maxz
     initRoomFloor ()
     o = generateLimits (o)
@@ -3888,12 +4040,18 @@ def generateEntities (o):
             testFaces (roomNo)
         else:
             pushScope (roomNo)
-            for e in el:
-                generateBricks (roomNo, e)
-            generateCeiling (roomNo, e)
-            generateFloor (roomNo, e)
-            generateLightBlocks (roomNo, el)
-            generatePlinths (roomNo)
+            if roomCuboids:
+                for e in el:
+                    generateBricks (roomNo, e)
+                generateCeiling (roomNo, e)
+                generateFloor (roomNo, e)
+                generateLightBlocks (roomNo, el)
+                generatePlinths (roomNo)
+                generateColumns (roomNo)
+            if enableSpiralStairs:
+                generateStairs (roomNo)
+            else:
+                generateSimpleStairs (roomNo)
             popScope ()
     vprintf ("\n")
     vprintf ("brick optimisation...")
@@ -3963,7 +4121,7 @@ def generateSecretDoors (o, e, bcount):
 def pen2MidPos (pos):
     v = []
     for p in translatePos (pos):
-        if debugging:
+        if args.debug:
             print(p)
         v += vecInches2 ([[int (p), halfUnit]])
     return v
@@ -3984,7 +4142,7 @@ def pen2Pos (pos):
 #
 
 def translatePos (pos):
-    if debugging:
+    if args.debug:
         print("translatePos called for", pos, minvec, "=", end=' ')
     pos = subVec (pos, minvec)
     pos = [pos[0], pos[1], -pos[2]]
@@ -4011,7 +4169,7 @@ def midReposition (pos):
         # v += vecInches2 ([[int (p), halfUnit]])
         p = vecInches2 ([[int (p), -float (halfUnit)]])
         v += p
-    if debugging:
+    if args.debug:
         print(pos[-1])
     v += [toInches (pos[-1])]
     return v
@@ -4023,17 +4181,18 @@ def getPlinthHeight (r, x, y):
             return float (plinths[2]) / inchesPerUnit
     return 0
 
-def generatePlayer (o, e):
+
+def generatePlayer (o, player_entity):
     for r in list(rooms.keys()):
         if rooms[r].worldspawn != []:
-            o.write ("// entity " + str (e) + '\n')
+            o.write ("// entity " + str (player_entity) + '\n')
             o.write ("{\n")
-            if gameType == singlePlayer:
+            if args.gametype == "single":
                 o.write ('    "classname" "info_player_start"\n')
-                o.write ('    "name" "info_player_start_1"\n')
+                o.write ('    "name" "info_player_start_%d"\n' % (player_entity))
             else:
                 o.write ('    "classname" "info_player_deathmatch"\n')
-                o.write ('    "name" "info_player_deathmatch_1"\n')
+                o.write ('    "name" "info_player_deathmatch_%d"\n' % (player_entity))
             o.write ('    "origin" "')
             xy = rooms[r].worldspawn[0]
             xyz = toIntList (xy) + [-invSpawnHeight]
@@ -4042,7 +4201,8 @@ def generatePlayer (o, e):
             o.write ('%f %f %f"\n' % (v[0], v[1], v[2]))
             o.write ('    "angle" "180"\n')
             o.write ("}\n")
-    return o, e+1
+            player_entity += 1
+    return o, player_entity
 
 
 def generateLights (o, e):
@@ -4057,11 +4217,20 @@ def generateLights (o, e):
         o.write ('    "noshadows" "0"\n')
         o.write ('    "nospecular" "0"\n')
         o.write ('    "nodiffuse" "0"\n')
-        o.write ('    "falloff" "0.000000"\n')
-        o.write ('    "_color" "')
-        l.write (o)
-        o.write ('"\n')
-        o.write ('    "light_radius" "225 225 225"\n')
+        if l.getOn () == "FLOOR":
+            o.write ('    "falloff" "0.5"\n')
+            o.write ('    "texture" "lights/round_flicker"\n')
+            o.write ('    "_color" "')
+            l.write (o)
+            o.write ('"\n')
+            o.write ('    "light_radius" "36 36 36"\n')
+        else:
+            o.write ('    "falloff" "0.0"\n')
+            o.write ('    "texture" "lights/round_flicker"\n')
+            o.write ('    "_color" "')
+            l.write (o)
+            o.write ('"\n')
+            o.write ('    "light_radius" "225 225 225"\n')
         o.write ("}\n")
         n += 1
         e += 1
@@ -4077,7 +4246,7 @@ def onLine (line, pos):
 
 
 def nextTo (w, p):
-    if debugging:
+    if args.debug:
         print(p)
     p = [int (p[0]), int (p[1])]
     if w[-2] == 'wall':
@@ -4123,7 +4292,7 @@ def newlight (pos, size, desc):
     global lightPoints
 
     lightPoints += [[calcLightOrigin (pos, size), desc]]
-    if debugging:
+    if args.debug:
         print("new light at", lightPoints[-1], lightPoints[-1][-1].getOn ())
 
 
@@ -4142,7 +4311,7 @@ def generateLightPillar (room_no, light_element, walls):
     light_obj = light_element[1]
     for wall in walls:
         if nextTo (wall, light_pos):
-            if debugging:
+            if args.debug:
                 print ("light at", light_pos, "is next to wall", wall, "in room", room_no)
             # place pillar next to the wall using the offset above
             p0 = [float (light_pos[0]), float (light_pos[1]), getFloorLevel (room_no)]
@@ -4154,10 +4323,10 @@ def generateLightPillar (room_no, light_element, walls):
             pos = addVec (pos, pillarOffset[wall[-1]])
             size = [lightBlock, lightBlock, 0]
             newlight (pos, size, light_obj)
-            if debugging:
+            if args.debug:
                 print("pos =", pos, "p0 =", p0, "light =", lightPoints[-1])
             return
-    if debugging:
+    if args.debug:
         print ("light is not touching a wall, placing it in the middle of the square")
     pos = [int (light_pos[0]), int (light_pos[1]), getFloorLevel (room_no)]
     pos = addVec (pos, pillarOffset["mid"])
@@ -4174,27 +4343,27 @@ def generateLightPillar (room_no, light_element, walls):
 #
 
 def generateFloorLight (r, l, walls):
-    if debugging:
+    if args.debug:
         print("floor light seen", end=' ')
     lp = l[0]
     li = l[1]
     for w in walls:
         if nextTo (w, l[0]):
-            if debugging:
+            if args.debug:
                 print("light at", l, "is next to wall", w, "in room", r)
             # place light next to the wall using the offset above
             p0 = addVec ([float (lp[0]), float (lp[1])], pillarOffset[w[-1]])
             size = [lightBlock, lightBlock, 0]
             # print "light is touching a wall", l
             pos = [p0[0], p0[1], lightFloorHeight]
-            if debugging:
+            if args.debug:
                 print(pos, size)
             newlight (pos, size, li)
             return
     # print "light is not touching a wall", l
     pos = [int (lp[0]), int (lp[1]), lightFloorHeight]
     size = [lightBlock, lightBlock, 0]
-    if debugging:
+    if args.debug:
         print(pos, size)
     newlight (pos, size, li)
 
@@ -4208,7 +4377,7 @@ def generateCeilingLight (r, l, walls):
     li = l[1]
     for w in walls:
         if nextTo (w, l[0]):
-            if debugging:
+            if args.debug:
                 print("light at", l, "is next to wall", w, "in room", r)
             # place light next to the wall using the offset above
             p0 = addVec ([float (lp[0]), float (lp[1])], pillarOffset[w[-1]])
@@ -4226,13 +4395,13 @@ def generateCeilingLight (r, l, walls):
 def generateLightBlocks (r, walls):
     for l in rooms[r].lights:
         if l[1].getOn () == "MID":
-            if enablePillarLights:
+            if args.pillarlights:
                 generateLightPillar (r, l, walls)
         elif l[1].getOn () == "FLOOR":
-            if enableFloorLights:
+            if args.floorlights:
                 generateFloorLight (r, l, walls)
         elif l[1].getOn () == "CEIL":
-            if enableCeilingLights:
+            if args.ceilinglights:
                 generateCeilingLight (r, l, walls)
         else:
             error ("unrecognised light position " + l[1].getOn ())
@@ -4262,6 +4431,255 @@ def generatePlinths (r):
             size = [1, 1, float (p[2]) / inchesPerUnit]
             print (pos, size)
             newcuboid (pos, size, 'plinth', r)
+
+
+def generateColumnBase (r, x, y):
+    size = vec (2.0 * 1.4142, 1.0, 1.0)
+    origin_offset = vec (1.4142, 0.5, 0)
+    pos = vec (int (x), int (y), getFloorLevel (r))
+    for segment in range (4):
+        moveAndTwist = mat (4).translate (-origin_offset).rotate_z (45.0 * segment)
+        baseblock = poly ().unit_cube ().scale (size).mult (moveAndTwist)
+        baseblock.sanity_check ()
+        baseblock.translate (pos)
+        baseblock.sort_vertices ()
+        print ("after sort", baseblock)
+        baseblock.sanity_check ()
+        print ("after sort", baseblock)
+        addpolyobj (baseblock.get_vertices (),
+                    baseblock.get_faces (),
+                    'plinth', r, 'column base')
+
+
+#
+#
+#
+
+def generateColumn (r, x, y):
+    generateColumnBase (r, x, y)
+
+
+
+#
+#  generateColumns - for each column generate a pillar.
+#
+
+def generateColumns (r):
+    for p in rooms[r].columns:
+        generateColumn (r, int (p[0]), int (p[1]))
+
+
+def dumpSimpleVertices (r, bot, size):
+    vertices = []
+    vertices += [vec (bot[0], bot[1], bot[2])]  # 0
+    vertices += [vec (bot[0], bot[1], bot[2] + size[2])]  # 1
+    vertices += [vec (bot[0]        , bot[1] + size[1], bot[2])]  # 2
+    vertices += [vec (bot[0]        , bot[1] + size[1], bot[2] + size[2])]  # 3
+    vertices += [vec (bot[0]+size[0], bot[1]          , bot[2])] # 4
+    vertices += [vec (bot[0]+size[0], bot[1]          , bot[2] + size[2])]  # 5
+    vertices += [vec (bot[0]+size[0], bot[1] + size[1], bot[2])]  # 6
+    vertices += [vec (bot[0]+size[0], bot[1] + size[1], bot[2] + size[2])]  # 7
+    for i, vert in enumerate (vertices):
+        print (i, vert)
+
+
+#
+#  generateSimpleStairs - for each staircase generate a stair.
+#
+
+def generateSimpleStairs (r):
+    for stair in rooms[r].stairs:
+        startHeight = getFloorLevel (r)
+        for s in range (12):
+            bot_pos = [int (stair.x) + startHeight,
+                       int (stair.y),
+                       startHeight]
+            stair_end = [int (stair.x)+ startHeight + 1,
+                         int (stair.y)+1,
+                         startHeight + floorStep]
+            size = subVec (stair_end, bot_pos)
+            newcuboid (bot_pos, size, 'plinth', r)
+            startHeight += floorStep
+            dumpSimpleVertices (r, bot_pos, size)
+
+
+def radian (degree):
+    return Decimal (degree) * Decimal (math.pi) / Decimal (180.0)
+
+
+#
+#  generateStairVert - return a list of vertices representing the stair
+#                      and wall positions.
+#
+#                               x0                x1                    x2               x3
+#                      (0,0)    (stairWall, 0)    (x0 + stairWall, 0)   (x1 + 2.0)       (x2 + stairWall)
+#
+#                      |        |                 |                     |                |
+#                      +--------+-----------------+---------------------+----------------+
+#                        Gap      Inner stairwall    Stair step           Outer stairwall
+#
+#                      the above values occur at angle 0 degrees.
+#                      The returned results are rotated and returned.
+#
+
+def generateStairVert (angle):
+    x0 = Decimal (stairWall)
+    x1 = Decimal (x0 + Decimal (stairWall))
+    x2 = Decimal (x1 + Decimal (2.0))
+    x3 = Decimal (x2 + Decimal (stairWall))
+    x4 = Decimal (x1 + Decimal (stairLight))   # x4 is the left position of the stair light
+    x5 = Decimal (x3 - Decimal (stairLight))   # x5 is the right position of the stair light
+    theta = radian (Decimal (angle))
+    print (x0, x1, x2, x3, x4, x5)
+    return [vec (Decimal (math.cos (theta)) * x0, Decimal (math.sin (theta)) * x0, 0),
+            vec (Decimal (math.cos (theta)) * x1, Decimal (math.sin (theta)) * x1, 0),
+            vec (Decimal (math.cos (theta)) * x2, Decimal (math.sin (theta)) * x2, 0),
+            vec (Decimal (math.cos (theta)) * x3, Decimal (math.sin (theta)) * x3, 0),
+            vec (Decimal (math.cos (theta)) * x4, Decimal (math.sin (theta)) * x4, 0),
+            vec (Decimal (math.cos (theta)) * x5, Decimal (math.sin (theta)) * x5, 0)]
+
+
+#
+#  generateStairs - generate a spiral staircase.
+#                   It calculates
+#
+
+def generateStairs (r):
+    for stair in rooms[r].stairs:
+        startHeight = getFloorLevel (r) - 2
+        prev_stair_vert = generateStairVert (0)
+        z_step = vec (0, 0, floorStep)
+        z_wall_right = vec (0, 0, 1.0)
+        for s in range (1, 25):
+            pos = vec (stair.x,
+                       stair.y,
+                       startHeight)
+            #
+            #  left hand wall
+            #
+            z_wall_left = vec (0, 0, 7.0 - s * floorStep)
+            cur_stair_vert = generateStairVert (-stepAngleClockwise * s)
+            a = cur_stair_vert[0]
+            b = cur_stair_vert[1]
+            c = prev_stair_vert[1]
+            d = prev_stair_vert[0]
+            e = prev_stair_vert[1] + z_wall_left
+            f = prev_stair_vert[0] + z_wall_left
+            g = cur_stair_vert[0] + z_wall_left
+            h = cur_stair_vert[1] + z_wall_left
+            stepblock = poly ().unit_cube ().set_vertices ({'a': a,
+                                                            'b': b,
+                                                            'c': c,
+                                                            'd': d,
+                                                            'e': e,
+                                                            'f': f,
+                                                            'g': g,
+                                                            'h': h})
+            stepblock = stepblock.translate (pos)
+            stepblock.sanity_check ()
+            print ("before sort", stepblock)
+            stepblock.sort_vertices ()
+            print ("after sort", stepblock)
+            stepblock.sanity_check ()
+            print ("after sort", stepblock)
+            addpolyobj (stepblock.get_vertices (),
+                        stepblock.get_faces (),
+                        'wall', r, 'stairs')
+            #
+            #  right hand wall
+            #
+            z_wall_left = vec (0, 0, 7.0 - s * floorStep)
+            cur_stair_vert = generateStairVert (-stepAngleClockwise * s)
+            a = cur_stair_vert[2]
+            b = cur_stair_vert[3]
+            c = prev_stair_vert[3]
+            d = prev_stair_vert[2]
+            e = prev_stair_vert[3] + z_wall_left
+            f = prev_stair_vert[2] + z_wall_left
+            g = cur_stair_vert[2] + z_wall_left
+            h = cur_stair_vert[3] + z_wall_left
+            stepblock = poly ().unit_cube ().set_vertices ({'a': a,
+                                                            'b': b,
+                                                            'c': c,
+                                                            'd': d,
+                                                            'e': e,
+                                                            'f': f,
+                                                            'g': g,
+                                                            'h': h})
+            stepblock = stepblock.translate (pos)
+            stepblock.sanity_check ()
+            print ("before sort", stepblock)
+            stepblock.sort_vertices ()
+            print ("after sort", stepblock)
+            stepblock.sanity_check ()
+            print ("after sort", stepblock)
+            addpolyobj (stepblock.get_vertices (),
+                        stepblock.get_faces (),
+                        'wall', r, 'stairs')
+
+            #
+            #  the step
+            #
+            cur_stair_vert = generateStairVert (-stepAngleClockwise * s)
+            a = cur_stair_vert[1]
+            b = cur_stair_vert[2]
+            c = prev_stair_vert[2]
+            d = prev_stair_vert[1]
+            e = prev_stair_vert[2] + z_step
+            f = prev_stair_vert[1] + z_step
+            g = cur_stair_vert[1] + z_step
+            h = cur_stair_vert[2] + z_step
+            light_stair_vert = generateStairVert (-stepAngleClockwise * s -stepAngleClockwise/2.0)
+            left = light_stair_vert[4]
+            right = light_stair_vert[5]
+            stepblock = poly ().unit_cube ().set_vertices ({'a': a,
+                                                            'b': b,
+                                                            'c': c,
+                                                            'd': d,
+                                                            'e': e,
+                                                            'f': f,
+                                                            'g': g,
+                                                            'h': h})
+            stepblock = stepblock.translate (pos)
+            stepblock.sanity_check ()
+            print ("before sort", stepblock)
+            stepblock.sort_vertices ()
+            print ("after sort", stepblock)
+            stepblock.sanity_check ()
+            print ("after sort", stepblock)
+            addpolyobj (stepblock.get_vertices (),
+                        stepblock.get_faces (),
+                        'wall', r, 'stairs')
+
+            if False:
+                pos = vec (stair.x,
+                           stair.y,
+                           0)
+                #
+                #  over step light
+                #
+                left = left + pos + z_step + vec (0, 0, lightFloorHeight + startHeight)
+                right = right + pos + z_step + vec (0, 0, startHeight + lightFloorHeight)
+                lx, ly, lz = left.to_list ()
+                rx, ry, rz = right.to_list ()
+                if s in [0]:
+                    coke_can (r, float (lx), float (ly), float (lz))
+                # coke_can (r, float (rx), float (ry), float (rz))
+                # candleStair (r, float (rx), float (ry), float (rz))
+                #
+                #  under step light
+                #
+                left = left - vec (0, 0, floorStep + lightFloorHeight)
+                right = right - vec (0, 0, floorStep + lightFloorHeight)
+                lx, ly, lz = left.to_list ()
+                rx, ry, rz = right.to_list ()
+                # candleStair (r, float (lx), float (ly), float (lz))
+                # candleStair (r, float (rx), float (ry), float (rz))
+            #
+            #  move onto the next step
+            #
+            prev_stair_vert = cur_stair_vert
+            startHeight += floorStep
 
 
 def generatePythonMonsters (o, e):
@@ -4309,7 +4727,7 @@ def generateMonsters (o, e):
 def generateAmmo (o, entno):
     n = 1
     for room in list(rooms.keys()):
-        if debugging:
+        if args.debug:
             print(rooms[room].ammo)
         for ammo_kind, a, xy in rooms[room].ammo:
             o.write ("// entity " + str (entno) + '\n')
@@ -4332,7 +4750,7 @@ def generateAmmo (o, entno):
 def generateSounds (o, e):
     n = 1
     for r in list(rooms.keys()):
-        if debugging:
+        if args.debug:
             print(rooms[r].sounds)
         for s, xy in rooms[r].sounds:
             o.write ("// entity " + str (e) + '\n')
@@ -4367,7 +4785,7 @@ def generateSounds (o, e):
 def generateWeapons (o, e):
     n = 1
     for r in list(rooms.keys ()):
-        if debugging:
+        if args.debug:
             print(rooms[r].weapons)
         for weapon_kind, xy in rooms[r].weapons:
             o.write ("// entity " + str (e) + '\n')
@@ -4389,7 +4807,7 @@ def generateWeapons (o, e):
 def generateLabels (o, e):
     n = 1
     for r in list(rooms.keys ()):
-        if debugging:
+        if args.debug:
             print (rooms[r].labels)
         for label_desc, xy in rooms[r].labels:
             o.write ("// entity " + str (e) + '\n')
@@ -4408,6 +4826,29 @@ def generateLabels (o, e):
     return o, e
 
 
+def generateCokeCans (o, e):
+    n = 1
+    for roomno in list (rooms.keys ()):
+        if args.debug:
+            print (rooms[roomno].cokeCans)
+        for can in rooms[roomno].cokeCans:
+            o.write ("// entity " + str (e) + '\n')
+            o.write ("{\n")
+            o.write ('    "inv_item" "4"\n')
+            o.write ('    "classname" "moveable_cokecan"\n')
+            o.write ('    "name" "movable_cokecan_' + str (n) + '"\n')
+            o.write ('    "origin" "')
+            x = toInches (can.x - minx)
+            y = toInches (can.y - miny)
+            z = toInches (can.z - getFloorLevel (roomno))
+            z += getFloorLevel (roomno)
+            o.write ('%d %d %d"\n' % (x, y, z))
+            o.write ("}\n")
+            n += 1
+            e += 1
+    return o, e
+
+
 def assignFloorLevel (f):
     global rooms
     for r in list(rooms.keys()):
@@ -4415,11 +4856,11 @@ def assignFloorLevel (f):
 
 
 def generateMap (o):
-    if genSteps:
+    if args.floor:
         calcFloorLevel ()
     else:
         assignFloorLevel (0)
-    o.write ("// automatically created from: " + inputFile + "\n")
+    o.write ("// automatically created from: " + args.inputfile + "\n")
     o       = generateVersion (o)
     o, e, b = generateEntities (o)
     o, e    = generatePlayer (o, e)
@@ -4431,9 +4872,10 @@ def generateMap (o):
     o, e    = generateWeapons (o, e)
     o, e    = generateLabels (o, e)
     o, e, b = generateSecretDoors (o, e, b)
-    if statistics:
-        print("Total rooms =", len (list(rooms.keys ())))
-        print("Total cuboids =", len (list(cuboids.keys ())))
+    o, e    = generateCokeCans (o, e)
+    if args.statistics:
+        print("Total rooms =", len (list (rooms.keys ())))
+        print("Total cuboids =", len (list (cuboids.keys ())))
         print("Total cuboids expanded (optimised) =", getexpanded ())
         print("Total entities used =", e, "entities unused =", maxEntities-e)
         print("Total brushes used  =", b)
@@ -4570,6 +5012,25 @@ def checkRegression ():
         setOptimise (True)
         regressiontest ()
     setOptimise (optimise)
+    unit_tests ()
+    dump_unit_coords ()
+
+
+def dump_unit_coords ():
+    toppos = [1, 1, 1]
+    botpos = [0, 0, 0]
+    size = subVec (toppos, botpos)
+    points = [botpos,
+              addVec (botpos, [0, size[1], 0]),
+              addVec (botpos, [size[0], size[1], 0]),
+              addVec (botpos, [size[0], 0, 0]),
+              toppos,
+              subVec (toppos, [0, size[1], 0]),
+              subVec (toppos, [size[0], size[1], 0]),
+              subVec (toppos, [size[0], 0, 0])]
+    print ("unit coords")
+    for p in points:
+        print (p)
 
 
 #
@@ -4577,29 +5038,26 @@ def checkRegression ():
 #
 
 def main ():
-    global inputFile, words, toTxt
-    io = handleOptions ()
+    global words, args
+    args = initOptions ()
     checkRegression ()
-    if (io[0] == None) or (io[0] == '-'):
+    if args.inputfile == '-':
         # input file not set so use stdin
-        inputFile = 'stdin'
-        i = sys.stdin
+        inf = sys.stdin
     else:
-        inputFile = io[0]
-        i = open (io[0], 'r')
-    if io[1] == None:
+        inf = open (args.inputfile, 'r')
+    if args.outputfile == '-':
         # output file not set so use stdout
-        o = sys.stdout
+        opf = sys.stdout
     else:
-        o = open (io[1], 'w')
-
-    words = lexicalPen (i)
+        opf = open (args.outputfile, 'w')
+    words = lexicalPen (inf)
     if parsePen ():
-        if toTxt:
-            o = generateTxt (o)
+        if args.txt:
+            opf = generateTxt (opf)
         else:
-            o = generateMap (o)
-        o.flush ()
+            opf = generateMap (opf)
+        opf.flush ()
 
 
 main ()

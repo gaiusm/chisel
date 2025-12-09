@@ -6,7 +6,9 @@ define o monster monster_demon_imp
 define n monster monster_demon_hellknight
 define i light
 define a ammo ammo_grenade 16
-define g plinth height 48 [a]
+define G plinth height 48 [a]
+define g plinth height 32 [a]
+define F plinth height 16 [a]
 
 define lightflame colour 150 107 7
 
@@ -25,29 +27,33 @@ define floor2 default texture floor textures/masonary/Tiles074
 define plinth plinth textures/masonary/Marble006
 define lightceiling default texture ceiling textures/masonary/Planks026A
 
+define defbeam default texture beam textures/quake1/pine_wood
+
 define yellow colour 190 180 170
 define darkyellow colour 190 185 66
 define flame colour 170 107 7
 define slatefloor default texture floor textures/quake1/slate_tile_floor
 
-define defroom1 default light mid [yellow] default light ceiling [flame] default light floor [darkyellow] default texture [plinth] [floor1] [lightceiling]
-define defroom2 default light mid [yellow] default light ceiling [flame] default light floor [darkyellow] default texture [plinth] [floor2] [lightceiling]
+define defroom1 default light mid [yellow] default light ceiling [flame] default light floor [darkyellow] default texture [plinth] [floor1] [lightceiling] [defbeam]
+define defroom2 default light mid [yellow] default light ceiling [flame] default light floor [darkyellow] default texture [plinth] [floor2] [lightceiling] [defbeam]
 
+define S staircase north spiral clockwise leads up to 4
+define C column
 
 ##################################
 # 1              # 2             #
 #                #               #
-# s    g  g      .               #
+# s              .               #
 #                .               #
-#      g  g      .               #
-#                #      g        #
+#       S        .               #
+#                #               #
 #                #               #
 #######....#######################
 # 3              #
 #                #
-#   g            #
-#   g            #
-#   g            #
+#                #
+#                #
+#                #
 #                #
 #                #
 ##################

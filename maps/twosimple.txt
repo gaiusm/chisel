@@ -1,0 +1,19 @@
+include defaults.txt
+
+define 1 room 1 [defroom1]
+define 2 room 2 [defroom2]
+define s worldspawn
+define o monster monster_demon_imp
+define n monster monster_demon_hellknight
+define g ammo ammo_grenade 16
+define p plinth height 80 [g]
+
+##################################
+# 1              # 2             #
+#                #               #
+# s       p      .               #
+#                .               #
+#                .               #
+#                #               #
+#                #               #
+##################################

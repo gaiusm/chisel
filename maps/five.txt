@@ -1,32 +1,31 @@
+include defaults.txt
 
-define 1 room 1
-define 2 room 2
-define 3 room 3
-define 4 room 4
-define 5 room 5
+define 1 room 1 [defroom1]
+define 2 room 2 [defroom2]
+define 3 room 3 [defroom3]
+define 4 room 4 [defroom4]
+define 5 room 5 [defroom9]
 define s worldspawn
-define o monster ogre
-define c monster cyberdaemon
-define h monster hellknight
-define a ammo 6 
-define w weapon 6
-define l light
+define o monster monster_demon_imp
+define c monster monster_demon_tick
+define h monster monster_demon_hellknight
+define a ammo ammo_grenade 16
 
 ###########################################
-# 1   a     w    .       2    # 4         #
-# s     l        . o        l #         l #
+# 1   a          .       2    # 4         #
+# s              . o          #           #
 #                . o          #           #
 ##################            #        c  #
-#               l#            .       c   #
-# 5              .            .         l #
+#                #            .       c   #
+# 5              .            .           #
 #              a .      a     #           #
-# l    c c       #            #      ######
+#      c c       #            #      ######
 #                #            #      #
 #                #            #      #
-##################..###########l     #
-# 3  l                  l     .  a   #
-#        a       h     h      .    l #
-#            l                .      #
+##################..###########      #
+# 3                           .  a   #
+#        a       h     h      .      #
+#                             .      #
 #                             .      #
 #                             .      #
 #                             .      #

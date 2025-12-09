@@ -1,0 +1,80 @@
+include defaults.txt
+
+define 1 room 1 [defroom1]
+define 2 room 2 [defroom2]
+define 3 room 3 [defroom3]
+define 4 room 4 [defroom4]
+define 5 room 5 [defroom9]
+define 6 room 6 [defroom1]
+define 7 room 7 [defroom2]
+define 8 room 8 [defroom3]
+define 9 room 9 [defroom4]
+define A room 10 [defroom9]
+define B room 11 [defroom1]
+define C room 12 [defroom2]
+define D room 13 [defroom3]
+define E room 14 [defroom4]
+define F room 15 [defroom9]
+define G room 16 [defroom9]
+define H room 17 [defroom1]
+define I room 18 [defroom2]
+define J room 19 [defroom3]
+define K room 20 [defroom4]
+define L room 21 [defroom9]
+define M room 22 [defroom9]
+define N room 23 [defroom1]
+define O room 24 [defroom2]
+define P room 25 [defroom3]
+define Q room 26 [defroom4]
+define R room 27 [defroom9]
+define S room 28 [defroom9]
+define T room 29 [defroom9]
+define U room 30 [defroom9]
+define V room 31 [defroom4]
+define W room 32 [defroom9]
+define X room 33 [defroom9]
+define Y room 34 [defroom9]
+define Z room 35 [defroom9]
+define a room 36 [defroom9]
+define b room 37 [defroom1]
+define c room 38 [defroom2]
+define d room 39 [defroom3]
+define e room 40 [defroom4]
+define f room 41 [defroom9]
+define g room 42 [defroom9]
+define h room 43 [defroom1]
+define i room 44 [defroom2]
+define j room 45 [defroom3]
+define k room 46 [defroom4]
+define l room 47 [defroom9]
+define m room 48 [defroom9]
+define n room 49 [defroom1]
+define o room 50 [defroom2]
+define p room 51 [defroom3]
+define q room 52 [defroom4]
+define r room 53 [defroom9]
+define s room 54 [defroom9]
+define t room 55 [defroom9]
+define u room 56 [defroom9]
+define v room 57 [defroom4]
+define w ammo ammo_grenade 16
+define x monster monster_demon_hellknight
+define y monster monster_demon_imp
+define z worldspawn
+
+
+                                          ##########################################
+                                          #                                        #
+                                          #                                        #
+                                          #                                        #
+                                          #             2                          #
+                                          #                                        #
+                                          #                                        #
+                                          ##############..##########################
+                                                       #  #
+                                                       #  #
+                                                       #  #
+                                 #######################  #
+                                 #   1       z            #
+                                 #                        #
+                                 ##########################

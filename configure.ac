@@ -1,4 +1,4 @@
-AC_INIT([chisel], [3.0], [bug-automake@gnu.org])
+AC_INIT([chisel], [4.0], [bug-automake@gnu.org])
 AM_INIT_AUTOMAKE([-Wall -Wno-portability])
 AM_PATH_PYTHON([3.0],, [:])
 AM_CONDITIONAL([HAVE_PYTHON], [test "$PYTHON" != :])

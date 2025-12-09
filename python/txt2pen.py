@@ -22,23 +22,19 @@
 # Author Gaius Mulley <gaiusmod2@gmail.com>
 #
 
-import getopt, sys, string, os
+import sys, string, os, argparse
 
 inputFile = None
 defines = {}
-verbose = False
-debugging = False
-autoLights = False
 floor = []
 rooms = {}
 maxx, maxy = 0, 0
 doorValue, wallValue, emptyValue = 0, -1, -2
-versionNumber = 0.2
-lightFrequency = 5
 defaultColour = None
 openDoor, closedDoor, secretDoor = range (3)
 inputStack = []
 includeDir = []
+args = None
 
 
 def pushInput (filename, lineno, contents):
@@ -115,7 +111,31 @@ class roomInfo:
         self.sounds = []
         self.labels = []
         self.plinths = []
+        self.stairs = []
+        self.columns = []
 
+
+class staircase:
+    def __init__ (self, room, x, y, orient, clockwise, up, dest):
+        self.room = room
+        self.x = x
+        self.y = y
+        self.orient = orient
+        self.clockwise = clockwise
+        self.up = up
+        self.dest = dest
+    def write (self, f):
+        f.write ("   STAIRCASE %d %d" % (self.x, self.y))
+        f.write ({0: " NORTH",
+                  1: " EAST",
+                  2: " SOUTH",
+                  3: " WEST",}[self.orient])
+        f.write ({True: " CLOCKWISE",
+                  False: " ANTICLOCK",}[self.clockwise])
+        f.write ({True: " UP",
+                  False: " DOWN",}[self.up])
+        f.write (" TO %d\n" % self.dest)
+        return f
 
 #
 #  printf - keeps C programmers happy :-)
@@ -128,13 +148,13 @@ def printf (format, *args):
 
 
 #
-#  vprintf - printf if verbose was set.
+#  vprintf - printf if args.verbose was set.
 #
 
-def vprintf (format, *args):
-    global verbose
-    if verbose:
-        print(str(format) % args, end=' ')
+def vprintf (format, *params):
+    global args
+    if args.verbose:
+        print(str(format) % params, end=' ')
         sys.stdout.flush ()
 
 
@@ -148,62 +168,37 @@ def error (format, *args):
 
 
 #
-#  debugf - issues prints if debugging is set
+#  debugf - issues prints if args.debug is set
 #
 
 def debugf (format, *args):
-    global debugging
-    if debugging:
+    if args.debug:
         print(str (format) % args, end=' ')
 
 
-def usage (code):
-    print("Usage: txt2pen [-dhlvV] [-f frequency] [-o outputfile] [-I path] inputfile")
-    print("  -d debugging")
-    print("  -h help")
-    print("  -l automatic lighting")
-    print("  -f frequency    (every frequency squares place a light)")
-    print("  -V verbose")
-    print("  -v version")
-    print("  -o outputfile name")
-    print("  -I includedirectory")
-    sys.exit (code)
-
-
 #
-#  handleOptions -
+#  initOptions -
 #
 
-def handleOptions ():
-    global debugging, verbose, outputName, autoLights, lightFrequency, includeDir
-
-    outputName = None
-    try:
-        optlist, l = getopt.getopt(sys.argv[1:], ':df:hlo:vI:V')
-        for opt in optlist:
-            if opt[0] == '-d':
-                debugging = True
-            elif opt[0] == '-h':
-                usage (0)
-            elif opt[0] == '-l':
-                autoLights = True
-            elif opt[0] == '-f':
-                lightFrequency = int (opt[1])
-            elif opt[0] == '-o':
-                outputName = opt[1]
-            elif opt[0] == '-v':
-                printf ("txt2pen version " + str (versionNumber) + "\n")
-                sys.exit (0)
-            elif opt[0] == '-I':
-                includeDir += [opt[1]]
-            elif opt[0] == '-V':
-                verbose = True
-        if l != []:
-            return (l[0], outputName)
-
-    except getopt.GetoptError:
-        usage (1)
-    return (None, outputName)
+def initOptions ():
+    parser = argparse.ArgumentParser ()
+    parser.add_argument('-a', '--autolights', help='turn on automatic lighting',
+                        default=False, action='store_true')
+    parser.add_argument('-d', '--debug', help='generate internal debugging messages',
+                        action='store_true')
+    parser.add_argument('-V', '--verbose', help='generate progress messages',
+                        default=False, action='store_true')
+    parser.add_argument('-v', '--version', help='display the version number',
+                        default=False, action='store_false')
+    parser.add_argument('-f', '--freq', help='set the light frequency to units per light',
+                        default='5', action='store')
+    parser.add_argument('-i', '--inputfile', help='set the input file',
+                        default=None, action='store')
+    parser.add_argument('-o', '--outputfile', help='set the output file',
+                        default=None, action='store')
+    parser.add_argument('-I', '--include', help='add path to the list of include directories',
+                        default=None, action='store')
+    return parser.parse_args ()
 
 
 #
@@ -413,14 +408,14 @@ def addWall (walls, start, current):
 
 
 def lookingLeft (pos, left, grid, s):
-    if debugging:
+    if args.debug:
         print(pos, left, s)
     if s[1] == ' ' and isPlane (pos, grid):
         return False
     if s[1] == 'x' and (not isPlane (pos, grid)):
         return False
     if s[1] == '.' and (not isDoor (pos, grid)):
-        if debugging:
+        if args.debug:
             print("no door at", pos)
         return False
     if s[0] == ' ' and isPlane (addVec (pos, left), grid):
@@ -445,32 +440,31 @@ def getDoorType (p, mapGrid):
 
 
 def scanRoom (topleft, p, mapGrid, walls, doors):
-    global debuging
-    if debugging:
+    if args.debug:
         print("scanning room, start pos in room = ", p)
     s = addVec (p, [0, 0])
     a = addVec (p, [-1, -1])
     d = 1  # 0 up, 1 right, 2 down, 3 left
     leftVec = [[-1, 0], [0, -1], [1, 0], [0, 1]]
     forwardVec = [[0, -1], [1, 0], [0, 1], [-1, 0]]
-    if debugging:
+    if args.debug:
         print("wall corner", p)
 
     doorStartPoint = None
     doorEndPoint = None
     doorType = None
     while True:
-        if debugging:
+        if args.debug:
             print("point currently at", p, d)
         if (doorStartPoint == None) and lookingLeft (p, leftVec[d], mapGrid, '. '):
-            if debugging:
+            if args.debug:
                 print("seen first point", p)
             # first point on the wall is a door
             doorStartPoint = addVec (p, leftVec[d])
             doorEndPoint = doorStartPoint
             doorType = getDoorType (doorStartPoint, mapGrid)
         if lookingLeft (addVec (p, forwardVec[d]), leftVec[d], mapGrid, '. '):
-            if debugging:
+            if args.debug:
                 print("seen a door point", p, end=' ')
             if doorStartPoint == None:
                 doorStartPoint = addVec (addVec (p, forwardVec[d]), leftVec[d])
@@ -486,7 +480,7 @@ def scanRoom (topleft, p, mapGrid, walls, doors):
             # carry on
             p = addVec (p, forwardVec[d])
         elif lookingLeft (addVec (p, forwardVec[d]), leftVec[d], mapGrid, 'x.'):
-            if debugging:
+            if args.debug:
                 print("wall corner (x.)", p)
             walls, a = addWall (walls, a, addVec (addVec (p, forwardVec[d]), leftVec[d]))
             # end of door?
@@ -500,7 +494,7 @@ def scanRoom (topleft, p, mapGrid, walls, doors):
                 # back to the start
                 return walls, doors
         elif lookingLeft (addVec (p, forwardVec[d]), leftVec[d], mapGrid, 'xx'):
-            if debugging:
+            if args.debug:
                 print("wall corner (xx)", p)
             walls, a = addWall (walls, a, addVec (addVec (p, forwardVec[d]), leftVec[d]))
             # end of door?
@@ -514,11 +508,11 @@ def scanRoom (topleft, p, mapGrid, walls, doors):
                 # back to the start
                 return walls, doors
         elif lookingLeft (addVec (p, forwardVec[d]), leftVec[d], mapGrid, '  '):
-            if debugging:
+            if args.debug:
                 print("wall corner (  )", p, end=' ')
             # walls, a = addWall (walls, a, addVec (addVec (p, forwardVec[d]), leftVec[d]))
             walls, a = addWall (walls, a, addVec (p, leftVec[d]))
-            if debugging:
+            if args.debug:
                 print("at point", a)
             # turn left
             p = addVec (p, forwardVec[d])
@@ -531,11 +525,11 @@ def scanRoom (topleft, p, mapGrid, walls, doors):
 
 
 #
-#  checkLight - add a mid light if lightCount == lightFrequency
+#  checkLight - add a mid light if lightCount == args.freq
 #
 
 def checkLight (position, lightList, lightCount):
-    if lightCount == lightFrequency:
+    if lightCount == int (args.freq):
         li = light ()
         li.settype ('MID')
         lightList += [position + [li]]
@@ -567,7 +561,7 @@ def introduceLights (p, mapGrid, walls, doors):
     d = 1  # 0 up, 1 right, 2 down, 3 left
     leftVec = [[-1, 0], [0, -1], [1, 0], [0, 1]]
     forwardVec = [[0, -1], [1, 0], [0, 1], [-1, 0]]
-    if debugging:
+    if args.debug:
         print("wall corner", p)
 
     lightCount = 0
@@ -594,14 +588,12 @@ def introduceLights (p, mapGrid, walls, doors):
 #
 
 def introduceLights (p, mapGrid, walls, doors):
-    global debugging
-
     s = p
     a = addVec (p, [-1, -1])
     d = 1  # 0 up, 1 right, 2 down, 3 left
     leftVec = [[-1, 0], [0, -1], [1, 0], [0, 1]]
     forwardVec = [[0, -1], [1, 0], [0, 1], [-1, 0]]
-    if debugging:
+    if args.debug:
         print("wall corner", p)
 
     lightCount = 0
@@ -613,16 +605,16 @@ def introduceLights (p, mapGrid, walls, doors):
 
     while True:
         # print (p)
-        if debugging:
+        if args.debug:
             print("point currently at", p, d)
         if (doorStartPoint == None) and lookingLeft (p, leftVec[d], mapGrid, '. '):
-            if debugging:
+            if args.debug:
                 print("seen first point", p)
             # first point on the wall is a door
             doorEndPoint = doorStartPoint
             suppressDoor = True
         if lookingLeft (addVec (p, forwardVec[d]), leftVec[d], mapGrid, '. '):
-            if debugging:
+            if args.debug:
                 print("seen a door point", p, end=' ')
             suppressDoor = True
             doorEndPoint = addVec (addVec (p, forwardVec[d]), leftVec[d])
@@ -643,7 +635,7 @@ def introduceLights (p, mapGrid, walls, doors):
             p = addVec (p, forwardVec[d])
             suppressDoor = False
         elif lookingLeft (addVec (p, forwardVec[d]), leftVec[d], mapGrid, 'x.'):
-            if debugging:
+            if args.debug:
                 print("wall corner (x.)", p)
             # end of door?
             doorStartPoint = None
@@ -655,7 +647,7 @@ def introduceLights (p, mapGrid, walls, doors):
                 # back to the start
                 return lights
         elif lookingLeft (addVec (p, forwardVec[d]), leftVec[d], mapGrid, 'xx'):
-            if debugging:
+            if args.debug:
                 print("wall corner (xx)", p)
             # end of door?
             doorStartPoint = None
@@ -667,7 +659,7 @@ def introduceLights (p, mapGrid, walls, doors):
                 # back to the start
                 return lights
         elif lookingLeft (addVec (p, forwardVec[d]), leftVec[d], mapGrid, '  '):
-            if debugging:
+            if args.debug:
                 print("wall corner (  )", p, end=' ')
             # turn left
             p = addVec (p, forwardVec[d])
@@ -713,24 +705,10 @@ def printInside (inside, o):
     return o
 
 
-def printSounds (sounds, o):
-    if sounds != []:
-        for s in sounds:
-            o = s.write (o)
-    return o
-
-
-def printLabels (labels, o):
-    if labels != []:
-        for l in labels:
-            o = l.write (o)
-    return o
-
-
-def printPlinths (plinths, o):
-    if plinths != []:
-        for p in plinths:
-            o = p.write (o)
+def printObjects (objects, o):
+    if objects != []:
+        for obj in objects:
+            o = obj.write (o)
     return o
 
 
@@ -804,29 +782,31 @@ def printRoom (roomNo, outputFile):
     outputFile = printMonsters (rooms[roomNo].monsters, outputFile)
     outputFile = printAmmo (rooms[roomNo].ammo, outputFile)
     outputFile = printWeapons (rooms[roomNo].weapons, outputFile)
-    if autoLights and (rooms[roomNo].lights == []):
+    if args.autolights and (rooms[roomNo].lights == []):
         outputFile = printLights (rooms[roomNo].autoLights, outputFile)
     else:
         outputFile = printLights (rooms[roomNo].lights, outputFile)
     outputFile = printSpawnPlayer (rooms[roomNo].worldspawn, outputFile)
     outputFile = printInside (rooms[roomNo].inside, outputFile)
-    outputFile = printSounds (rooms[roomNo].sounds, outputFile)
-    outputFile = printLabels (rooms[roomNo].labels, outputFile)
-    outputFile = printPlinths (rooms[roomNo].plinths, outputFile)
+    outputFile = printObjects (rooms[roomNo].sounds, outputFile)
+    outputFile = printObjects (rooms[roomNo].labels, outputFile)
+    outputFile = printObjects (rooms[roomNo].plinths, outputFile)
+    outputFile = printObjects (rooms[roomNo].stairs, outputFile)
+    outputFile = printObjects (rooms[roomNo].columns, outputFile)
     outputFile.write ("END\n\n")
     return outputFile
 
 
 def generateRoom (roomNo, position, mapGrid, start, lineNo):
-    global verbose, rooms, debugging
+    global rooms
 
     inside = position
     position = moveBy (position, [-1, -1], mapGrid)
-    if debugging:
+    if args.debug:
         print ("top left is", position)
     start = position
     walls, doors = scanRoom (start, position, mapGrid, [], [])
-    if debugging:
+    if args.debug:
         print(walls)
     rooms[roomNo] = roomInfo (walls, doors)
     rooms[roomNo].autoLights += introduceLights (position, mapGrid, [], [])
@@ -838,7 +818,7 @@ def plot (w, value):
     x1 = max (w[0][0], w[1][0])
     y0 = min (w[0][1], w[1][1])
     y1 = max (w[0][1], w[1][1])
-    if debugging:
+    if args.debug:
         printf ("plot x0 = %d, x1 = %d, y0 = %d, y1 = %d\n", x0, x1, y0, y1)
     if x0 == x1:
         for j in range (y0, y1+1):
@@ -849,7 +829,7 @@ def plot (w, value):
 
 
 def onFloor (r):
-    global verbose, rooms, maxx, maxy, wallValue, doorValue
+    global rooms, maxx, maxy, wallValue, doorValue
 
     for w in rooms[r].walls:
         plot (w, wallValue)
@@ -1029,9 +1009,18 @@ class plinth:
         f.write ("   PLINTH %d %d %d\n" % (self.x, self.y, self.h))
         return f
 
+class column:
+    def __init__ (self, x, y):
+        self.x = x
+        self.y = y
+    def write (self, f):
+        f.write ("   COLUMN %d %d\n" % (self.x, self.y))
+        return f
+
 
 #
-#  ebnf := roomNo | worldSpawn | ammoSpawn | lightSpawn | configDefaults | monsterSpawn | weaponSpawn | soundSpawn | label | plinth =:
+#  ebnf := roomNo | worldSpawn | ammoSpawn | lightSpawn | configDefaults | monsterSpawn |
+#          weaponSpawn | soundSpawn | label | plinth | staircase =:
 #
 #  roomNo := 'room' int =:
 #  worldSpawn := 'worldspawn' =:
@@ -1048,18 +1037,28 @@ class plinth:
 #  soundSpawn := 'sound' filename { "volume" int | "looping" | "wait" int } =:
 #  label := 'label' 'at' int int string =:
 #  plinth := 'plinth' 'height' int =:
+#  staircase := 'staircase' orientation 'spiral' ( 'clockwise' | 'anticlock' ) 'leads' 'up' 'to' int =:
+#  orientation := 'north' | 'east' | 'south' | 'west' =:
+#  column := 'column' =:
 #
 
 
-reservedKeywords = ['ammo', 'ceiling', 'colour', 'default',
-                    'floor', 'height', 'label', 'light', 'looping',
+reservedKeywords = ['anticlock', 'ammo',
+                    'beam',
+                    'ceiling', 'clockwise', 'colour',
+                    'column',
+                    'default', 'down', 'east',
+                    'floor', 'height', 'label',
+                    'leads', 'light', 'looping',
+                    'north',
                     'mid', 'monster',
                     'plinth',
                     'worldspawn',
                     'room', 'sound',
-                    'texture', 'type',
+                    'staircase', 'spiral', 'south',
+                    'texture', 'to', 'type', 'up',
                     'volume',
-                    'wall', 'wait', 'weapon']
+                    'wall', 'wait', 'weapon', 'west']
 
 def parseColour (l, room, x, y):
     expect ('colour', room, x, y)
@@ -1067,7 +1066,7 @@ def parseColour (l, room, x, y):
     g = expectInt (room, x, y, "green colour component")
     b = expectInt (room, x, y, "blue colour component")
     l.setcolour (r, g, b)
-    if debugging:
+    if args.debug:
         print("colour complete", l.r, l.g, l.b)
     return l
 
@@ -1092,7 +1091,7 @@ def tokenise (k):
 def expecting (l):
     global tokens
     tokens = tokens.lstrip ()
-    if debugging:
+    if args.debug:
         print("expecting", tokens)
     for w in l:
         if isSubstr (tokens, "<" + w + ">"):
@@ -1109,13 +1108,13 @@ def expect (w, r, x, y):
 
     tokens = tokens.lstrip ()
     w = w.lstrip ()
-    if debugging:
+    if args.debug:
         print("expect", w)
     if isSubstr (tokens, "<" + w + ">"):
         if tokens != "":
             tokens = tokens[len (w) + 2:]
     else:
-        if debugging:
+        if args.debug:
             print(w, tokens)
         error ("expecting token " + w + " in room " +
                str (r) + " at " + str (x) + " " + str (y))
@@ -1195,13 +1194,13 @@ def parseLightDefault (room, x, y):
         l = parseColour (light (), room, x, y)
         l.settype ('MID')
     elif expecting (['ceiling']):
-        if debugging:
+        if args.debug:
             print("seen ceiling")
         expect ('ceiling', room, x, y)
-        if debugging:
+        if args.debug:
             print("eat ceiling")
         l = parseColour (light (), room, x, y)
-        if debugging:
+        if args.debug:
             print("finished parseColour")
         l.settype ('CEILING')
     else:
@@ -1243,7 +1242,96 @@ def parseLabel (room, x, y):
 
 
 #
-#  ebnf := roomNo | worldSpawn | ammoSpawn | lightSpawn | configDefaults | monsterSpawn | weaponSpawn | soundSpawn =:
+#  staircase := 'staircase' 'spiral' ( 'clockwise' | 'anticlock' )
+#               'leads' 'up' 'to' int =:
+#
+
+def parseStaircase (room, x, y):
+    if expecting (['staircase']):
+        expect ('staircase', room, x, y)
+        orient = parseOrientation (room, x, y)
+        expect ('spiral', room, x, y)
+        parseStarcaseDirection (room, x, y, orient)
+        return True
+    return False
+
+#
+#  column := 'column' =:
+#
+
+def parseColumn (room, x, y):
+    if expecting (['column']):
+        expect ('column', room, x, y)
+        rooms[room].columns += [column (x, y)]
+        return True
+    return False
+
+#
+#
+#
+
+def parseOrientation (room, x, y):
+    if expecting (['north']):
+        expect ('north', room, x, y)
+        return 0
+    if expecting (['east']):
+        expect ('east', room, x, y)
+        return 1
+    if expecting (['south']):
+        expect ('south', room, x, y)
+        return 2
+    if expecting (['west']):
+        expect ('west', room, x, y)
+        return 3
+    error ("expecting north, east, south or west in room " +
+           str (room) + " at " + str (x) + " " + str (y))
+
+#
+# ( 'clockwise' | 'anticlock' ) 'leads' ( 'up' | 'down' ) 'to' int =:
+#
+
+def parseStarcaseDirection (room, x, y, orient):
+    if expecting (['clockwise']):
+        expect ('clockwise', room, x, y)
+        parseStairLeads (room, x, y, orient, True)
+    elif expecting (['anticlock']):
+        expect ('anticlock', room, x, y)
+        parseStairLeads (room, x, y, orient, False)
+    else:
+        error ("expecting clockwise or anticlock in room " +
+               str (room) + " at " + str (x) + " " + str (y))
+
+#
+#  parseStairLeads - ( 'up' | 'down' ) 'to' int =:
+#
+
+def parseStairLeads (room, x, y, orient, clockwise):
+    expect ('leads', room, x, y)
+    if expecting (['up']):
+        expect ('up', room, x, y)
+        parseStairTo (room, x, y, orient, clockwise, True)
+    elif expecting (['down']):
+        expect ('down', room, x, y)
+        parseStairTo (room, x, y, orient, clockwise, False)
+    else:
+        error ("expecting clockwise or anticlock in room " +
+               str (room) + " at " + str (x) + " " + str (y))
+
+#
+#  parseStairTo -
+#
+
+def parseStairTo (room, x, y, orient, clockwise, up):
+    expect ('to', room, x, y)
+    dest = expectInt (room, x, y,
+                      "staircase needs a destination 'to' room")
+    stair = staircase (room, x, y, orient, clockwise, up, dest)
+    rooms[room].stairs += [stair]
+
+
+#
+#  ebnf := roomNo | worldSpawn | ammoSpawn | lightSpawn | configDefaults |
+#          monsterSpawn | weaponSpawn | soundSpawn | =:
 #
 
 def ebnf (room, x, y):
@@ -1268,8 +1356,13 @@ def ebnf (room, x, y):
             pass
         elif parsePlinth (room, x, y):
             pass
+        elif parseStaircase (room, x, y):
+            pass
+        elif parseColumn (room, x, y):
+            pass
         else:
             w = tokens.split ()[0]
+            print (tokens)
             error ("unexpected token " + w + " in room " +
                    str (room) + " at " + str (x) + " " + str (y))
 
@@ -1307,10 +1400,10 @@ def parseWorldSpawn (room, x, y):
 def parseAmmoSpawn (room, x, y):
     global rooms
     if expecting (['ammo']):
-        if debugging:
+        if args.debug:
             print("before", tokens)
         expect ('ammo', room, x, y)
-        if debugging:
+        if args.debug:
             print("after", tokens)
         s = expectString (room, x, y, 'describing ammo')
         n = expectInt (room, x, y, 'amount of ammo')
@@ -1483,7 +1576,7 @@ def parseEntities (k, room, x, y):
     global tokens
 
     tokens = tokenise (k)
-    if debugging:
+    if args.debug:
         print (tokens)
     ebnf (room, x, y)
 
@@ -1494,7 +1587,7 @@ def parseEntities (k, room, x, y):
 #
 
 def findEntities (mapGrid, room, p):
-    if debugging:
+    if args.debug:
         for line in mapGrid:
             print (line, end=' ')
         printf ("floor list for room %s\n", room)
@@ -1502,24 +1595,24 @@ def findEntities (mapGrid, room, p):
             print (line)
         dumpFloor ()
     for y, gridLine in enumerate (mapGrid):
-        if debugging:
+        if args.debug:
             printf ("gridLine = %s, y = %d\n", gridLine, y)
         for x in range (maxx+1):
-            if debugging:
+            if args.debug:
                 printf ("gridLine = %s, x, y = %d, %d\n", gridLine, x, y)
                 printf ("getFloor (%d, %d) = %d\n", x, y, getFloor (x, y))
             if getFloor (x, y) == int (room):
-                if debugging:
+                if args.debug:
                     printf ("getFloor matches, finding entities now\n")
                 c = gridLine[x]
-                if debugging:
+                if args.debug:
                     printf ("  entity %s\n", c)
                 if c in defines:
-                    if debugging:
+                    if args.debug:
                         print ("seen", c, "at", x, y)
                         print ("pos", x, y, c, "=>", end=' ')
                     k = macro (defines[c])
-                    if debugging:
+                    if args.debug:
                         print (k)
                     parseEntities (k, room, x, y)
 
@@ -1574,7 +1667,6 @@ def generatePen (mapGrid, start, fileContents, outputFile):
 #
 
 def processMap (outputFile):
-    global verbose
     vprintf ("reading defines: ")
     contents = readDefines ()
     vprintf ("done\n")
@@ -1592,20 +1684,20 @@ def processMap (outputFile):
 #
 
 def main ():
-    global inputFile
-    io = handleOptions ()
-    if io[0] == None:
+    global args, inputFile
+    args = initOptions ()
+    if args.inputfile == '-':
         # input file not set so use stdin
         inputFile = 'stdin'
         i = sys.stdin
     else:
-        inputFile = io[0]
-        i = open (io[0], 'r')
-    if io[1] == None:
+        inputFile = args.inputfile
+        i = open (inputFile, 'r')
+    if args.outputfile == '-':
         # output file not set so use stdout
         o = sys.stdout
     else:
-        o = open (io[1], 'w')
+        o = open (args.outputfile, 'w')
     pushInput (inputFile, None, i.readlines ())
     o = processMap (o)
     o.flush ()

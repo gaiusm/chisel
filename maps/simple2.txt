@@ -1,0 +1,30 @@
+
+  room 3
+define s worldspawn
+define o monster monster_demon_imp
+define n monster monster_demon_hellknight
+define i light
+define a ammo ammo_shells_large 16
+
+##################################
+# 1              # 2             #
+#                #               #
+#  s             #               #
+#                #               #
+#          i     .               #
+#                #             o #
+#                #               #
+####.......#############...#######
+# 3x                             #
+#                                #
+#                                #
+#                                #
+#                                #
+#                                #
+#                                #
+#                                #
+#                         n      #
+#                                #
+#                                #
+#                                #
+##################################

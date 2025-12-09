@@ -33,6 +33,7 @@ define W room 32  [defroom10]
 
 define a ammo item_medkit 1
 define b ammo ammo_shells_large 32
+define c ammo item_armor_shard 1
 define d ammo weapon_shotgun_double 1
 define f light type floor
 define h monster monster_demon_hellknight
